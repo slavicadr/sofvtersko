@@ -1,42 +1,69 @@
 package com.fakultet.dobrobit.models;
 
+import com.fakultet.dobrobit.enums.StatusNaloga;
+import com.fakultet.dobrobit.enums.TipKorisnika;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "korisnik")
 public class Korisnik {
 
-private  int korisnik_id;
-private    String ime;
-private    String prezime;
-private    String email;
-private     String lozinka_hash;
-private    String tip_korisnika;
-private   String status_naloga;
-private String telefon;
-private String adresa;
-private LocalDateTime datum_registracije;
-private boolean verifikovan;
-    public Korisnik(int korisnik_id, String ime, String prezime, String email, String lozinka_hash,
-                    String telefon, String adresa, String tip_korisnika, String status_naloga,
-                    LocalDateTime datum_registracije, boolean verifikovan) {
-        this.korisnik_id = korisnik_id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int korisnikId;
+
+    private String ime;
+    private String prezime;
+
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column(name = "lozinka_hash", nullable = false)
+    private String lozinkaHash;
+
+    private String telefon;
+    private String adresa;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tip_korisnika")
+    private TipKorisnika tipKorisnika;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_naloga")
+    private StatusNaloga statusNaloga;
+
+    @Column(name = "datum_registracije")
+    private LocalDateTime datumRegistracije;
+
+    private boolean verifikovan;
+
+    public Korisnik() {}
+
+    public Korisnik(String ime, String prezime, String email, String lozinkaHash,
+                    String telefon, String adresa,
+                    TipKorisnika tipKorisnika, StatusNaloga statusNaloga,
+                    LocalDateTime datumRegistracije, boolean verifikovan) {
         this.ime = ime;
         this.prezime = prezime;
         this.email = email;
-        this.lozinka_hash = lozinka_hash;
+        this.lozinkaHash = lozinkaHash;
         this.telefon = telefon;
         this.adresa = adresa;
-        this.tip_korisnika = tip_korisnika;
-        this.status_naloga = status_naloga;
-        this.datum_registracije = datum_registracije;
+        this.tipKorisnika = tipKorisnika;
+        this.statusNaloga = statusNaloga;
+        this.datumRegistracije = datumRegistracije;
         this.verifikovan = verifikovan;
     }
 
-    public int getKorisnik_id() {
-        return korisnik_id;
+
+    public int getKorisnikId() {
+        return korisnikId;
     }
 
-    public void setKorisnik_id(int korisnik_id) {
-        this.korisnik_id = korisnik_id;
+    public void setKorisnikId(int korisnikId) {
+        this.korisnikId = korisnikId;
     }
 
     public String getIme() {
@@ -63,28 +90,12 @@ private boolean verifikovan;
         this.email = email;
     }
 
-    public String getLozinka_hash() {
-        return lozinka_hash;
+    public String getLozinkaHash() {
+        return lozinkaHash;
     }
 
-    public void setLozinka_hash(String lozinka_hash) {
-        this.lozinka_hash = lozinka_hash;
-    }
-
-    public String getTip_korisnika() {
-        return tip_korisnika;
-    }
-
-    public void setTip_korisnika(String tip_korisnika) {
-        this.tip_korisnika = tip_korisnika;
-    }
-
-    public String getStatus_naloga() {
-        return status_naloga;
-    }
-
-    public void setStatus_naloga(String status_naloga) {
-        this.status_naloga = status_naloga;
+    public void setLozinkaHash(String lozinkaHash) {
+        this.lozinkaHash = lozinkaHash;
     }
 
     public String getTelefon() {
@@ -103,12 +114,28 @@ private boolean verifikovan;
         this.adresa = adresa;
     }
 
-    public LocalDateTime getDatum_registracije() {
-        return datum_registracije;
+    public TipKorisnika getTipKorisnika() {
+        return tipKorisnika;
     }
 
-    public void setDatum_registracije(LocalDateTime datum_registracije) {
-        this.datum_registracije = datum_registracije;
+    public void setTipKorisnika(TipKorisnika tipKorisnika) {
+        this.tipKorisnika = tipKorisnika;
+    }
+
+    public StatusNaloga getStatusNaloga() {
+        return statusNaloga;
+    }
+
+    public void setStatusNaloga(StatusNaloga statusNaloga) {
+        this.statusNaloga = statusNaloga;
+    }
+
+    public LocalDateTime getDatumRegistracije() {
+        return datumRegistracije;
+    }
+
+    public void setDatumRegistracije(LocalDateTime datumRegistracije) {
+        this.datumRegistracije = datumRegistracije;
     }
 
     public boolean isVerifikovan() {
