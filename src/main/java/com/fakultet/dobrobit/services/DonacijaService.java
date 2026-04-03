@@ -48,8 +48,6 @@ import java.util.List;
             return donacijaRepository.save(d);
         }
 
-        public void obrisiDonaciju(int id) {
-            donacijaRepository.deleteById(id);
-        }
+
     }
 
