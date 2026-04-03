@@ -29,6 +29,7 @@ public class KorisnikPomoci {
 
     public KorisnikPomoci() {}
 
+
     public int getPomocId() { return pomocId; }
     public void setPomocId(int pomocId) { this.pomocId = pomocId; }
 

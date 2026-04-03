@@ -1,5 +1,6 @@
 package com.fakultet.dobrobit.repositories;
 import com.fakultet.dobrobit.models.Korisnik;
+import com.fakultet.dobrobit.models.KorisnikPomoci;
 import com.fakultet.dobrobit.enums.TipKorisnika;
 import com.fakultet.dobrobit.enums.StatusNaloga;
 
@@ -32,5 +33,6 @@ import java.util.List;
                 String ime,
                 String prezime
         );
+        List<KorisnikPomoci> findByNazivContainingIgnoreCase(String naziv);
     }
 
