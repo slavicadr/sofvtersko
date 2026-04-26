@@ -3,7 +3,7 @@ package com.fakultet.dobrobit.services;
 import com.fakultet.dobrobit.models.Verifikacija;
 import com.fakultet.dobrobit.models.Korisnik;
 import com.fakultet.dobrobit.models.UslugaProizvod;
-import com.fakultet.dobrobit.repository.VerifikacijaRepository;
+import com.fakultet.dobrobit.repositories.VerifikacijaRepository;
 
 import org.springframework.stereotype.Service;
 

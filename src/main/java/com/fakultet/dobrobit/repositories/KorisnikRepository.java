@@ -34,5 +34,6 @@ import java.util.List;
                 String prezime
         );
         List<KorisnikPomoci> findByNazivContainingIgnoreCase(String naziv);
+
     }
 

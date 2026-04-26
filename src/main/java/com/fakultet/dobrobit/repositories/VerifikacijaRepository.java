@@ -1,4 +1,4 @@
-package com.fakultet.dobrobit.repository;
+package com.fakultet.dobrobit.repositories;
 
 import com.fakultet.dobrobit.models.Verifikacija;
 import com.fakultet.dobrobit.models.Korisnik;
