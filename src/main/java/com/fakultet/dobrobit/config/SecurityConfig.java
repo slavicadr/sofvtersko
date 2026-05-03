@@ -36,10 +36,8 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
 
-                        // Spring error endpoint
                         .requestMatchers("/error").permitAll()
 
-                        // ── Javni endpointi ────────────────────────────────────────────
                         .requestMatchers(HttpMethod.POST, "/api/korisnici/registracija").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/korisnici/registracija/kupac").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/korisnici/login").permitAll()

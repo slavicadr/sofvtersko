@@ -1,19 +1,18 @@
 package com.fakultet.dobrobit.controllers;
 
 import com.fakultet.dobrobit.models.KupljenaUsluga;
-import com.fakultet.dobrobit.models.Korisnik;
-import com.fakultet.dobrobit.models.KorisnikPomoci;
-import com.fakultet.dobrobit.models.UslugaProizvod;
 import com.fakultet.dobrobit.services.KupljenaUslugaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/kupovine")
 public class KupljenaUslugaController {
+
     private final KupljenaUslugaService service;
 
     public KupljenaUslugaController(KupljenaUslugaService service) {
@@ -25,48 +24,53 @@ public class KupljenaUslugaController {
         return service.getAll();
     }
 
-    //kreira se kupovina
+    // Kupac kupuje uslugu (SRS UC-3)
+    // Body: { "kupacId": 1, "uslugaId": 1, "pomocId": 1, "nacinPlacanja": "KARTICA" }
     @PostMapping("/kupi")
-    public ResponseEntity<?> kupi(
-            @RequestBody KupljenaUsluga podaci) {
+    public ResponseEntity<?> kupi(@RequestBody Map<String, Object> podaci) {
         try {
-            // Pozivamo servis sa svim potrebnim objektima koje smo dobili u Body-u
-            KupljenaUsluga novaKupovina = service.kupiUslugu(
-                    podaci.getDonator(),
-                    podaci.getUslugaProizvod(),
-                    podaci.getKorisnikPomoci(),
-                    podaci.getIznos(),
-                    podaci.getNacinPlacanja()
-            );
-            return ResponseEntity.ok(novaKupovina);
+            int kupacId = (Integer) podaci.get("kupacId");
+            int uslugaId = (Integer) podaci.get("uslugaId");
+            int pomocId = (Integer) podaci.get("pomocId");
+            String nacinPlacanja = (String) podaci.getOrDefault("nacinPlacanja", "KARTICA");
+
+            // Iznos je opcionalan — ako nije proslijeđen uzima se cijena usluge
+            BigDecimal iznos = podaci.containsKey("iznos")
+                    ? new BigDecimal(podaci.get("iznos").toString())
+                    : null;
+
+            KupljenaUsluga nova = service.kupiUslugu(kupacId, uslugaId, pomocId, iznos, nacinPlacanja);
+            return ResponseEntity.ok(nova);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    //pristup kupovini za specificnog donatora
-    @PostMapping("/filter-donator")
-    public List<KupljenaUsluga> poDonatoru(@RequestBody Korisnik donator) {
-        return service.getByDonator(donator);
-    }
-
-    //izmjena statusa placanja
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<?> izmijeniStatus(@PathVariable int id, @RequestParam String noviStatus) {
+    // Kupovine određenog kupca — za dashboard (SRS 6.2)
+    @GetMapping("/kupac/{kupacId}")
+    public ResponseEntity<?> poKupcu(@PathVariable int kupacId) {
         try {
-            KupljenaUsluga k = service.promijeniStatus(id, noviStatus);
-            return ResponseEntity.ok(k);
+            return ResponseEntity.ok(service.getByDonator(kupacId));
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> obrisi(@PathVariable int id) {
+    // Kupovine za određenog korisnika pomoći
+    @GetMapping("/pomoc/{pomocId}")
+    public ResponseEntity<?> poPomoci(@PathVariable int pomocId) {
         try {
-            service.obrisi(id);
-            return ResponseEntity.ok("Zapis o kupovini obrisan.");
-        } catch (Exception e) {
+            return ResponseEntity.ok(service.getByPomoc(pomocId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> izmijeniStatus(@PathVariable int id, @RequestParam String noviStatus) {
+        try {
+            return ResponseEntity.ok(service.promijeniStatus(id, noviStatus));
+        } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
     }

@@ -2,6 +2,7 @@ package com.fakultet.dobrobit.models;
 
 import com.fakultet.dobrobit.enums.StatusNaloga;
 import com.fakultet.dobrobit.enums.TipKorisnika;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -34,13 +35,17 @@ public class Korisnik implements UserDetails {
 
     @NotBlank(message = "Lozinka je obavezna")
     @Column(name = "lozinka_hash", nullable = false)
+    @JsonIgnore  // Nikad ne vraćati lozinku u API odgovoru!
     private String lozinkaHash;
 
     private String telefon;
     private String adresa;
     private String naziv;
 
-    // Da li se korisnik prikazuje anonimno u javnoj listi donacija/kupovina (SRS 6.1, 7.3)
+    // Osnovni opis — obavezan za volontere (SRS 3.4.1)
+    @Column(columnDefinition = "TEXT")
+    private String opis;
+
     @Column(name = "prikaz_anonimno", nullable = false)
     private boolean prikazAnonimno = false;
 
@@ -57,13 +62,11 @@ public class Korisnik implements UserDetails {
 
     private boolean verifikovan;
 
-    // Razlog koji administrator unosi pri promjeni statusa (SRS 5.3.1)
     @Column(name = "razlog_promjene_statusa", columnDefinition = "TEXT")
     private String razlogPromjeneStatusa;
 
     public Korisnik() {}
 
-    // Vraća ime za javni prikaz — "Anonimno" ili "Ime Prezime" (SRS 7.3 / 7.3.1)
     @Transient
     public String getJavnoIme() {
         if (prikazAnonimno) return "Anonimno";
@@ -96,6 +99,9 @@ public class Korisnik implements UserDetails {
     public String getNaziv() { return naziv; }
     public void setNaziv(String naziv) { this.naziv = naziv; }
 
+    public String getOpis() { return opis; }
+    public void setOpis(String opis) { this.opis = opis; }
+
     public boolean isPrikazAnonimno() { return prikazAnonimno; }
     public void setPrikazAnonimno(boolean prikazAnonimno) { this.prikazAnonimno = prikazAnonimno; }
 
@@ -114,32 +120,38 @@ public class Korisnik implements UserDetails {
     public String getRazlogPromjeneStatusa() { return razlogPromjeneStatusa; }
     public void setRazlogPromjeneStatusa(String razlog) { this.razlogPromjeneStatusa = razlog; }
 
-    // ===================== Spring Security =====================
+    // ===================== Spring Security — sve ignorisano u JSON-u =====================
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + tipKorisnika.name()));
     }
 
     @Override
+    @JsonIgnore
     public String getPassword() { return lozinkaHash; }
 
     @Override
+    @JsonIgnore
     public String getUsername() { return email; }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonExpired() { return true; }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonLocked() {
-        // Suspendovan i uklonjen korisnik ne može se ulogovati
         return statusNaloga != StatusNaloga.suspendovan
                 && statusNaloga != StatusNaloga.uklonjen;
     }
 
     @Override
+    @JsonIgnore
     public boolean isCredentialsNonExpired() { return true; }
 
     @Override
+    @JsonIgnore
     public boolean isEnabled() { return verifikovan; }
 }
