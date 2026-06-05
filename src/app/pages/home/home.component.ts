@@ -28,22 +28,22 @@ export class HomeComponent implements OnInit, AfterViewInit {
   a11yPanelOpen = false;
 
   stats = [
-    { value: '128',   label: 'Aktivnih volontera' },
-    { value: '45',    label: 'Humanitarnih akcija' },
+    { value: '58',   label: 'Aktivnih volontera' },
+    { value: '70',    label: 'Humanitarnih akcija' },
     { value: '1.230', label: 'Izvršenih transakcija' },
     { value: '98%',   label: 'Zadovoljnih korisnika' },
   ];
 
   activeCases = [
-    { name:'Petar Stojanović', description:'Plaćeni troškovi za terapiju',
-      fullDesc:'Hronična bolest zahtijeva skupo liječenje – svaka pomoć je dragocjena.',
+    { name:'Petar Stojanović', description:'Ogromni troškovi terapije',
+      fullDesc:'Hronična bolest zahtijeva skupo liječenje - svaka pomoć je dragocjena.',
       raised:1750, goal:2500, percent:70, category:'Zdravlje', photoUrl:'',
       avatarBg:'linear-gradient(135deg,var(--mint-to),var(--mint-from))',
       imgBg:'linear-gradient(135deg,var(--mint-to),var(--mint-from))',
       tagBg:'var(--mint-to)', tagColor:'#2d6b55' },
     { name:'Marija Nikolić', description:'Samohrana majka troje djece',
       fullDesc:'Samohrana majka troje djece – potrebna pomoć za hranu i školske potrebe.',
-      raised:2400, goal:5000, percent:48, category:'Edukacija', photoUrl:'',
+      raised:2400, goal:5000, percent:48, category:'Socijalna zaštita', photoUrl:'',
       avatarBg:'linear-gradient(135deg,var(--lime-to),var(--lime-from))',
       imgBg:'linear-gradient(135deg,var(--lime-to),var(--lime-from))',
       tagBg:'var(--lime-to)', tagColor:'#4a6e1a' },
@@ -59,12 +59,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
     { icon:'🤝', iconBg:'linear-gradient(135deg,var(--mint-to),var(--mint-from))', title:'Volonter', desc:'Ponudite uslugu ili proizvod besplatno', items:['Registrujte profil i dodajte uslugu','Administrator verifikuje Vaš profil','Odaberite korisnika pomoći'] },
     { icon:'🛒', iconBg:'linear-gradient(135deg,var(--lime-to),var(--lime-from))', title:'Kupac', desc:'Kupite usluge ili proizvode od volontra', items:['Kreirajte nalog i pregledajte ponude','Bezbjedno plaćanje karticom','Ostavite recenziju nakon kupovine'] },
     { icon:'💝', iconBg:'linear-gradient(135deg,var(--peach-to),var(--peach-from))', title:'Donator', desc:'Direktno donirajte bez kreiranja naloga - brzo i jednostavno.', items:['Ne treba vam nalog','Odaberite korisnika i iznos','Prikaz u javnoj listi donacija'] },
-    { icon:'🌟', iconBg:'linear-gradient(135deg,var(--lime-to),var(--mint-from))', title:'Korisnik pomoći', desc:'Lice ili organizacija kojoj je pomoć potrebna ', items:['Registracija putem administratora','Praćenje primljenih donacija','Zaštita privatnosti'] },
+    { icon:'🌟', iconBg:'linear-gradient(135deg,var(--lime-to),var(--mint-from))', title:'Korisnik pomoći', desc:'Lice ili organizacija kojoj je pomoć potrebna ', items:['Prilozite neophodnu dokumentaciju','Pratite primljene donacije','Zaštita privatnosti'] },
   ];
 
   reviews = [
     { stars:'★★★★★', initials:'SK', avatarUrl:'', text:'Profesionalne i zanimljive lekcije. Marko je odličan predavač!', name:'Srđan Kadić', service:'Online Lekcije' },
-    { stars:'★★★★★', initials:'AK', avatarUrl:'', text:'Isplativo online savjetovanje – preporučujem svima.', name:'Aleksa Kovačević', service:'Online Konsalting' },
+    { stars:'★★★★★', initials:'AK', avatarUrl:'', text:'Isplativo online savjetovanje - preporučujem svima.', name:'Aleksa Kovačević', service:'Online Konsalting' },
     { stars:'★★★★☆', initials:'NP', avatarUrl:'', text:'Sjajan osjećaj kada znam da moje kupovine direktno pomažu nekome.', name:'Nina Perović', service:'Popravka kućanstva' },
   ];
 
@@ -72,8 +72,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
     { name:'Marko Vešović', title:'Online predavač (Matematika & IT)', rating:'4.9', reviewsCount:24, photoUrl:'assets/volonteri/volonter1.jpg', skills:['Podučavanje','Programiranje'], bgGradient:'linear-gradient(135deg,rgba(168,221,208,0.3),rgba(184,224,128,0.2))' },
     { name:'Jelena Radović', title:'Prevođenje i pisanje članaka', rating:'5.0', reviewsCount:18, photoUrl:'assets/volonteri/volonter2.jpg', skills:['Engleski','Copywriting'], bgGradient:'linear-gradient(135deg,rgba(168,221,208,0.3),rgba(184,224,128,0.2))' },
     { name:'Nikola Popović', title:'Popravke laptopova', rating:'4.8', reviewsCount:32, photoUrl:'assets/volonteri/volonter4.png', skills:['Popravke','Montaža'], bgGradient:'linear-gradient(135deg,rgba(168,221,208,0.3),rgba(184,224,128,0.2))' },
-    { name:'Evica Bulatović', title:'Life-coach', rating:'4.8', reviewsCount:17, photoUrl:'assets/volonteri/volonter6.png', skills:['UI/UX','Dizajn'], bgGradient:'linear-gradient(135deg,rgba(168,221,208,0.3),rgba(184,224,128,0.2))' },
-    { name:'Ratka Laban', title:'Profesorica engleskog', rating:'5.0', reviewsCount:12, photoUrl:'assets/volonteri/volonter5.png', skills:['UI/UX','Dizajn'], bgGradient:'linear-gradient(135deg,rgba(168,221,208,0.3),rgba(184,224,128,0.2))' },
+    { name:'Evica Bulatović', title:'Life-coach', rating:'4.8', reviewsCount:17, photoUrl:'assets/volonteri/volonter6.png', skills:['Lični razvoj','Motivacija'], bgGradient:'linear-gradient(135deg,rgba(168,221,208,0.3),rgba(184,224,128,0.2))' },
+    { name:'Ratka Laban', title:'Astrolog', rating:'5.0', reviewsCount:12, photoUrl:'assets/volonteri/volonter5.png', skills:['Natalna karta','Horoskop'], bgGradient:'linear-gradient(135deg,rgba(168,221,208,0.3),rgba(184,224,128,0.2))' },
     ];
 
 
