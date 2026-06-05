@@ -1,0 +1,71 @@
+<app-navbar [logoImagePath]="logoPath"></app-navbar>
+
+<div class="about-page">
+
+  <!-- Hero -->
+  <section class="about-hero">
+    <div class="about-hero-inner">
+      <div class="hero-tag">
+        <i class="ph-fill ph-heart"></i> O nama
+      </div>
+      <h1>Dobrobit</h1>
+    </div>
+  </section>
+
+  <!-- Sadržaj — isti kao na početnoj -->
+  <div class="about-page-content">
+
+    <div class="section-tag" style="margin-bottom:8px;">O nama</div>
+    <h2 class="section-title">Zašto Dobrobit?</h2>
+
+    <div class="about-grid">
+      <div class="about-story">
+        <p class="about-lead">DobroBit je nastao kao odgovor na stvarne izazove humanitarnog djelovanja u Crnoj Gori. U praksi, mnogi ljudi žele da pomognu, ali prepreke poput nepovjerenja u posrednike, sporih procedura, nedovoljne transparentnosti i ograničenih mogućnosti doniranja obeshrabruju pojedince da preduzmu akciju.
+          Istovremeno, oni kojima je pomoć potrebna teško dolaze do vidljivosti i podrške.
+          DobroBit je zamišljen kao digitalni most između ljudi dobre volje i onih kojima je pomoć potrebna. Umjesto klasičnih donacija, platforma omogućava ljudima da ponude svoje usluge ili proizvode, dok novac od kupaca koji kupe te usluge/proizvode ide direktno na račun korisnika kojima je pomoć potrebna.
+        </p>
+        <p>
+          Iza svakog humanitarnog slučaja nalazi se stvarna osoba.<br>
+          Iza svake donacije nalazi se neko ko je odlučio da pomogne.<br>
+          Kupovinom ili ponudom usluge, proizvoda ili direktnom donacijom postajete dio lanca podrške koji mijenja živote.
+        </p>
+
+        <div class="about-mission-box">
+          <i class="ph-fill ph-heart" style="font-size:1.5rem;color:#2d6b55;flex-shrink:0;"></i>
+          <div>
+            <div class="amb-title">Naša misija</div>
+            <div class="amb-text">Izgradnja platforme povjerenja u kojoj svaki čovjek može dati i primiti pomoć dostojanstveno i transparentno.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-values">
+        <div class="value-item" *ngFor="let v of aboutValues">
+          <div class="value-icon" [style.background]="v.bg">
+            <i class="ph-fill" [class]="v.icon" style="font-size:1.2rem;color:#fff;"></i>
+          </div>
+          <div>
+            <div class="value-title">{{ v.title }}</div>
+            <div class="value-desc">{{ v.desc }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="team-section">
+      <h3 class="team-title">Tim iza Dobrobita</h3>
+      <div class="team-grid">
+        <div class="team-card" *ngFor="let m of teamMembers">
+          <div class="team-avatar" [style.background]="m.bg">
+            <span>{{ m.initials }}</span>
+          </div>
+          <div class="team-name">{{ m.name }}</div>
+          <div class="team-role">{{ m.role }}</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<app-footer [logoWhitePath]="logoWhitePath"></app-footer>

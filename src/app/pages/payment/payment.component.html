@@ -1,0 +1,217 @@
+<!-- Payment Page -->
+<div class="payment-page">
+  <!-- Minimal header -->
+  <header class="payment-header">
+    <div class="payment-logo">
+      <img *ngIf="logoPath" [src]="logoPath" style="height:36px;" alt="Dobrobit">
+      <span *ngIf="!logoPath" class="logo-fallback">💚 Dobrobit</span>
+    </div>
+    <div class="secure-badge"><i class="ph-fill ph-shield-check"></i> Sigurno Plaćanje</div>
+  </header>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <span>Korpa</span>
+    <span class="bc-arrow">›</span>
+    <span class="bc-active">Plaćanje</span>
+    <span class="bc-arrow">›</span>
+    <span>Potvrda</span>
+  </div>
+
+  <!-- SUCCESS STATE -->
+  <div class="payment-success" *ngIf="paymentSuccess">
+    <div class="success-icon"><i class="ph-fill ph-check-circle" style="color:#2d6b55;"></i></div>
+    <h2>Plaćanje Uspješno!</h2>
+    <p>Vaša transakcija je obrađena. Referentni broj: <strong>{{ transactionId }}</strong></p>
+    <div class="success-contact" *ngIf="!isDonation">
+      <p>Kontakt podaci volontera poslani su na vašu email adresu.</p>
+      <div class="contact-box">
+        <div class="contact-item"><i class="bi bi-envelope-fill" style="color:#2d6b55;"></i> marko.jovanovic&#64;email.com</div>
+        <div class="contact-item"><i class="bi bi-telephone-fill" style="color:#2d6b55;"></i> +382 67 123 456</div>
+      </div>
+      <p class="disclaimer"><i class="bi bi-exclamation-triangle-fill" style="color:#e67e22;"></i> Platforma ne garantuje izvršenje usluge i ne vraća sredstva.</p>
+    </div>
+    <div class="success-contact" *ngIf="isDonation">
+      <p>Vaša donacija je zabilježena i uvrštena u javnu listu.</p>
+    </div>
+    <button class="btn-home" (click)="goHome()">← Nazad na Početnu</button>
+  </div>
+
+  <!-- FAILURE STATE -->
+  <div class="payment-failure" *ngIf="paymentFailed">
+    <div class="failure-icon"><i class="ph-fill ph-x-circle" style="color:#e74c3c;"></i></div>
+    <h2>Plaćanje Neuspješno</h2>
+    <p>{{ failureReason }}</p>
+    <div class="failure-actions">
+      <button class="btn-retry" (click)="retryPayment()">Pokušaj Ponovo</button>
+      <button class="btn-home-outline" (click)="goHome()">Nazad na Početnu</button>
+    </div>
+  </div>
+
+  <!-- MAIN PAYMENT FORM -->
+  <div class="payment-layout" *ngIf="!paymentSuccess && !paymentFailed">
+    <!-- Order Summary -->
+    <div class="order-summary">
+      <h3 class="summary-title">Vaša Narudžba</h3>
+
+      <div class="order-item">
+        <div class="order-item-img">
+          <img *ngIf="orderImageUrl" [src]="orderImageUrl" [alt]="orderTitle" class="order-img">
+          <div *ngIf="!orderImageUrl" class="order-img-placeholder">🛠</div>
+        </div>
+        <div class="order-item-info">
+          <div class="order-item-title">{{ orderTitle }}</div>
+          <div class="order-item-meta" *ngIf="!isDonation">Usluga / Proizvod</div>
+          <div class="order-item-meta" *ngIf="isDonation">Direktna Donacija</div>
+        </div>
+        <div class="order-item-price">€{{ orderAmount }}</div>
+      </div>
+
+      <div class="beneficiary-info-box">
+        <div class="bib-label">💚 Sredstva idu direktno:</div>
+        <div class="bib-name">{{ beneficiaryName }}</div>
+        <div class="bib-note">Volonter ne može mijenjati primaoca.</div>
+      </div>
+
+      <div class="promo-section">
+        <div class="promo-label">Promo Kod:</div>
+        <div class="promo-row">
+          <input class="promo-input" type="text" [(ngModel)]="promoCode" placeholder="Unesite kod...">
+          <button class="btn-promo" (click)="applyPromo()">Primijeni</button>
+        </div>
+        <div class="promo-success" *ngIf="promoApplied"><i class="ph-fill ph-check-circle" style="color:#2d6b55;"></i> Popust 10% primijenjen!</div>
+      </div>
+
+      <div class="summary-totals">
+        <div class="total-row"><span>Cijena</span><span>€{{ orderAmount }}</span></div>
+        <div class="total-row discount" *ngIf="promoApplied"><span>Popust (10%)</span><span>-€{{ discountAmount | number:'1.2-2' }}</span></div>
+        <div class="total-row final"><span>Ukupno</span><span>€{{ finalAmount | number:'1.2-2' }}</span></div>
+      </div>
+    </div>
+
+    <!-- Payment Form -->
+    <div class="payment-form">
+      <h3 class="form-title">Informacije o Plaćanju</h3>
+
+      <!-- Contact Info -->
+      <div class="contact-section">
+        <div class="section-label-row">
+          <span class="form-section-label">Kontakt</span>
+          <a class="change-link" href="/login">Promijeni</a>
+        </div>
+        <div class="contact-display">
+          <div>{{ contactName }}</div>
+          <div>{{ contactEmail }}</div>
+          <div *ngIf="contactPhone">{{ contactPhone }}</div>
+        </div>
+      </div>
+
+      <!-- Payment Method -->
+      <div class="payment-methods-section">
+        <div class="form-section-label" style="margin-bottom:12px;">Način Plaćanja</div>
+
+        <div class="method-options">
+          <label class="method-option" [class.selected]="paymentMethod === 'card'">
+            <input type="radio" name="method" value="card" [(ngModel)]="paymentMethod">
+            <span class="method-icon"><i class="ph-fill ph-credit-card"></i></span>
+            <span class="method-label">Kartica</span>
+            <div class="card-logos">
+              <span class="card-logo visa">VISA</span>
+              <span class="card-logo mc">MC</span>
+            </div>
+          </label>
+          <label class="method-option" [class.selected]="paymentMethod === 'paypal'">
+            <input type="radio" name="method" value="paypal" [(ngModel)]="paymentMethod">
+            <span class="method-icon"><i class="bi bi-paypal" style="font-size:1.3rem;color:#003087;"></i></span>
+            <span class="method-label">PayPal</span>
+          </label>
+          <label class="method-option" [class.selected]="paymentMethod === 'googlepay'">
+            <input type="radio" name="method" value="googlepay" [(ngModel)]="paymentMethod">
+            <span class="method-icon"><i class="ph-fill ph-google-logo"></i></span>
+            <span class="method-label">Google Pay</span>
+          </label>
+          <label class="method-option" [class.selected]="paymentMethod === 'applepay'">
+            <input type="radio" name="method" value="applepay" [(ngModel)]="paymentMethod">
+            <span class="method-icon"><i class="ph-fill ph-apple-logo"></i></span>
+            <span class="method-label">Apple Pay</span>
+          </label>
+        </div>
+
+        <!-- Card Fields -->
+        <div class="card-fields" *ngIf="paymentMethod === 'card'">
+          <div class="form-group">
+            <label class="form-label">Broj Kartice</label>
+            <div class="card-input-wrap">
+              <input class="form-input card-number" type="text" [(ngModel)]="cardNumber"
+                (input)="formatCardNumber($event)" placeholder="1234 5678 9101 1121" maxlength="19">
+              <span class="card-type-icon"><i class="ph-fill ph-credit-card" style="color:#7a8a8e;"></i></span>
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Datum Isteka</label>
+              <input class="form-input" type="text" [(ngModel)]="cardExpiry" placeholder="MM / GG" maxlength="7" (input)="formatExpiry($event)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">CVC <span class="cvc-hint" title="3 cifre na poleđini kartice">?</span></label>
+              <input class="form-input" type="text" [(ngModel)]="cardCvc" placeholder="CVC" maxlength="3">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ime na Kartici</label>
+            <input class="form-input" type="text" [(ngModel)]="cardName" placeholder="IME PREZIME">
+          </div>
+          <div class="save-card-row">
+            <input type="checkbox" id="saveCard" [(ngModel)]="saveCard">
+            <label for="saveCard">Sačuvaj karticu za buduće kupovine</label>
+          </div>
+        </div>
+
+        <!-- PayPal placeholder -->
+        <div class="alt-payment-placeholder" *ngIf="paymentMethod === 'paypal'">
+          <div class="alt-icon"><i class="bi bi-paypal" style="font-size:2rem;color:#003087;"></i></div>
+          <p>Bićete preusmjereni na PayPal za završetak plaćanja.</p>
+        </div>
+        <div class="alt-payment-placeholder" *ngIf="paymentMethod === 'googlepay'">
+          <div class="alt-icon"><i class="ph-fill ph-google-logo" style="font-size:2rem;"></i></div>
+          <p>Platite brzo koristeći Google Pay.</p>
+        </div>
+        <div class="alt-payment-placeholder" *ngIf="paymentMethod === 'applepay'">
+          <div class="alt-icon"><i class="ph-fill ph-apple-logo" style="font-size:2rem;"></i></div>
+          <p>Platite brzo koristeći Apple Pay.</p>
+        </div>
+      </div>
+
+      <!-- Validation errors -->
+      <div class="validation-errors" *ngIf="validationErrors.length > 0">
+        <div class="error-item" *ngFor="let e of validationErrors">⚠️ {{ e }}</div>
+      </div>
+
+      <!-- Submit -->
+      <div class="total-before-submit">
+        Ukupno: <span class="total-count">{{ isDonation ? '1 donacija' : '1 stavka' }}</span>
+        <strong class="total-final">€{{ finalAmount | number:'1.2-2' }}</strong>
+      </div>
+
+      <button class="btn-pay" (click)="processPayment()" [disabled]="isProcessing">
+        <span *ngIf="!isProcessing"><i class="ph-fill ph-lock-simple"></i> Završi Plaćanje</span>
+        <span *ngIf="isProcessing" class="loading-spinner"><i class="bi bi-arrow-repeat" style="animation:spin 1s linear infinite;"></i> Obrađuje se...</span>
+      </button>
+
+      <a class="back-to-cart" href="javascript:history.back()">← Nazad</a>
+
+      <div class="security-badges">
+        <span><i class="ph-fill ph-lock-simple"></i> SSL Enkripcija</span>
+        <span><i class="ph-fill ph-shield-check"></i> 3D Secure</span>
+        <span><i class="ph ph-eye-slash"></i> Podaci se ne čuvaju</span>
+      </div>
+    </div>
+  </div>
+
+  <footer class="payment-footer">
+    <span>© 2026 Dobrobit. Sva prava zadržana.</span>
+    <a href="#">Sigurno Plaćanje</a>
+    <a href="#">Politika Privatnosti</a>
+    <a href="#">Uslovi Korišćenja</a>
+  </footer>
+</div>

@@ -1,0 +1,257 @@
+<app-navbar [logoImagePath]="logoPath"></app-navbar>
+
+<div class="services-page">
+  <section class="services-hero">
+    <div class="services-hero-content">
+      <div class="hero-tag">
+        <i class="bi bi-tools" style="margin-right: 6px;"></i> Usluge & Proizvodi
+      </div>
+      <h1>Ovdje kupovina dobija veći smisao </h1>
+      <p>Svaka kupovina pomaže osobi kojoj je podrška najpotrebnija. Volonteri nude svoje vještine - vi birate, plaćate i pomažete jednim klikom.</p>
+    </div>
+  </section>
+
+  <div class="filter-bar-sticky">
+    <div class="filter-bar-inner">
+      <div class="search-wrap" style="position: relative; display: flex; align-items: center;">
+        <span class="search-icon" style="position: absolute; left: 12px; display: flex; align-items: center;">
+          <i class="bi bi-search" style="color: #888;"></i>
+        </span>
+        <input class="main-search" type="text" [(ngModel)]="searchQuery" (ngModelChange)="filterServices()" placeholder="Pretraži usluge i proizvode..." style="padding-left: 36px;">
+      </div>
+
+      <div class="filters-row">
+        <select class="filter-select" [(ngModel)]="selectedCategory" (ngModelChange)="filterServices()">
+          <option value="">Sve Kategorije</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
+
+        <select class="filter-select" [(ngModel)]="sortBy" (ngModelChange)="filterServices()">
+          <option value="popular">Najpopularnije</option>
+          <option value="price-asc">Cijena ↑</option>
+          <option value="price-desc">Cijena ↓</option>
+          <option value="rating">Ocjena</option>
+        </select>
+
+        <div class="price-filter">
+          <span class="price-label">Do €{{ maxPrice }}</span>
+          <input type="range" min="5" max="200" step="5" [(ngModel)]="maxPrice" (ngModelChange)="filterServices()" class="price-slider">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="category-chips-wrap">
+    <div class="category-chips">
+      <button class="chip" [class.active]="selectedCategory === ''" (click)="setCategory('')">Sve</button>
+      <button class="chip" *ngFor="let cat of categories" [class.active]="selectedCategory === cat" (click)="setCategory(cat)">{{ cat }}</button>
+    </div>
+  </div>
+
+  <div class="results-meta">
+    <span class="results-count">{{ filteredServices.length }} usluga pronađeno</span>
+    <div class="view-toggle" style="display: flex; gap: 4px;">
+      <button class="view-btn" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" style="display: flex; align-items: center; justify-content: center; padding: 6px 10px;">
+        <i class="bi bi-grid-3x3-gap-fill"></i>
+      </button>
+      <button class="view-btn" [class.active]="viewMode === 'list'" (click)="viewMode = 'list'" style="display: flex; align-items: center; justify-content: center; padding: 6px 10px;">
+        <i class="bi bi-list-task"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="services-grid" *ngIf="viewMode === 'grid' && filteredServices.length > 0">
+    <div class="service-card" *ngFor="let service of filteredServices" (click)="openServiceModal(service)">
+      
+      <div class="service-img-wrap" style="position: relative; display: flex; align-items: center; justify-content: center; background: #e0f2e9; height: 180px; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <img *ngIf="service.imageUrl" [src]="service.imageUrl" [alt]="service.title" class="service-img" style="width:100%; height:100%; object-fit:cover;">
+        
+        <div *ngIf="!service.imageUrl" class="dynamic-category-icon" style="display: flex; align-items: center; justify-content: center;">
+          <i [class]="
+            service.title?.toLowerCase().includes('njemack') || service.title?.toLowerCase().includes('njemačk') ? 'bi bi-translate' :
+            service.title?.toLowerCase().includes('med') && !service.title?.toLowerCase().includes('medit') ? 'bi bi-basket2-fill' :
+            service.title?.toLowerCase().includes('medit') ? 'bi bi-heart-pulse-fill' :
+            service.category === 'Prevoz' ? 'bi bi-car-front-fill' :
+            service.category === 'Biznis' ? 'bi bi-briefcase-fill' :
+            service.category === 'Obrazovanje' ? 'bi bi-book-half' :
+            service.category === 'Zdravlje' ? 'bi bi-heart-pulse-fill' :
+            service.category === 'IT' ? 'bi bi-laptop' :
+            service.category === 'Sport' ? 'bi bi-activity' :
+            service.category === 'Majstorstvo' ? 'bi bi-tools' :
+            service.category === 'Kuhinja' ? 'bi bi-egg-fried' : 
+            'bi bi-bag-heart-fill'" 
+            style="font-size: 4.5rem; color: rgba(46, 125, 50, 0.4);">
+          </i>
+        </div>
+
+        <span class="service-category-tag" style="position: absolute; top: 12px; left: 12px;">{{ service.category }}</span>
+        
+        <div class="service-upload-overlay" (click)="$event.stopPropagation(); uploadServiceImage(service)" style="display: flex; align-items: center; gap: 4px;">
+          <i class="bi bi-camera-fill"></i> Dodaj sliku
+        </div>
+      </div>
+
+      <div class="service-body">
+        <div class="service-volunteer-row">
+          <div class="volunteer-avatar-xs">{{ service.volunteerInitials }}</div>
+          <span class="volunteer-name-xs">{{ service.volunteerName }}</span>
+          <span class="service-badge" [ngClass]="service.type === 'Usluga' ? 'badge-service' : 'badge-product'">{{ service.type }}</span>
+        </div>
+        <h3 class="service-title">{{ service.title }}</h3>
+        <p class="service-desc">{{ service.description }}</p>
+        <div class="service-footer">
+          <div class="service-rating" style="display: flex; align-items: center; gap: 2px;">
+            <span class="stars" style="color: #ffd700; margin-right: 2px;"><i class="bi bi-star-fill" style="font-size: 0.85rem;"></i></span>
+            <span class="rating-num">{{ service.rating }}</span>
+            <span class="review-count">({{ service.reviewCount }})</span>
+          </div>
+          <div class="service-beneficiary">
+            <span class="beneficiary-label">Za:</span>
+            <span class="beneficiary-name-sm">{{ service.beneficiary }}</span>
+          </div>
+        </div>
+        <div class="service-price-row">
+          <span class="service-price">€{{ service.price }}</span>
+          <button class="btn-buy" (click)="$event.stopPropagation(); buyService(service)">Kupi Sada</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="services-list" *ngIf="viewMode === 'list' && filteredServices.length > 0">
+    <div class="service-list-item" *ngFor="let service of filteredServices" (click)="openServiceModal(service)">
+      
+      <div class="list-img-wrap" style="position: relative; display: flex; align-items: center; justify-content: center; background: #e0f2e9; width: 120px; height: 120px; border-radius: 12px; overflow: hidden; flex-shrink: 0;">
+        <img *ngIf="service.imageUrl" [src]="service.imageUrl" [alt]="service.title" class="list-img">
+        <div *ngIf="!service.imageUrl" style="display: flex; align-items: center; justify-content: center;">
+          <i [class]="
+            service.title?.toLowerCase().includes('njemack') || service.title?.toLowerCase().includes('njemačk') ? 'bi bi-translate' :
+            service.title?.toLowerCase().includes('med') && !service.title?.toLowerCase().includes('medit') ? 'bi bi-basket2-fill' :
+            service.title?.toLowerCase().includes('medit') ? 'bi bi-heart-pulse-fill' :
+            service.category === 'Prevoz' ? 'bi bi-car-front-fill' :
+            service.category === 'Biznis' ? 'bi bi-briefcase-fill' :
+            service.category === 'Obrazovanje' ? 'bi bi-book-half' :
+            service.category === 'Zdravlje' ? 'bi bi-heart-pulse-fill' :
+            service.category === 'IT' ? 'bi bi-laptop' :
+            service.category === 'Sport' ? 'bi bi-activity' :
+            service.category === 'Majstorstvo' ? 'bi bi-tools' :
+            service.category === 'Kuhinja' ? 'bi bi-egg-fried' : 
+            'bi bi-bag-heart-fill'" 
+            style="font-size: 2.5rem; color: rgba(46, 125, 50, 0.4);">
+          </i>
+        </div>
+        <div class="service-upload-overlay" (click)="$event.stopPropagation(); uploadServiceImage(service)" style="display: flex; align-items: center; justify-content: center;">
+          <i class="bi bi-camera-fill" style="font-size: 1.1rem;"></i>
+        </div>
+      </div>
+
+      <div class="list-content">
+        <div class="list-top-row">
+          <h3 class="service-title">{{ service.title }}</h3>
+          <span class="service-badge" [ngClass]="service.type === 'Usluga' ? 'badge-service' : 'badge-product'">{{ service.type }}</span>
+        </div>
+        <p class="service-desc">{{ service.description }}</p>
+        <div class="list-meta-row">
+          <div class="volunteer-avatar-xs">{{ service.volunteerInitials }}</div>
+          <span class="volunteer-name-xs">{{ service.volunteerName }}</span>
+          <span class="stars-sm" style="color: #ffd700;"><i class="bi bi-star-fill" style="font-size: 0.75rem;"></i></span>
+          <span class="rating-num">{{ service.rating }}</span>
+          <span class="list-beneficiary">Za: <strong>{{ service.beneficiary }}</strong></span>
+        </div>
+      </div>
+      <div class="list-price-wrap">
+        <div class="service-price">€{{ service.price }}</div>
+        <button class="btn-buy" (click)="$event.stopPropagation(); buyService(service)">Kupi</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="filteredServices.length === 0" style="text-align: center; padding: 48px 20px;">
+    <div class="empty-icon" style="margin-bottom: 16px;">
+      <i class="bi bi-search-heart" style="font-size: 3.5rem; color: var(--text-light);"></i>
+    </div>
+    <h3>Nije pronađeno</h3>
+    <p>Pokušajte sa drugačijim filterima.</p>
+    <button class="btn-primary" (click)="resetFilters()">Resetuj Filtere</button>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="selectedService" (click)="closeServiceModal()">
+  <div class="modal-box service-modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeServiceModal()">✕</button>
+
+    <div class="modal-img-wrap" style="position: relative; display: flex; align-items: center; justify-content: center; background: #e0f2e9; min-height: 220px; border-radius: 12px 12px 0 0;">
+      <img *ngIf="selectedService.imageUrl" [src]="selectedService.imageUrl" [alt]="selectedService.title" class="modal-img">
+      <div *ngIf="!selectedService.imageUrl" style="display: flex; align-items: center; justify-content: center;">
+        <i [class]="
+          selectedService.title?.toLowerCase().includes('njemack') || selectedService.title?.toLowerCase().includes('njemačk') ? 'bi bi-translate' :
+          selectedService.title?.toLowerCase().includes('med') && !selectedService.title?.toLowerCase().includes('medit') ? 'bi bi-basket2-fill' :
+          selectedService.title?.toLowerCase().includes('medit') ? 'bi bi-heart-pulse-fill' :
+          selectedService.category === 'Prevoz' ? 'bi bi-car-front-fill' :
+          selectedService.category === 'Biznis' ? 'bi bi-briefcase-fill' :
+          selectedService.category === 'Obrazovanje' ? 'bi bi-book-half' :
+          selectedService.category === 'Zdravlje' ? 'bi bi-heart-pulse-fill' :
+          selectedService.category === 'IT' ? 'bi bi-laptop' :
+          selectedService.category === 'Sport' ? 'bi bi-activity' :
+          selectedService.category === 'Majstorstvo' ? 'bi bi-tools' :
+          selectedService.category === 'Kuhinja' ? 'bi bi-egg-fried' : 
+          'bi bi-bag-heart-fill'" 
+          style="font-size: 4.5rem; color: rgba(46, 125, 50, 0.4);">
+        </i>
+      </div>
+    </div>
+
+    <div class="modal-content-area">
+      <div class="modal-tags-row">
+        <span class="service-category-tag">{{ selectedService.category }}</span>
+        <span class="service-badge" [ngClass]="selectedService.type === 'Usluga' ? 'badge-service' : 'badge-product'">{{ selectedService.type }}</span>
+      </div>
+      <h2 class="modal-service-title">{{ selectedService.title }}</h2>
+      <p class="modal-desc">{{ selectedService.description }}</p>
+
+      <div class="modal-volunteer-card">
+        <div class="volunteer-avatar-md">{{ selectedService.volunteerInitials }}</div>
+        <div class="volunteer-modal-info">
+          <div class="volunteer-modal-name">{{ selectedService.volunteerName }}</div>
+          <div class="volunteer-modal-stats">
+            <span><i class="bi bi-star-fill" style="color: #ffd700; font-size: 0.85rem; margin-right: 2px;"></i> {{ selectedService.rating }}</span>
+            <span>·</span>
+            <span>{{ selectedService.reviewCount }} recenzija</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-beneficiary-box">
+        <div class="modal-beneficiary-label">
+          <i class="bi bi-heart-fill" style="color: var(--moss); margin-right: 4px;"></i> Sredstva idu direktno:
+        </div>
+        <div class="modal-beneficiary-name">{{ selectedService.beneficiary }}</div>
+        <div class="modal-beneficiary-desc">{{ selectedService.beneficiaryDesc }}</div>
+      </div>
+
+      <div class="modal-reviews" *ngIf="selectedService.reviews?.length">
+        <h4>Recenzije</h4>
+        <div class="review-item" *ngFor="let r of selectedService.reviews">
+          <div class="review-header-row">
+            <span class="review-author">{{ r.author }}</span>
+            <span class="review-stars" style="color: #ffd700;"><i class="bi bi-star-fill"></i></span>
+            <span class="review-date">{{ r.date }}</span>
+          </div>
+          <p class="review-text">{{ r.comment }}</p>
+          <div class="review-reply" *ngIf="r.reply">
+            <span class="reply-label"><i class="bi bi-reply-fill" style="transform: scaleX(-1); display: inline-block; margin-right: 2px;"></i> Volonter:</span> {{ r.reply }}
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-price-row">
+        <span class="modal-price">€{{ selectedService.price }}</span>
+        <button class="btn-buy-lg" (click)="buyService(selectedService)">
+          Kupi Sada <i class="bi bi-heart-fill" style="margin-left: 4px;"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer [logoWhitePath]="logoWhitePath"></app-footer>
