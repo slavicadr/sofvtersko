@@ -1,0 +1,109 @@
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+
+      <!-- Brand -->
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <img *ngIf="logoWhitePath" [src]="logoWhitePath" alt="Dobrobit" style="height:36px;border-radius:8px;"/>
+          <div *ngIf="!logoWhitePath" class="footer-logo-icon">
+            <i class="ph-fill ph-heart" style="color:#fff;font-size:1.1rem;"></i>
+          </div>
+          <span class="footer-logo-text">Dobrobit</span>
+        </div>
+        <p class="footer-tagline">
+          Platforma koja spaja.<br>
+          Hvala što ste dio nečije ljepše priče.
+        </p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn" aria-label="Facebook">
+            <i class="ph-fill ph-facebook-logo"></i>
+          </a>
+          <a href="#" class="social-btn" aria-label="Instagram">
+            <i class="ph-fill ph-instagram-logo"></i>
+          </a>
+          <a href="#" class="social-btn" aria-label="LinkedIn">
+            <i class="ph-fill ph-linkedin-logo"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Platforma -->
+      <div>
+        <div class="footer-col-title">Platforma</div>
+        <ul class="footer-links">
+          <li><a routerLink="/slucajevi">
+            <i class="ph ph-heart"></i> Humanitarni slučajevi
+          </a></li>
+          <li><a routerLink="/usluge">
+            <i class="ph ph-toolbox"></i> Usluge &amp; Proizvodi
+          </a></li>
+          <li><a routerLink="/donacije">
+            <i class="ph ph-hand-heart"></i> Javna lista donacija
+          </a></li>
+          <li><a routerLink="/registracija">
+            <i class="ph ph-user-plus"></i> Registracija
+          </a></li>
+        </ul>
+      </div>
+
+      <!-- Informacije -->
+      <div>
+        <div class="footer-col-title">Informacije</div>
+        <ul class="footer-links">
+          <li><a routerLink="/o-nama">
+            <i class="ph ph-info"></i> O nama
+          </a></li>
+          <li><a routerLink="/o-nama">
+            <i class="ph ph-question"></i> Kako funkcioniše?
+          </a></li>
+          <li><a routerLink="/registracija" [queryParams]="{uloga:'volonter'}">
+            <i class="ph ph-handshake"></i> Za volontere
+          </a></li>
+          <li><a routerLink="/faq">
+            <i class="ph ph-chat-circle-text"></i> FAQ
+          </a></li>
+        </ul>
+      </div>
+
+      <!-- Kontakt -->
+      <div>
+        <div class="footer-col-title">Kontakt</div>
+        <ul class="footer-links">
+          <li>
+            <i class="ph ph-envelope-simple"></i>
+            <a href="mailto:dobrobit&#64;outlook.com">dobrobit&#64;outlook.com</a>
+          </li>
+          <li>
+            <i class="ph ph-phone"></i>
+            <a href="tel:+38220123456">+382 20 123 456</a>
+          </li>
+          <li>
+            <i class="ph ph-map-pin"></i>
+            <span>Prirodno-matematički fakultet, Podgorica</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-copy">
+        © {{ currentYear }} DobroBit. Sva prava zadržana.
+      </div>
+      <div class="footer-legal">
+        <a routerLink="/uslovi">
+          <i class="ph ph-file-text"></i> Uslovi korišćenja
+        </a>
+        <a routerLink="/privatnost">
+          <i class="ph ph-shield-check"></i> Politika privatnosti
+        </a>
+        <a routerLink="/faq">
+          <i class="ph ph-chat-circle-text"></i> FAQ
+        </a>
+        <a routerLink="/pravni-ugovor">
+          <i class="ph ph-file-text"></i> Pravni ugovor
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>

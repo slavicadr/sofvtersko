@@ -1,0 +1,282 @@
+.thankyou-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Hero ────────────────────────────────────────────────── */
+.ty-hero {
+  background: linear-gradient(135deg, #1a3a2e, #3d8c6e);
+  padding: 56px 40px 48px;
+  text-align: center;
+}
+.ty-hero-inner {
+  max-width: 560px;
+  margin: 0 auto;
+}
+.ty-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: rgba(122, 182, 72, 0.15);
+  border: 1.5px solid rgba(122, 182, 72, 0.35);
+  border-radius: 50%;
+  margin-bottom: 16px;
+  animation: heartbeat 1.6s ease-in-out infinite;
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  30%       { transform: scale(1.12); }
+  60%       { transform: scale(1); }
+  80%       { transform: scale(1.06); }
+}
+.hero-tag {
+  display: inline-block;
+  background: rgba(122, 182, 72, 0.2);
+  color: #b8e080;
+  border: 1px solid rgba(122, 182, 72, 0.3);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.ty-hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.4rem;
+  color: #fff;
+  margin: 0 0 10px;
+}
+.ty-hero p {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* ── Card wrap ───────────────────────────────────────────── */
+.ty-card-wrap {
+  max-width: 620px;
+  margin: -32px auto 60px;
+  padding: 0 20px;
+}
+
+.ty-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #e5eaf0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+  padding: 40px 36px 32px;
+  text-align: center;
+}
+
+/* ── Check icon ──────────────────────────────────────────── */
+.ty-check {
+  font-size: 3.5rem;
+  color: #2d6b55;
+  line-height: 1;
+  margin-bottom: 16px;
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.ty-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: #1a3a2e;
+  margin: 0 0 24px;
+}
+
+/* ── Summary rows ────────────────────────────────────────── */
+.ty-summary {
+  background: #f6faf7;
+  border: 1px solid #d9ede4;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+.ty-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  &:not(:last-child) { border-bottom: 1px solid #e8f0eb; }
+}
+.ty-label {
+  font-size: 0.8rem;
+  color: #7a8a8e;
+  font-weight: 500;
+}
+.ty-value {
+  font-size: 0.88rem;
+  color: #1a3a2e;
+  font-weight: 600;
+}
+.ty-mono { font-family: 'Courier New', monospace; font-size: 0.82rem; }
+.ty-amount { color: #2d6b55; font-size: 1rem; }
+
+/* ── Info box ────────────────────────────────────────────── */
+.ty-infobox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #e8f5e9;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 24px;
+  text-align: left;
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #2d5a44;
+    line-height: 1.5;
+  }
+}
+.ty-info-icon {
+  font-size: 1.2rem;
+  color: #2d6b55;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Share ───────────────────────────────────────────────── */
+.ty-share-section {
+  margin-bottom: 28px;
+}
+.ty-share-label {
+  font-size: 0.8rem;
+  color: #7a8a8e;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.ty-share-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.18s, transform 0.15s;
+  &:hover { opacity: 0.88; transform: translateY(-1px); }
+  &:active { transform: translateY(0); }
+}
+.share-fb   { background: #1877f2; color: #fff; }
+.share-wa   { background: #25d366; color: #fff; }
+.share-copy { background: #f0f4f8; color: #2d6b55; border: 1.5px solid #d1dce6; }
+.copy-confirm {
+  display: block;
+  font-size: 0.78rem;
+  color: #2d6b55;
+  margin-top: 8px;
+  animation: fadeIn 0.25s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Action buttons ──────────────────────────────────────── */
+.ty-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #2d6b55, #3d8c6e);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 24px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.18s, transform 0.15s;
+  &:hover { opacity: 0.9; transform: translateY(-1px); }
+}
+.btn-secondary {
+  background: #f0f9f5;
+  color: #2d6b55;
+  border: 1.5px solid #c2dfd3;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.18s, transform 0.15s;
+  &:hover { background: #e2f2eb; transform: translateY(-1px); }
+}
+.btn-ghost {
+  background: transparent;
+  color: #7a8a8e;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 6px;
+  transition: color 0.18s;
+  &:hover { color: #1a3a2e; }
+}
+
+/* ── Impact strip ────────────────────────────────────────── */
+.ty-impact {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e5eaf0;
+  padding: 24px 16px;
+  margin-top: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.impact-item {
+  text-align: center;
+  i { font-size: 1.4rem; color: #2d6b55; display: block; margin-bottom: 6px; }
+}
+.impact-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a3a2e;
+}
+.impact-label {
+  font-size: 0.72rem;
+  color: #7a8a8e;
+  font-weight: 500;
+}
+.impact-divider {
+  width: 1px;
+  height: 48px;
+  background: #e5eaf0;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .ty-card { padding: 28px 20px 24px; }
+  .ty-hero { padding: 40px 20px 40px; }
+  .ty-hero h1 { font-size: 1.9rem; }
+  .ty-share-btns { flex-direction: column; align-items: stretch; }
+  .impact-num { font-size: 1.1rem; }
+}

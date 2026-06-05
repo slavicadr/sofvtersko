@@ -1,0 +1,35 @@
+.legal-page {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 0 24px;
+}
+
+.legal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+
+  h1 {
+    font-size: 1.8rem;
+    color: #1a4035;
+  }
+}
+
+.btn-download {
+  background: #1a4035;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+
+  &:hover {
+    background: #2d6a4f;
+  }
+}
+
+iframe {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
