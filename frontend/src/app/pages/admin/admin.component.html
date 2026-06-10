@@ -1,0 +1,754 @@
+<div class="admin-layout">
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
+  <aside class="admin-sidebar" [class.collapsed]="sidebarCollapsed">
+
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i class="ph-fill ph-heart"></i>
+        </div>
+        <div class="sidebar-logo-text" *ngIf="!sidebarCollapsed">
+          <span class="sidebar-brand">Dobrobit</span>
+          <span class="sidebar-badge">Admin</span>
+        </div>
+      </div>
+      <button class="sidebar-collapse-btn" (click)="sidebarCollapsed = !sidebarCollapsed" [title]="sidebarCollapsed ? 'Proširi' : 'Skupi'">
+        <i class="ph" [class.ph-arrow-line-left]="!sidebarCollapsed" [class.ph-arrow-line-right]="sidebarCollapsed"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-group-label" *ngIf="!sidebarCollapsed">Pregled</div>
+      <a class="nav-item" [class.active]="activeSection==='dashboard'" (click)="setSection('dashboard')" title="Dashboard">
+        <i class="ph-fill ph-squares-four nav-icon"></i>
+        <span *ngIf="!sidebarCollapsed">Dashboard</span>
+      </a>
+
+      <div class="nav-group-label" *ngIf="!sidebarCollapsed">Korisnici</div>
+      <a class="nav-item" [class.active]="activeSection==='volunteers'" (click)="setSection('volunteers')" title="Volonteri">
+        <i class="ph-fill ph-handshake nav-icon"></i>
+        <span *ngIf="!sidebarCollapsed">Volonteri</span>
+        <span class="nav-pill" *ngIf="pendingVolunteers > 0">{{ pendingVolunteers }}</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection==='beneficiaries'" (click)="setSection('beneficiaries')" title="Korisnici Pomoći">
+        <i class="ph-fill ph-star nav-icon"></i>
+        <span *ngIf="!sidebarCollapsed">Korisnici Pomoći</span>
+      </a>
+
+      <div class="nav-group-label" *ngIf="!sidebarCollapsed">Sadržaj</div>
+      <a class="nav-item" [class.active]="activeSection==='offers'" (click)="setSection('offers')" title="Ponude">
+        <i class="ph-fill ph-toolbox nav-icon"></i>
+        <span *ngIf="!sidebarCollapsed">Ponude</span>
+        <span class="nav-pill" *ngIf="pendingOffers > 0">{{ pendingOffers }}</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection==='reviews'" (click)="setSection('reviews')" title="Recenzije">
+        <i class="ph-fill ph-star-half nav-icon"></i>
+        <span *ngIf="!sidebarCollapsed">Recenzije</span>
+      </a>
+
+      <div class="nav-group-label" *ngIf="!sidebarCollapsed">Finansije</div>
+      <a class="nav-item" [class.active]="activeSection==='transactions'" (click)="setSection('transactions')" title="Transakcije">
+        <i class="ph-fill ph-credit-card nav-icon"></i>
+        <span *ngIf="!sidebarCollapsed">Transakcije</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection==='kupovine'" (click)="setSection('kupovine'); loadAllKupovine()" title="Kupovine usluga">
+        <i class="ph-fill ph-receipt nav-icon"></i>
+        <span *ngIf="!sidebarCollapsed">Kupovine</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection==='donations'" (click)="setSection('donations')" title="Donacije">
+        <i class="ph-fill ph-hand-heart nav-icon"></i>
+        <span *ngIf="!sidebarCollapsed">Donacije</span>
+      </a>
+
+      <div class="nav-group-label" *ngIf="!sidebarCollapsed">Sistem</div>
+      <a class="nav-item" [class.active]="activeSection==='logs'" (click)="setSection('logs')" title="Logovi">
+        <i class="ph-fill ph-clipboard-text nav-icon"></i>
+        <span *ngIf="!sidebarCollapsed">Logovi</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection==='alerts'" (click)="setSection('alerts')" title="Upozorenja">
+        <i class="ph-fill ph-bell-ringing nav-icon"></i>
+        <span *ngIf="!sidebarCollapsed">Upozorenja</span>
+        <span class="nav-pill danger" *ngIf="systemAlerts > 0">{{ systemAlerts }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer" *ngIf="!sidebarCollapsed">
+      <div class="sidebar-admin-row">
+        <div class="sa-avatar">AD</div>
+        <div class="sa-info">
+          <div class="sa-name">{{ admin.name }}</div>
+          <div class="sa-role">Administrator</div>
+        </div>
+        <a routerLink="/login" class="sa-logout" title="Odjava">
+          <i class="ph ph-sign-out"></i>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══════════════════════════════════════════════════ -->
+  <main class="admin-main">
+
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <div class="topbar-left">
+        <h1 class="topbar-title">{{ getSectionTitle() }}</h1>
+        <p class="topbar-sub">{{ getSectionSubtitle() }}</p>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search-wrap">
+          <i class="ph ph-magnifying-glass topbar-search-icon"></i>
+          <input class="topbar-search" type="text" placeholder="Pretraži..." [(ngModel)]="searchQuery">
+        </div>
+        <button class="topbar-icon-btn" (click)="setSection('alerts')" title="Upozorenja">
+          <i class="ph-fill ph-bell"></i>
+          <span class="alert-badge" *ngIf="systemAlerts > 0">{{ systemAlerts }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- ── DASHBOARD ──────────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'dashboard'">
+
+        <div class="kpi-grid">
+          <div class="kpi-card" *ngFor="let k of kpis">
+            <div class="kpi-icon-wrap" [style.background]="k.iconBg">
+              <i class="ph-fill" [class]="k.phIcon" style="font-size:1.3rem;"></i>
+            </div>
+            <div class="kpi-body">
+              <div class="kpi-value">{{ k.value | number }}</div>
+              <div class="kpi-label">{{ k.label }}</div>
+            </div>
+            <div class="kpi-trend" [ngClass]="k.trendUp ? 'trend-up' : 'trend-down'">
+              <i class="ph-fill" [class]="k.trendUp ? 'ph-trend-up' : 'ph-trend-down'"></i>
+              {{ k.trend }}
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Pending verifications -->
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <span class="dash-card-title"><i class="ph-fill ph-clock-countdown"></i> Čeka Verifikaciju</span>
+              <button class="btn-link-sm" (click)="setSection('volunteers')">Prikaži sve <i class="ph ph-arrow-right"></i></button>
+            </div>
+            <div class="verif-list">
+              <div class="verif-item" *ngFor="let v of pendingVolunteersList">
+                <div class="verif-avatar">{{ v.initials }}</div>
+                <div class="verif-body">
+                  <div class="verif-name">{{ v.name }}</div>
+                  <div class="verif-service"><i class="ph ph-wrench"></i> {{ v.services }}</div>
+                </div>
+                <div class="verif-actions">
+                  <button class="btn-approve" (click)="approveVolunteer(v)" title="Odobri">
+                    <i class="ph-fill ph-check-circle"></i>
+                  </button>
+                  <button class="btn-reject-sm" (click)="rejectVolunteer(v)" title="Odbij">
+                    <i class="ph-fill ph-x-circle"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="empty-inline" *ngIf="pendingVolunteersList.length === 0">
+                <i class="ph-fill ph-check-circle" style="color:#2d6b55;font-size:1.5rem;"></i>
+                <span>Nema volontera na čekanju</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Korisnici pomoći -->
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <span class="dash-card-title"><i class="ph-fill ph-star"></i> Korisnici Pomoći</span>
+              <button class="btn-link-sm" (click)="setSection('beneficiaries')">Upravljaj <i class="ph ph-arrow-right"></i></button>
+            </div>
+            <div class="beneficiary-rows">
+              <div class="brow" *ngFor="let b of beneficiaries">
+                <div class="brow-photo">
+                  <img *ngIf="b.photoUrl" [src]="b.photoUrl" class="brow-img">
+                  <span *ngIf="!b.photoUrl" class="brow-initials">{{ b.initials }}</span>
+                </div>
+                <div class="brow-info">
+                  <div class="brow-name">{{ b.name }}</div>
+                  <div class="brow-progress-bar"><div class="brow-progress-fill" [style.width.%]="raisedPercent(b)"></div></div>
+                </div>
+                <div class="brow-amount">€{{ b.totalReceived }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sumnjive aktivnosti -->
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <span class="dash-card-title"><i class="ph-fill ph-warning-circle" style="color:#e74c3c;"></i> Sumnjive Aktivnosti</span>
+            </div>
+            <div class="suspicious-list">
+              <div class="suspicious-item" *ngFor="let a of suspiciousActivities">
+                <i class="ph-fill ph-warning" style="color:#f39c12;font-size:1.1rem;"></i>
+                <span class="suspicious-text">{{ a.text }}</span>
+                <span class="suspicious-count">{{ a.count }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent transactions -->
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <span class="dash-card-title"><i class="ph-fill ph-credit-card"></i> Nedavne Transakcije</span>
+              <button class="btn-link-sm" (click)="setSection('transactions')">Sve <i class="ph ph-arrow-right"></i></button>
+            </div>
+            <div class="recent-tx-list">
+              <div class="rtx-item" *ngFor="let t of allTransactions.slice(0,4)">
+                <div class="rtx-icon" [class]="t.status === 'SUCCESS' ? 'rtx-ok' : t.status === 'FAILED' ? 'rtx-fail' : 'rtx-pend'">
+                  <i class="ph-fill" [class]="t.status === 'SUCCESS' ? 'ph-check' : t.status === 'FAILED' ? 'ph-x' : 'ph-clock'"></i>
+                </div>
+                <div class="rtx-info">
+                  <div class="rtx-offer">{{ t.offer }}</div>
+                  <div class="rtx-date">{{ t.date }}</div>
+                </div>
+                <div class="rtx-amount">€{{ t.amount }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── VOLUNTEERS ─────────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'volunteers'">
+        <div class="section-toolbar">
+          <div class="filter-tabs-wrap">
+            <button *ngFor="let f of volunteerFilters" class="ftab" [class.active]="volunteerFilter === f.value" (click)="volunteerFilter = f.value">
+              {{ f.label }} <span class="ftab-count" *ngIf="f.count > 0">{{ f.count }}</span>
+            </button>
+          </div>
+          <div class="toolbar-search">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" [(ngModel)]="volunteerSearch" placeholder="Pretraži volontere...">
+          </div>
+        </div>
+
+        <div class="data-card">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Volonter</th>
+                <th>Usluge</th>
+                <th>Ocjena</th>
+                <th>Datum</th>
+                <th>Status</th>
+                <th>Akcije</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let v of filteredVolunteers">
+                <td>
+                  <div class="cell-user">
+                    <div class="cu-avatar">
+                      <img *ngIf="v.avatarUrl" [src]="v.avatarUrl" class="cu-img">
+                      <span *ngIf="!v.avatarUrl">{{ v.initials }}</span>
+                    </div>
+                    <div>
+                      <div class="cu-name">{{ v.name }}</div>
+                      <div class="cu-email">{{ v.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="cell-meta"><i class="ph ph-toolbox"></i> {{ v.servicesCount }}</span></td>
+                <td><span class="cell-rating"><i class="ph-fill ph-star" style="color:#f39c12;"></i> {{ v.rating }}</span></td>
+                <td><span class="cell-date">{{ v.joinDate }}</span></td>
+                <td><span class="status-badge" [class]="'sb-' + v.status.toLowerCase()">{{ getStatusLabel(v.status) }}</span></td>
+                <td>
+                  <div class="cell-actions">
+                    <button class="ca-btn ca-view" (click)="openVolunteerDetail(v)" title="Prikaži profil/CV">
+                      <i class="ph ph-user-circle"></i>
+                    </button>
+                    <button class="ca-btn ca-approve" *ngIf="v.status === 'PENDING'" (click)="approveVolunteer(v)" title="Odobri">
+                      <i class="ph-fill ph-check-circle"></i>
+                    </button>
+                    <button class="ca-btn ca-reject" *ngIf="v.status === 'PENDING'" (click)="rejectVolunteer(v)" title="Odbij">
+                      <i class="ph-fill ph-x-circle"></i>
+                    </button>
+                    <button class="ca-btn ca-edit" (click)="openStatusChange(v)" title="Promjena statusa">
+                      <i class="ph ph-sliders-horizontal"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="table-empty" *ngIf="filteredVolunteers.length === 0">
+            <i class="ph-fill ph-users" style="font-size:2.5rem;color:#d0d9e0;"></i>
+            <p>Nema rezultata</p>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── BENEFICIARIES ──────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'beneficiaries'">
+        <div class="section-toolbar">
+          <button class="btn-primary-sm" (click)="openAddBeneficiary()">
+            <i class="ph-fill ph-plus-circle"></i> Dodaj Korisnika Pomoći
+          </button>
+        </div>
+
+        <div class="beneficiary-cards-grid">
+          <div class="bcard" *ngFor="let b of beneficiaries">
+            <div class="bcard-photo-wrap" (click)="uploadBeneficiaryPhoto(b)">
+              <img *ngIf="b.photoUrl" [src]="b.photoUrl" class="bcard-photo">
+              <div *ngIf="!b.photoUrl" class="bcard-photo-placeholder">{{ b.initials }}</div>
+              <div class="bcard-photo-overlay"><i class="ph-fill ph-camera"></i></div>
+              <span class="bcard-status-dot" [class]="'dot-' + b.status.toLowerCase()"></span>
+            </div>
+            <div class="bcard-body">
+              <div class="bcard-name">{{ b.name }}</div>
+              <div class="bcard-desc">{{ b.description }}</div>
+              <div class="bcard-progress">
+                <div class="bcard-amounts">
+                  <span class="bcard-raised">€{{ b.raised }}</span>
+                  <span class="bcard-goal">/ €{{ b.goal }}</span>
+                </div>
+                <div class="bcard-bar"><div class="bcard-fill" [style.width.%]="raisedPercent(b)"></div></div>
+                <div class="bcard-pct">{{ raisedPercent(b) }}%</div>
+              </div>
+              <div class="bcard-vols">
+                <i class="ph ph-users" style="font-size:0.8rem;color:#7a8a8e;"></i>
+                <span *ngFor="let v of b.volunteers; let last = last">{{ v }}{{ last ? '' : ', ' }}</span>
+              </div>
+            </div>
+            <div class="bcard-footer">
+              <button class="ca-btn ca-edit" (click)="editBeneficiary(b)" title="Uredi">
+                <i class="ph ph-pencil-simple"></i>
+              </button>
+              <button class="ca-btn ca-status" (click)="openStatusChange(b)" title="Status">
+                <i class="ph ph-sliders-horizontal"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── OFFERS ─────────────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'offers'">
+        <div class="section-toolbar">
+          <div class="filter-tabs-wrap">
+            <button *ngFor="let f of ['Sve','Aktivne','Na Čekanju','Odbijene']" class="ftab" [class.active]="offerFilter === f" (click)="offerFilter = f">{{ f }}</button>
+          </div>
+          <div class="toolbar-search">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" [(ngModel)]="offerSearch" placeholder="Pretraži ponude...">
+          </div>
+        </div>
+
+        <div class="data-card">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Ponuda</th><th>Volonter</th><th>Cijena</th><th>Korisnik Pomoći</th><th>Status</th><th>Akcije</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let o of filteredOffers">
+                <td>
+                  <div class="cell-user">
+                    <div class="cu-avatar offer-icon-bg">
+                      <span *ngIf="!o.imageUrl">{{ o.emoji }}</span>
+                      <img *ngIf="o.imageUrl" [src]="o.imageUrl" class="cu-img">
+                    </div>
+                    <div>
+                      <div class="cu-name">{{ o.name }}</div>
+                      <div class="cu-email">{{ o.category }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="cell-meta">{{ o.volunteerName }}</span></td>
+                <td><span class="cell-price">€{{ o.price }}</span></td>
+                <td><span class="cell-meta">{{ o.beneficiaryName }}</span></td>
+                <td><span class="status-badge" [class]="'sb-' + o.status.toLowerCase()">{{ getStatusLabel(o.status) }}</span></td>
+                <td>
+                  <div class="cell-actions">
+                    <button class="ca-btn ca-approve" *ngIf="o.status === 'PENDING'" (click)="approveOffer(o)" title="Odobri"><i class="ph-fill ph-check-circle"></i></button>
+                    <button class="ca-btn ca-reject" *ngIf="o.status === 'PENDING'" (click)="rejectOffer(o)" title="Odbij"><i class="ph-fill ph-x-circle"></i></button>
+                    <button class="ca-btn ca-reject" *ngIf="o.status === 'ACTIVE'" (click)="removeOffer(o)" title="Ukloni"><i class="ph-fill ph-trash"></i></button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="table-empty" *ngIf="filteredOffers.length === 0"><i class="ph-fill ph-toolbox" style="font-size:2.5rem;color:#d0d9e0;"></i><p>Nema ponuda</p></div>
+        </div>
+      </ng-container>
+
+      <!-- ── TRANSACTIONS ───────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'transactions'">
+        <div class="section-toolbar flex-wrap">
+          <div class="toolbar-search">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" [(ngModel)]="txSearch" placeholder="ID, kupac, ponuda...">
+          </div>
+          <select class="toolbar-select" [(ngModel)]="txStatusFilter">
+            <option value="">Svi statusi</option>
+            <option value="SUCCESS">Uspješne</option>
+            <option value="FAILED">Neuspješne</option>
+            <option value="PENDING">Na čekanju</option>
+          </select>
+          <input type="date" class="toolbar-input" [(ngModel)]="txDateFrom">
+          <input type="date" class="toolbar-input" [(ngModel)]="txDateTo">
+        </div>
+
+        <div class="data-card">
+          <table class="admin-table">
+            <thead>
+              <tr><th>ID</th><th>Datum</th><th>Iznos</th><th>Kupac</th><th>Korisnik Pomoći</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of filteredTransactions">
+                <td><code class="tx-code">{{ t.id }}</code></td>
+                <td><span class="cell-date">{{ t.date }}</span></td>
+                <td><span class="cell-price">€{{ t.amount }}</span></td>
+                <td>{{ t.buyerName }}</td>
+                <td>{{ t.beneficiaryName }}</td>
+                <td>
+                  <span class="status-badge" [class]="t.status === 'SUCCESS' ? 'sb-verified' : t.status === 'FAILED' ? 'sb-rejected' : 'sb-pending'">
+                    <i class="ph-fill" [class]="t.status === 'SUCCESS' ? 'ph-check' : t.status === 'FAILED' ? 'ph-x' : 'ph-clock'"></i>
+                    {{ t.status === 'SUCCESS' ? 'Uspješna' : t.status === 'FAILED' ? 'Neuspješna' : 'Na čekanju' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="table-footer-info">
+            <span>{{ filteredTransactions.length }} transakcija</span>
+            <span class="tx-total">Ukupno: <strong>€{{ txTotal }}</strong></span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── DONATIONS ──────────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'donations'">
+        <div class="data-card">
+          <table class="admin-table">
+            <thead><tr><th>Donator</th><th>Korisnik Pomoći</th><th>Iznos</th><th>Vrsta</th><th>Datum</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let d of donations">
+                <td>
+                  <div class="cell-user">
+                    <div class="cu-avatar"><span>{{ d.anonymous ? '?' : d.donor[0] }}</span></div>
+                    <span [class.anonymous-cell]="d.anonymous">{{ d.anonymous ? 'Anonimno' : d.donor }}</span>
+                  </div>
+                </td>
+                <td>{{ d.beneficiary }}</td>
+                <td><span class="cell-price">€{{ d.amount }}</span></td>
+                <td><span class="status-badge sb-active">{{ d.type }}</span></td>
+                <td><span class="cell-date">{{ d.date }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- ── KUPOVINE ──────────────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'kupovine'">
+
+        <div class="kpi-grid" style="margin-bottom:20px;grid-template-columns:repeat(3,1fr);">
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(45,107,85,0.1);"><i class="ph-fill ph-receipt" style="font-size:1.2rem;color:#2d6b55;"></i></div>
+            </div>
+            <div class="kpi-num">{{ allKupovine.length }}</div>
+            <div class="kpi-label">Ukupno kupovina</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(122,182,72,0.1);"><i class="ph-fill ph-check-circle" style="font-size:1.2rem;color:#7ab648;"></i></div>
+            </div>
+            <div class="kpi-num">{{ kupovineRealizovano }}</div>
+            <div class="kpi-label">Realizovano</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon" style="background:rgba(142,68,173,0.1);"><i class="ph-fill ph-hand-heart" style="font-size:1.2rem;color:#8e44ad;"></i></div>
+            </div>
+            <div class="kpi-num">€{{ kupovineUkupnoEur | number:'1.0-0' }}</div>
+            <div class="kpi-label">Ukupan iznos</div>
+          </div>
+        </div>
+
+        <div class="data-card">
+          <div *ngIf="allKupovine.length === 0" style="text-align:center;padding:48px 32px;color:#94a3b8;">
+            <i class="ph-fill ph-receipt" style="font-size:2.5rem;display:block;margin-bottom:12px;opacity:0.4;"></i>
+            Nema evidentiranih kupovina. Kliknite na <strong>Kupovine</strong> u navigaciji da ih učitate.
+          </div>
+
+          <table class="admin-table" *ngIf="allKupovine.length > 0">
+            <thead>
+              <tr>
+                <th>Usluga</th>
+                <th>Kupac</th>
+                <th>Volonter</th>
+                <th>Iznos</th>
+                <th>Datum</th>
+                <th>Isporuka</th>
+                <th>Akcija</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let k of allKupovine">
+                <td><strong>{{ k.serviceName }}</strong></td>
+                <td>{{ k.buyerName }}</td>
+                <td style="color:var(--text-light);">{{ k.volunteerName }}</td>
+                <td><strong style="color:var(--moss);">€{{ k.amount }}</strong></td>
+                <td style="font-size:0.8rem;color:var(--text-light);white-space:nowrap;">{{ k.date }}</td>
+                <td>
+                  <span class="status-badge sb-verified" *ngIf="k.statusIsporuke === 'realizovano'">
+                    <i class="ph-fill ph-check-circle"></i> Realizovano
+                  </span>
+                  <span class="status-badge sb-pending" *ngIf="k.statusIsporuke !== 'realizovano'">
+                    <i class="ph-fill ph-clock"></i> Na čekanju
+                  </span>
+                </td>
+                <td>
+                  <button class="ca-btn ca-approve" *ngIf="k.statusIsporuke !== 'realizovano'"
+                    (click)="adminOznaciRealizovano(k)" title="Označi realizovanim">
+                    <i class="ph-fill ph-check"></i>
+                  </button>
+                  <span *ngIf="k.statusIsporuke === 'realizovano'"
+                    style="font-size:0.78rem;color:#16a34a;white-space:nowrap;">
+                    {{ k.datumRealizacije }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- ── LOGS ───────────────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'logs'">
+        <div class="data-card">
+          <div class="log-timeline">
+            <div class="log-entry" *ngFor="let l of activityLogs" [class]="'le-' + l.type">
+              <div class="le-dot"></div>
+              <div class="le-icon">
+                <i class="ph-fill" [class]="l.type === 'info' ? 'ph-info' : l.type === 'warn' ? 'ph-warning' : 'ph-x-circle'"></i>
+              </div>
+              <div class="le-body">
+                <div class="le-text">{{ l.text }}</div>
+                <div class="le-meta"><span class="le-user">{{ l.user }}</span> · {{ l.time }}</div>
+              </div>
+              <span class="le-badge" [class]="'leb-' + l.type">{{ l.typeLabel }}</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── REVIEWS ────────────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'reviews'">
+        <div class="data-card">
+          <div style="padding:12px 16px 0;color:var(--text-light);font-size:0.84rem;">
+            Ukupno recenzija: <strong>{{ allReviews.length }}</strong>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Kupac</th>
+                <th>Usluga</th>
+                <th>Volonter</th>
+                <th>Ocjena</th>
+                <th>Komentar</th>
+                <th>Datum</th>
+                <th>Akcije</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of allReviews">
+                <td>{{ r.buyerName }}</td>
+                <td>{{ r.serviceName }}</td>
+                <td>{{ r.volunteerName }}</td>
+                <td><span class="stars-cell">{{ r.starsDisplay }}</span></td>
+                <td class="comment-cell">{{ r.comment || '—' }}</td>
+                <td style="white-space:nowrap;font-size:0.8rem;color:var(--text-light);">{{ r.date }}</td>
+                <td>
+                  <button class="ca-btn ca-reject" (click)="deleteReview(r)" title="Obriši recenziju"><i class="ph-fill ph-trash"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="allReviews.length === 0">
+                <td colspan="7" style="text-align:center;color:var(--text-light);padding:24px;">Nema recenzija.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- ── ALERTS ─────────────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'alerts'">
+        <div class="alerts-grid">
+          <div class="alert-card" *ngFor="let a of systemAlertsList" [class]="'ac-' + a.level">
+            <div class="ac-icon"><i class="ph-fill" [class]="a.level === 'high' ? 'ph-siren' : a.level === 'medium' ? 'ph-warning' : 'ph-info'"></i></div>
+            <div class="ac-body">
+              <div class="ac-title">{{ a.title }}</div>
+              <div class="ac-desc">{{ a.desc }}</div>
+            </div>
+            <div class="ac-time">{{ a.time }}</div>
+          </div>
+        </div>
+      </ng-container>
+
+    </div><!-- /admin-content -->
+  </main>
+</div>
+
+<!-- ══ VOLUNTEER DETAIL MODAL ════════════════════════════════ -->
+<div class="modal-backdrop" *ngIf="volunteerDetailOpen" (click)="closeVolunteerDetail()">
+  <div class="modal-card volunteer-detail-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="ph-fill ph-user-circle"></i> Profil volontera</h3>
+      <button class="modal-close" (click)="closeVolunteerDetail()"><i class="ph ph-x"></i></button>
+    </div>
+    <div class="modal-body" *ngIf="volunteerDetail">
+      <div class="vd-identity">
+        <div class="vd-avatar">{{ volunteerDetail.initials }}</div>
+        <div class="vd-meta">
+          <div class="vd-name">{{ volunteerDetail.name }}</div>
+          <div class="vd-email"><i class="ph ph-envelope"></i> {{ volunteerDetail.email }}</div>
+          <div class="vd-status">
+            <span class="status-badge" [class]="'sb-' + volunteerDetail.status.toLowerCase()">{{ getStatusLabel(volunteerDetail.status) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="volunteerDetailLoading" class="vd-loading">
+        <i class="ph ph-spinner-gap vd-spinner"></i> Učitavanje...
+      </div>
+
+      <ng-container *ngIf="!volunteerDetailLoading">
+        <div class="vd-section">
+          <div class="vd-section-label"><i class="ph ph-note-pencil"></i> Biografija / CV</div>
+          <div class="vd-bio">{{ volunteerDetail.biografija }}</div>
+        </div>
+
+        <div class="vd-section" *ngIf="volunteerDetail.portfolioLink">
+          <div class="vd-section-label"><i class="ph ph-link"></i> Portfolio</div>
+          <a class="vd-link" [href]="volunteerDetail.portfolioLink" target="_blank" rel="noopener">
+            {{ volunteerDetail.portfolioLink }}
+          </a>
+        </div>
+
+        <div class="vd-section" *ngIf="volunteerDetail.cvUrl">
+          <div class="vd-section-label"><i class="ph ph-file-pdf"></i> CV (PDF)</div>
+          <a class="vd-cv-link" [href]="volunteerDetail.cvUrl" target="_blank" rel="noopener">
+            <i class="bi bi-file-earmark-pdf-fill" style="color:#dc2626;margin-right:6px;font-size:1rem;"></i>
+            Preuzmi / Pogledaj CV
+          </a>
+        </div>
+
+        <div class="vd-section">
+          <div class="vd-section-label"><i class="ph ph-toolbox"></i> Prijavljene ponude ({{ volunteerDetail.services?.length ?? 0 }})</div>
+          <div *ngIf="volunteerDetail.services?.length === 0" class="vd-bio" style="color:#94a3b8;">Nema prijavljenih ponuda.</div>
+          <div class="vd-services-list" *ngIf="volunteerDetail.services?.length > 0">
+            <div class="vd-service-item" *ngFor="let s of volunteerDetail.services">
+              <div class="vd-service-name">{{ s.name }}</div>
+              <div class="vd-service-meta">
+                <span class="vd-service-cat">{{ s.category }}</span>
+                <span class="vd-service-price">{{ s.price }}€</span>
+                <span class="status-badge" [class]="getStatusBadgeClass(s.status)">{{ getOfferStatusLabel(s.status) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="vd-stats-row">
+          <div class="vd-stat"><span class="vd-stat-val">{{ volunteerDetail.brojUsluga }}</span><span class="vd-stat-label">Realizovanih usluga</span></div>
+          <div class="vd-stat"><span class="vd-stat-val">{{ volunteerDetail.servicesCount }}</span><span class="vd-stat-label">Aktivnih ponuda</span></div>
+          <div class="vd-stat"><span class="vd-stat-val">{{ volunteerDetail.joinDate }}</span><span class="vd-stat-label">Datum registracije</span></div>
+        </div>
+      </ng-container>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary-sm" (click)="closeVolunteerDetail()">Zatvori</button>
+      <button class="btn-primary-sm ca-approve-btn" *ngIf="volunteerDetail?.status === 'PENDING'" (click)="approveVolunteer(volunteerDetail); closeVolunteerDetail()">
+        <i class="ph-fill ph-check-circle"></i> Odobri volontera
+      </button>
+      <button class="btn-danger-sm ca-reject-btn" *ngIf="volunteerDetail?.status === 'PENDING'" (click)="rejectVolunteer(volunteerDetail); closeVolunteerDetail()">
+        <i class="ph-fill ph-x-circle"></i> Odbij
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STATUS CHANGE MODAL ════════════════════════════════════ -->
+<div class="modal-backdrop" *ngIf="statusModalOpen" (click)="closeStatusModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="ph-fill ph-sliders-horizontal"></i> Promjena Statusa</h3>
+      <button class="modal-close" (click)="closeStatusModal()"><i class="ph ph-x"></i></button>
+    </div>
+    <p class="modal-user-line">Korisnik: <strong>{{ statusChangeTarget?.name }}</strong></p>
+    <div class="form-group">
+      <label class="form-label">Novi status</label>
+      <select class="form-select" [(ngModel)]="newStatus">
+        <option value="aktivan">Aktivan / Verifikovan</option>
+        <option value="na_cekanju">Na čekanju</option>
+        <option value="neaktivan">Neaktivan</option>
+        <option value="suspendovan">Suspendovan</option>
+        <option value="uklonjen">Uklonjen</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Razlog promjene <span style="color:#e74c3c;">*</span></label>
+      <textarea class="form-textarea" [(ngModel)]="statusChangeReason" placeholder="Navedite razlog promjene statusa..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-confirm" (click)="confirmStatusChange()">
+        <i class="ph-fill ph-paper-plane-tilt"></i> Potvrdi i pošalji email
+      </button>
+      <button class="btn-modal-cancel" (click)="closeStatusModal()">Otkaži</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BENEFICIARY MODAL ══════════════════════════════════════ -->
+<div class="modal-backdrop" *ngIf="beneficiaryModalOpen" (click)="closeBeneficiaryModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <i class="ph-fill" [class]="editingBeneficiary ? 'ph-pencil-simple' : 'ph-user-plus'"></i>
+        {{ editingBeneficiary ? 'Uredi' : 'Dodaj' }} Korisnika Pomoći
+      </h3>
+      <button class="modal-close" (click)="closeBeneficiaryModal()"><i class="ph ph-x"></i></button>
+    </div>
+
+    <div class="beneficiary-photo-upload" (click)="uploadBeneficiaryModalPhoto()">
+      <img *ngIf="newBeneficiary.photoUrl" [src]="newBeneficiary.photoUrl" class="bp-preview">
+      <div *ngIf="!newBeneficiary.photoUrl" class="bp-placeholder">
+        <i class="ph-fill ph-camera" style="font-size:2rem;color:#b0bec5;"></i>
+        <span>Dodaj fotografiju</span>
+      </div>
+      <div class="bp-overlay"><i class="ph-fill ph-camera"></i> Promijeni</div>
+    </div>
+    <p class="photo-hint"><i class="ph ph-folder-open"></i> Postavi u: <code>assets/images/beneficiaries/ime.jpg</code></p>
+
+    <div class="form-group">
+      <label class="form-label">Ime i prezime <span style="color:#e74c3c;">*</span></label>
+      <input type="text" class="form-input" [(ngModel)]="newBeneficiary.name" placeholder="Npr. Marija Nikolić">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Opis situacije</label>
+      <textarea class="form-textarea" [(ngModel)]="newBeneficiary.description" placeholder="Kratki opis potreba..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <select class="form-select" [(ngModel)]="newBeneficiary.status">
+        <option value="ACTIVE">Aktivan</option>
+        <option value="INACTIVE">Neaktivan</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-confirm" (click)="saveBeneficiary()">
+        <i class="ph-fill" [class]="editingBeneficiary ? 'ph-floppy-disk' : 'ph-plus-circle'"></i>
+        {{ editingBeneficiary ? 'Sačuvaj izmjene' : 'Dodaj korisnika' }}
+      </button>
+      <button class="btn-modal-cancel" (click)="closeBeneficiaryModal()">Otkaži</button>
+    </div>
+  </div>
+</div>

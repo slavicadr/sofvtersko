@@ -1,0 +1,231 @@
+{
+  "info": { "name": "Dobrobit API Tests", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json" },
+  "item": [
+    {
+      "name": "1. Register Kupac",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/korisnici/registracija/kupac",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"ime\":\"Test\",\"prezime\":\"Kupac\",\"email\":\"kupac_t1@test.com\",\"lozinkaHash\":\"TestPass123\",\"tipKorisnika\":\"kupac\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Has korisnikId', () => pm.expect(pm.response.json()).to.have.property('korisnikId'));",
+        "pm.collectionVariables.set('kupacId', pm.response.json().korisnikId);"
+      ]}}]
+    },
+    {
+      "name": "2. Register Volonter",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/korisnici/registracija",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"ime\":\"Test\",\"prezime\":\"Volonter\",\"email\":\"volonter_t1@test.com\",\"lozinkaHash\":\"TestPass123\",\"tipKorisnika\":\"volonter\",\"opis\":\"Iskusan volonter\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.collectionVariables.set('volonterId', pm.response.json().korisnikId);"
+      ]}}]
+    },
+    {
+      "name": "3. Register Admin",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/korisnici/registracija",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"ime\":\"Test\",\"prezime\":\"Admin\",\"email\":\"admin_t1@test.com\",\"lozinkaHash\":\"TestPass123\",\"tipKorisnika\":\"administrator\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.collectionVariables.set('adminId', pm.response.json().korisnikId);"
+      ]}}]
+    },
+    {
+      "name": "4. Register Duplicate Email (expect 400)",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/korisnici/registracija/kupac",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"ime\":\"Test\",\"prezime\":\"Kupac\",\"email\":\"kupac_t1@test.com\",\"lozinkaHash\":\"TestPass123\",\"tipKorisnika\":\"kupac\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 400 for duplicate email', () => pm.response.to.have.status(400));"
+      ]}}]
+    },
+    {
+      "name": "5. Login as Kupac",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/korisnici/login",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"email\":\"kupac_t1@test.com\",\"lozinka\":\"TestPass123\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Has email', () => pm.expect(pm.response.json()).to.have.property('email'));",
+        "pm.test('No password in response', () => { var b = pm.response.json(); pm.expect(b).to.not.have.property('lozinkaHash'); pm.expect(b).to.not.have.property('password'); });"
+      ]}}]
+    },
+    {
+      "name": "6. Login Wrong Password (expect 401)",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/korisnici/login",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"email\":\"kupac_t1@test.com\",\"lozinka\":\"WRONG\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 401 for bad creds', () => pm.response.to.have.status(401));"
+      ]}}]
+    },
+    {
+      "name": "7. Logout Kupac",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/korisnici/logout",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"korisnikId\":{{kupacId}}}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));"
+      ]}}]
+    },
+    {
+      "name": "8. Create Kategorija (authenticated)",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/kategorije",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "kupac_t1@test.com" }, { "key": "password", "value": "TestPass123" }] },
+        "body": { "mode": "raw", "raw": "{\"naziv\":\"Test Kategorija\",\"opis\":\"Opis test kategorije\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.collectionVariables.set('kategorijaId', pm.response.json().kategorijaId);"
+      ]}}]
+    },
+    {
+      "name": "9. Create Korisnik Pomoci (public)",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/korisnici-pomoci",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"korisnik\":{\"korisnikId\":{{kupacId}}},\"naziv\":\"Test Porodica\",\"opisPotrebe\":\"Treba pomoci\",\"brojRacuna\":\"111-222-333\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.collectionVariables.set('pomocId', pm.response.json().pomocId);"
+      ]}}]
+    },
+    {
+      "name": "10. Create Donacija (public)",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/donacije",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"donatorId\":{{kupacId}},\"pomocId\":{{pomocId}},\"iznos\":100.00,\"nacinPlacanja\":\"KARTICA\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Has donacijaId', () => pm.expect(pm.response.json()).to.have.property('donacijaId'));",
+        "pm.collectionVariables.set('donacijaId', pm.response.json().donacijaId);"
+      ]}}]
+    },
+    {
+      "name": "11. Create Usluga as Volonter (aktivna-direct via admin patch)",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/usluge-proizvodi",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "volonter_t1@test.com" }, { "key": "password", "value": "TestPass123" }] },
+        "body": { "mode": "raw", "raw": "{\"volonter\":{\"korisnikId\":{{volonterId}}},\"kategorija\":{\"kategorijaId\":{{kategorijaId}}},\"naziv\":\"Test Usluga\",\"opis\":\"Test opis\",\"tip\":\"usluga\",\"cijena\":50.00}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "var code = pm.response.code;",
+        "pm.test('Register OK or 401/403 (volonter not yet verified)', () => pm.expect([200,401,403]).to.include(code));",
+        "if(code === 200){ pm.collectionVariables.set('uslugaId', pm.response.json().uslugaProizvodId); }"
+      ]}}]
+    },
+    {
+      "name": "12. Create Volonter Info",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/volonter-info",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "volonter_t1@test.com" }, { "key": "password", "value": "TestPass123" }] },
+        "body": { "mode": "raw", "raw": "{\"volonterId\":{{volonterId}},\"biografija\":\"Bio volontera\",\"portfolioLink\":\"https://portfolio.example.com\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "var code = pm.response.code;",
+        "pm.test('200 or 401/403 (not verified)', () => pm.expect([200,401,403]).to.include(code));"
+      ]}}]
+    },
+    {
+      "name": "13. Create Profil (authenticated)",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/profili",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "kupac_t1@test.com" }, { "key": "password", "value": "TestPass123" }] },
+        "body": { "mode": "raw", "raw": "{\"korisnik\":{\"korisnikId\":{{kupacId}}},\"opis\":\"Moj profil\",\"grad\":\"Sarajevo\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));"
+      ]}}]
+    },
+    {
+      "name": "14. Create Verifikacija (admin only — expect 401 as kupac)",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/verifikacije",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "kupac_t1@test.com" }, { "key": "password", "value": "TestPass123" }] },
+        "body": { "mode": "raw", "raw": "{\"tipVerifikacije\":\"volonter\",\"napomena\":\"Test\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('403 for non-admin', () => pm.response.to.have.status(403));"
+      ]}}]
+    },
+    {
+      "name": "15. Buy Usluga as Kupac (uses existing active usluga ID=7)",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/kupovine/kupi",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "kupac_t1@test.com" }, { "key": "password", "value": "TestPass123" }] },
+        "body": { "mode": "raw", "raw": "{\"kupacId\":{{kupacId}},\"uslugaId\":1,\"pomocId\":1,\"nacinPlacanja\":\"KARTICA\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.collectionVariables.set('kupovinaId', pm.response.json().kupovinaId);"
+      ]}}]
+    },
+    {
+      "name": "16. Add Recenzija as Kupac",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/recenzije/dodaj",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "kupac_t1@test.com" }, { "key": "password", "value": "TestPass123" }] },
+        "body": { "mode": "raw", "raw": "{\"kupovinaId\":{{kupovinaId}},\"kupacId\":{{kupacId}},\"brojZvjezdica\":5,\"komentar\":\"Odlicna usluga!\"}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));"
+      ]}}]
+    },
+    {
+      "name": "17. Filter Usluge by Kategorija",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/usluge-proizvodi/filter-kategorija",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "kupac_t1@test.com" }, { "key": "password", "value": "TestPass123" }] },
+        "body": { "mode": "raw", "raw": "{\"kategorijaId\":1}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+      ]}}]
+    },
+    {
+      "name": "18. Filter Usluge by Volonter",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/usluge-proizvodi/filter-volonter",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "kupac_t1@test.com" }, { "key": "password", "value": "TestPass123" }] },
+        "body": { "mode": "raw", "raw": "{\"korisnikId\":7}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+      ]}}]
+    },
+    {
+      "name": "19. Profil Pretraga by Korisnik",
+      "request": { "method": "POST", "url": "http://localhost:8080/api/profili/pretraga-korisnik",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "auth": { "type": "basic", "basic": [{ "key": "username", "value": "kupac_t1@test.com" }, { "key": "password", "value": "TestPass123" }] },
+        "body": { "mode": "raw", "raw": "{\"korisnikId\":{{kupacId}}}" }
+      },
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));"
+      ]}}]
+    }
+  ],
+  "variable": [
+    { "key": "kupacId", "value": "" },
+    { "key": "volonterId", "value": "" },
+    { "key": "adminId", "value": "" },
+    { "key": "pomocId", "value": "" },
+    { "key": "donacijaId", "value": "" },
+    { "key": "kategorijaId", "value": "" },
+    { "key": "uslugaId", "value": "" },
+    { "key": "kupovinaId", "value": "" }
+  ]
+}

@@ -1,0 +1,176 @@
+.cases-page { min-height: 100vh; background: #f8fafc; font-family: 'DM Sans', sans-serif; }
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.cases-hero {
+  background: linear-gradient(135deg, #1a3a2e 0%, #2d6b55 60%, #7ab648 100%);
+  padding: 64px 40px 52px; text-align: center; position: relative; overflow: hidden;
+  &::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 70% 50%, rgba(168,221,208,0.15) 0%, transparent 60%); }
+}
+.cases-hero-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }
+.hero-tag {
+  display: inline-block; background: rgba(122,182,72,0.2); color: #b8e080;
+  border: 1px solid rgba(122,182,72,0.3); padding: 6px 16px; border-radius: 20px;
+  font-size: 0.85rem; font-weight: 600; margin-bottom: 16px;
+}
+.cases-hero h1 {
+  font-family: 'Playfair Display', serif; font-size: 2.4rem; color: #fff; margin: 0 0 12px;
+}
+.cases-hero p { color: rgba(255,255,255,0.75); font-size: 1rem; line-height: 1.6; margin-bottom: 32px; }
+
+.hero-stats { display: flex; align-items: center; justify-content: center; gap: 0; background: rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; }
+.hero-stat { text-align: center; padding: 0 28px; }
+.hero-stat-divider { width: 1px; height: 40px; background: rgba(255,255,255,0.2); }
+.hs-value { font-size: 1.8rem; font-weight: 700; color: #fff; }
+.hs-label { font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ── Cases Grid ───────────────────────────────────────────── */
+.cases-container { max-width: 1100px; margin: 0 auto; padding: 48px 24px 64px; }
+.cases-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+
+.case-card {
+  background: #fff; border-radius: 20px; border: 1px solid #e5eaf0; overflow: hidden;
+  transition: all 0.3s;
+  &:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.1); transform: translateY(-4px); }
+}
+
+/* Photo */
+.case-photo-wrap {
+  height: 220px; position: relative; overflow: hidden; cursor: pointer;
+}
+.case-photo { width: 100%; height: 100%; object-fit: cover; }
+.case-photo-placeholder {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, #f0c89e 0%, #fce0c0 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 4rem; font-weight: 700; color: #d4a882;
+}
+.case-photo-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 0.85rem; opacity: 0; transition: opacity 0.2s;
+  .case-photo-wrap:hover & { opacity: 1; }
+}
+.case-progress-badge {
+  position: absolute; top: 12px; right: 12px;
+  background: #fff; color: #2d6b55; font-weight: 700; font-size: 0.85rem;
+  padding: 4px 10px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Body */
+.case-body { padding: 20px; }
+.case-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.case-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: #1a3a2e; margin: 0; }
+.case-category {
+  background: #e8f5e9; color: #2d6b55; padding: 3px 10px; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 600; white-space: nowrap; flex-shrink: 0;
+}
+.case-description { font-size: 0.85rem; color: #7a8a8e; line-height: 1.55; margin: 0 0 16px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Progress */
+.case-progress-section { margin-bottom: 14px; }
+.case-amounts { margin-bottom: 6px; }
+.raised-amount { font-size: 1.3rem; font-weight: 700; color: #2d6b55; }
+.goal-amount { font-size: 0.85rem; color: #7a8a8e; }
+.case-progress-bar { height: 8px; background: #e5eaf0; border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+.case-progress-fill { height: 100%; background: linear-gradient(90deg, #2d6b55, #7ab648); border-radius: 4px; transition: width 0.8s ease; }
+.case-progress-label { font-size: 0.72rem; color: #7a8a8e; }
+
+/* Volunteers */
+.case-volunteers { margin-bottom: 14px; display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+.volunteers-label { font-size: 0.75rem; color: #7a8a8e; flex-shrink: 0; margin-top: 3px; }
+.volunteer-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.volunteer-chip {
+  background: #f0f9f5; color: #2d6b55; padding: 3px 10px;
+  border-radius: 20px; font-size: 0.72rem; font-weight: 500;
+}
+
+/* Actions */
+.case-actions { display: flex; gap: 10px; }
+.btn-donate {
+  flex: 1; padding: 11px; background: #2d6b55; color: #fff;
+  border: none; border-radius: 10px; font-weight: 700; font-size: 0.9rem;
+  cursor: pointer; transition: all 0.2s;
+  &:hover { background: #245647; }
+}
+.btn-details {
+  padding: 11px 18px; background: #fff; color: #2d6b55;
+  border: 1.5px solid #2d6b55; border-radius: 10px; font-weight: 600; font-size: 0.85rem;
+  cursor: pointer; transition: all 0.2s;
+  &:hover { background: #f0f9f5; }
+}
+
+/* ── Donation Modal ────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+}
+.modal-box {
+  background: #fff; border-radius: 20px; padding: 32px;
+  width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.25); position: relative;
+  &.details-modal { max-width: 520px; padding: 0 0 24px; }
+}
+.modal-close-btn {
+  position: absolute; top: 14px; right: 14px; width: 32px; height: 32px;
+  border-radius: 50%; border: none; background: #f0f4f8; cursor: pointer;
+  font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
+  &:hover { background: #e5eaf0; }
+}
+.modal-icon { font-size: 2.5rem; text-align: center; margin-bottom: 12px; }
+.modal-title {
+  font-family: 'Playfair Display', serif; font-size: 1.3rem; color: #1a3a2e;
+  text-align: center; margin: 0 0 8px;
+}
+.modal-subtitle { font-size: 0.85rem; color: #7a8a8e; text-align: center; margin-bottom: 24px; }
+
+.quick-amounts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
+.quick-btn {
+  padding: 10px 0; border: 1.5px solid #e5eaf0; border-radius: 10px;
+  background: #f8fafc; font-weight: 600; font-size: 0.9rem; color: #1a3a2e; cursor: pointer;
+  transition: all 0.2s;
+  &:hover, &.selected { background: #2d6b55; border-color: #2d6b55; color: #fff; }
+}
+.custom-amount-wrap { position: relative; margin-bottom: 16px; }
+.currency-prefix {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  font-weight: 700; color: #2d6b55;
+}
+.custom-amount-input {
+  width: 100%; padding: 10px 14px 10px 28px;
+  border: 1.5px solid #e5eaf0; border-radius: 10px; font-size: 0.95rem;
+  &:focus { outline: none; border-color: #2d6b55; }
+}
+.donor-display-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 16px; font-size: 0.85rem; color: #4a5568;
+  input { accent-color: #2d6b55; }
+}
+.modal-total { font-size: 0.9rem; color: #7a8a8e; text-align: center; margin-bottom: 16px; strong { color: #2d6b55; font-size: 1.1rem; } }
+.btn-confirm-donation {
+  width: 100%; padding: 14px; background: #2d6b55; color: #fff;
+  border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer;
+  transition: all 0.2s;
+  &:hover:not(:disabled) { background: #245647; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+/* ── Details Modal ────────────────────────────────────────── */
+.details-photo-wrap { height: 200px; overflow: hidden; border-radius: 20px 20px 0 0; }
+.details-photo { width: 100%; height: 100%; object-fit: cover; }
+.details-photo-placeholder {
+  width: 100%; height: 100%; background: linear-gradient(135deg, #f0c89e, #fce0c0);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 4rem; font-weight: 700; color: #d4a882;
+}
+.details-desc { font-size: 0.9rem; color: #4a5568; line-height: 1.6; margin-bottom: 20px; padding: 0 24px; }
+.details-progress-section { padding: 0 24px; margin-bottom: 20px; }
+.details-history { padding: 0 24px; h4 { font-family: 'Playfair Display', serif; font-size: 1rem; color: #1a3a2e; margin-bottom: 10px; } }
+.history-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 0; border-bottom: 1px solid #f0f4f8;
+  font-size: 0.83rem;
+}
+.history-donor { flex: 1; font-weight: 600; color: #1a3a2e; }
+.history-amount { font-weight: 700; color: #2d6b55; }
+.history-date { color: #7a8a8e; }

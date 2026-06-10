@@ -1,0 +1,91 @@
+### Registracija kupca
+POST http://localhost:8080/api/korisnici/registracija/kupac
+Content-Type: application/json
+
+{
+  "ime": "Test",
+  "prezime": "Kupac",
+  "email": "kupac@test.com",
+  "lozinkaHash": "lozinka123",
+  "tipKorisnika": "kupac"
+}
+
+### Login
+POST http://localhost:8080/api/korisnici/login
+Content-Type: application/json
+
+{
+  "email": "kupac@test.com",
+  "lozinka": "lozinka123"
+}
+
+### Logout
+POST http://localhost:8080/api/korisnici/logout
+Content-Type: application/json
+
+{
+  "korisnikId": 1
+}
+
+### Kreiraj kategoriju
+POST http://localhost:8080/api/kategorije
+Content-Type: application/json
+
+{
+  "naziv": "Edukacija",
+  "opis": "Edukativne usluge"
+}
+
+### Kreiraj korisnika pomoci
+POST http://localhost:8080/api/korisnici-pomoci
+Content-Type: application/json
+
+{
+  "korisnik": { "korisnikId": 1 },
+  "naziv": "Porodica Petrović",
+  "opisPotrebe": "Potrebna finansijska pomoć",
+  "brojRacuna": "123-456-789"
+}
+
+### Nova donacija
+POST http://localhost:8080/api/donacije
+Content-Type: application/json
+
+{
+  "donatorId": 1,
+  "pomocId": 1,
+  "iznos": 150.00,
+  "nacinPlacanja": "KARTICA"
+}
+
+### Kupi uslugu (zahtijeva login kao kupac)
+POST http://localhost:8080/api/kupovine/kupi
+Content-Type: application/json
+
+{
+  "kupacId": 1,
+  "uslugaId": 1,
+  "pomocId": 1,
+  "nacinPlacanja": "KARTICA"
+}
+
+### Dodaj recenziju (zahtijeva login kao kupac)
+POST http://localhost:8080/api/recenzije/dodaj
+Content-Type: application/json
+
+{
+  "kupovinaId": 1,
+  "kupacId": 1,
+  "brojZvjezdica": 5,
+  "komentar": "Odlična usluga!"
+}
+
+### Kreiraj volonter-info profil (zahtijeva login kao volonter)
+POST http://localhost:8080/api/volonter-info
+Content-Type: application/json
+
+{
+  "volonterId": 2,
+  "biografija": "Iskusan volonter sa 5 godina rada.",
+  "portfolioLink": "https://portfolio.example.com"
+}

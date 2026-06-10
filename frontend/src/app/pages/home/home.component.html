@@ -1,0 +1,335 @@
+<app-navbar [logoImagePath]="logoPath"></app-navbar>
+
+<!-- ══ HERO ══════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-label">Platforma za humanitarnu pomoć</div>
+    <h1 class="hero-title">Ova ruka putuje da se<br>sa tvojom <em>rukuje</em></h1>
+    <p class="hero-sub">Donirajte novac ili kupite usluge od volontera.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" routerLink="/donacije">Donirajte Sada</button>
+      <button class="btn-outline" routerLink="/usluge">Pronađite Uslugu →</button>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="floating-badge">
+      <i class="ph-fill ph-sparkle" style="color:#ffd700;margin-right:4px;"></i>
+      <span>1.250€</span> prikupljeno danas
+    </div>
+    <div class="hero-image-card">
+      <div class="hero-img-wrap">
+        <img src="assets/images/hero-image.png" alt="Humanitarna pomoć" onerror="this.style.display='none'"/>
+        <i class="ph-fill ph-heart" style="font-size:3.5rem;color:rgba(255,255,255,0.35);position:relative;z-index:1;"></i>
+      </div>
+      <p class="hero-cases-label">Aktivni slučajevi</p>
+      <div class="hero-cases">
+        <div class="hero-case-item" *ngFor="let c of activeCases.slice(0,3)">
+          <div class="hero-case-avatar" [style.background]="c.avatarBg">
+            <img *ngIf="c.photoUrl" [src]="c.photoUrl" [alt]="c.name" class="hca-img"/>
+            <i *ngIf="!c.photoUrl" class="ph-fill ph-user" style="color:#fff;font-size:1.1rem;"></i>
+          </div>
+          <div class="hero-case-info">
+            <div class="hero-case-name">{{ c.name }}</div>
+            <div class="hero-case-desc">{{ c.description }}</div>
+          </div>
+          <div>
+            <div class="hero-case-amount">{{ c.raised }}€</div>
+            <div class="progress-bar" style="width:64px;margin-top:4px;"><div class="progress-fill" [style.width.%]="c.percent"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats-strip">
+  <div class="stat-item" *ngFor="let s of stats">
+    <div class="stat-num">{{ s.value }}</div>
+    <div class="stat-label">{{ s.label }}</div>
+  </div>
+</div>
+
+<!-- ══ KAKO FUNKCIONIŠE ══════════════════════════════════════ -->
+<section class="section section-lime">
+  <div class="section-tag">Kako funkcioniše</div>
+  <h2 class="section-title">Transparentno, sigurno, bez posrednika</h2>
+  <div class="steps-grid">
+    <div class="step-card fade-in" data-num="01">
+      <div class="step-icon" style="background:linear-gradient(135deg,var(--mint-to),var(--mint-from));">
+        <i class="ph-fill ph-magnifying-glass" style="font-size:1.7rem;color:#fff;"></i>
+      </div>
+      <div class="step-title">Pronađi slučaj ili uslugu</div>
+      <p class="step-desc">Pregledajte aktivne usluge koje nude volonteri.</p>
+    </div>
+    <div class="step-card fade-in" data-num="02">
+      <div class="step-icon" style="background:linear-gradient(135deg,var(--lime-to),var(--lime-from));">
+        <i class="ph-fill ph-currency-circle-dollar" style="font-size:1.7rem;color:#fff;"></i>
+      </div>
+      <div class="step-title">Izvrši donaciju ili kupovinu</div>
+      <p class="step-desc">Direktno donirajte novac ili kupite uslugu. Novac automatski odlazi na račun korisnika pomoći.</p>
+    </div>
+    <div class="step-card fade-in" data-num="03">
+      <div class="step-icon" style="background:linear-gradient(135deg,var(--peach-to),var(--peach-from));">
+        <i class="ph-fill ph-chat-circle-heart" style="font-size:1.7rem;color:#fff;"></i>
+      </div>
+      <div class="step-title">Ostavi recenziju</div>
+      <p class="step-desc">Nakon kupljene usluge ostavite ocjenu i komentar.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ AKTIVNI SLUČAJEVI ══════════════════════════════════════ -->
+<section class="section cases-section">
+  <div class="cases-header">
+    <div>
+      <div class="section-tag">Humanitarni slučajevi</div>
+      <h2 class="section-title" style="margin-bottom:0;">Aktivni slučajevi</h2>
+    </div>
+    <button class="btn-outline" routerLink="/slucajevi">Prikaži sve →</button>
+  </div>
+  <div class="cases-grid">
+    <div class="case-card fade-in" *ngFor="let c of activeCases">
+      <div class="case-card-img" [style.background]="c.imgBg">
+        <img *ngIf="c.photoUrl" [src]="c.photoUrl" [alt]="c.name" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"/>
+        <i *ngIf="!c.photoUrl" class="ph-fill ph-shield-heart" style="font-size:3.5rem;color:rgba(255,255,255,0.85);"></i>
+      </div>
+      <div class="case-card-body">
+        <span class="case-tag" [style.background]="c.tagBg" [style.color]="c.tagColor">{{ c.category }}</span>
+        <div class="case-card-name">{{ c.name }}</div>
+        <p class="case-card-detail">{{ c.fullDesc }}</p>
+        <div class="case-progress-label">
+          <span>{{ c.raised }}€ / {{ c.goal }}€</span>
+          <span style="color:var(--moss);font-weight:500;">{{ c.percent }}%</span>
+        </div>
+        <div class="progress-bar" style="margin-bottom:16px;"><div class="progress-fill" [style.width.%]="c.percent"></div></div>
+        <button class="btn-donate" (click)="openDonation(c)">Doniraj</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ KO MOŽE UČESTVOVATI ═══════════════════════════════════ -->
+<section class="section roles-section">
+  <div class="section-tag">Ko može učestvovati</div>
+  <h2 class="section-title">Platforma za sve</h2>
+  <div class="roles-grid">
+    <div class="role-card fade-in" *ngFor="let r of roles">
+      <div class="role-icon" [style.background]="r.iconBg">
+        <i [class]="r.title==='Volonter'?'ph-fill ph-person-arms-spread':r.title==='Kupac'?'ph-fill ph-shopping-cart-simple':r.title==='Donator'?'ph-fill ph-hand-heart':'ph-fill ph-star'" style="font-size:1.7rem;color:#fff;"></i>
+      </div>
+      <div>
+        <div class="role-title">{{ r.title }}</div>
+        <p class="role-desc">{{ r.desc }}</p>
+        <ul class="role-list"><li *ngFor="let item of r.items">{{ item }}</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ RECENZIJE ══════════════════════════════════════════════ -->
+<section class="section reviews-section">
+  <div class="section-tag">Recenzije</div>
+  <h2 class="section-title">Šta kažu naši korisnici</h2>
+  <div class="reviews-grid">
+    <div class="review-card fade-in" *ngFor="let r of reviews">
+      <div style="margin-bottom:8px;"><i class="bi bi-quote" style="font-size:1.8rem;color:var(--teal);opacity:0.6;"></i></div>
+      <div class="stars" style="color:#ffd700;margin-bottom:8px;">
+        <i class="ph-fill ph-star" *ngFor="let s of [1,2,3,4,5]"></i>
+      </div>
+      <p class="review-text">"{{ r.text }}"</p>
+      <div class="review-author">
+        <div class="review-avatar">
+          <img *ngIf="r.avatarUrl" [src]="r.avatarUrl" [alt]="r.name" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:absolute;inset:0;"/>
+          <span *ngIf="!r.avatarUrl">{{ r.initials }}</span>
+        </div>
+        <div>
+          <div class="review-name">{{ r.name }}</div>
+          <div class="review-service">{{ r.service }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ VOLONTERI ══════════════════════════════════════════════ -->
+<section class="section volunteers-section">
+  <div class="cases-header">
+    <div>
+      <div class="section-tag">Naši Heroji</div>
+      <h2 class="section-title" style="margin-bottom:0;">Izdvojeni volonteri</h2>
+    </div>
+    <button class="btn-outline" routerLink="/usluge">Pogledaj sve ponude →</button>
+  </div>
+  <div class="volunteers-grid">
+    <div class="volunteer-card fade-in" *ngFor="let v of featuredVolunteers" [style.background]="v.bgGradient">
+      <div class="vol-avatar-container">
+        <img [src]="v.photoUrl" [alt]="v.name" class="vol-card-img"/>
+        <div class="vol-rating-badge"><i class="ph-fill ph-star" style="color:#ffd700;font-size:0.8rem;"></i> {{ v.rating }}</div>
+      </div>
+      <div class="vol-card-body">
+        <div class="vol-card-name">{{ v.name }}</div>
+        <div class="vol-card-title">{{ v.title }}</div>
+        <div class="vol-skills-tags">
+          <span *ngFor="let sk of v.skills" class="skill-tag">{{ sk }}</span>
+        </div>
+        <p class="vol-card-reviews">{{ v.reviewsCount }} odrađenih usluga</p>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="btn-outline" style="flex:1;font-size:0.82rem;" (click)="openVolunteerProfile(v)">Pogledaj profil</button>
+          <button class="btn-donate" style="flex:1;" routerLink="/usluge">Unajmi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ VOLONTER CTA ═══════════════════════════════════════════ -->
+<div class="volunteer-strip">
+  <div>
+    <h2>Postanite volonter i<br><em style="color:var(--moss);">napravite razliku</em></h2>
+    <p>Registrujte se kao volonter, ponudite svoje znanje, vještine ili proizvode i na taj način promijenite nečiji život.</p>
+    <button class="btn-primary" routerLink="/registracija" [queryParams]="{uloga:'volonter'}">Registrujte se kao volonter</button>
+  </div>
+  <div class="volunteer-visual">
+    <div class="vol-stats-row" style="margin-top:20px;">
+      <div class="vol-stat"><div class="vol-stat-num">128</div><div class="vol-stat-label">Volontera</div></div>
+      <div class="vol-stat"><div class="vol-stat-num">4.8</div><div class="vol-stat-label">Prosj. ocjena</div></div>
+      <div class="vol-stat"><div class="vol-stat-num">45</div><div class="vol-stat-label">Aktiv. ponuda</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ABOUT US ═══════════════════════════════════════════════ -->
+<section class="section about-section" id="o-nama">
+  <div class="section-tag">O nama</div>
+  <h2 class="section-title">Zašto Dobrobit?</h2>
+  <div class="about-grid">
+    <div class="about-story">
+      <p class="about-lead">DobroBit je nastao kao odgovor na stvarne izazove humanitarnog djelovanja u Crnoj Gori. U praksi, mnogi ljudi žele da pomognu, ali prepreke poput nepovjerenja u posrednike, sporih procedura, nedovoljne transparentnosti i ograničenih mogućnosti doniranja obeshrabruju pojedince da  preduzmu akciju.
+          Istovremeno, oni kojima je pomoć potrebna -  teško dolaze do vidljivosti i podrške.
+          DobroBit je zamišljen kao digitalni most između ljudi dobre volje i onih kojima je pomoć  potrebna. Umjesto klasičnih donacija, platforma omogućava ljudima da ponude svoje usluge ili proizvode, dok novac od kupaca koji kupe te usluge/proizvode ide direktno na račun korisnika kojima je pomoć potrebna. 
+
+        Iza svakog humanitarnog slučaja nalazi se stvarna osoba.
+        Iza svake donacije nalazi se neko ko je odlučio da pomogne
+        Kupovinom ili ponudom usluge, proizvoda ili direktnom donacijom postajete dio lanca podrške koji mijenja živote.
+
+
+</p>
+      <div class="about-mission-box">
+        <i class="ph-fill ph-heart" style="font-size:1.5rem;color:#2d6b55;"></i>
+        <div>
+          <div class="amb-title">Naša misija</div>
+          <div class="amb-text">Izgradnja platforme povjerenja u kojoj svaki čovjek može dati i primiti pomoć dostojanstveno i transparentno.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-values">
+      <div class="value-item" *ngFor="let v of aboutValues">
+        <div class="value-icon" [style.background]="v.bg">
+          <i class="ph-fill" [class]="v.icon" style="font-size:1.2rem;color:#fff;"></i>
+        </div>
+        <div>
+          <div class="value-title">{{ v.title }}</div>
+          <div class="value-desc">{{ v.desc }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="team-section">
+    <h3 class="team-title">Tim iza Dobrobita</h3>
+    <div class="team-grid">
+      <div class="team-card" *ngFor="let m of teamMembers">
+        <div class="team-avatar" [style.background]="m.bg">
+          <span>{{ m.initials }}</span>
+        </div>
+        <div class="team-name">{{ m.name }}</div>
+        <div class="team-role">{{ m.role }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-footer [logoWhitePath]="logoWhitePath"></app-footer>
+
+<!-- Volunteer profile modal -->
+<div class="modal-backdrop" *ngIf="volunteerProfileOpen" (click)="closeVolunteerProfile()">
+  <div class="modal-card" style="max-width:580px;max-height:85vh;overflow-y:auto;" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeVolunteerProfile()"><i class="ph ph-x"></i></button>
+
+    <div style="display:flex;gap:16px;align-items:center;margin-bottom:20px;">
+      <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--mint-to),var(--mint-from));display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:#fff;flex-shrink:0;">
+        <img *ngIf="selectedVolunteer?.photoUrl" [src]="selectedVolunteer.photoUrl" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
+        <span *ngIf="!selectedVolunteer?.photoUrl">{{ selectedVolunteer?.initials }}</span>
+      </div>
+      <div>
+        <div style="font-size:1.2rem;font-weight:700;color:var(--text-dark);">{{ selectedVolunteer?.name }}</div>
+        <div style="font-size:0.88rem;color:var(--text-light);">{{ selectedVolunteer?.title }}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+          <span *ngFor="let sk of selectedVolunteer?.skills" style="background:rgba(58,131,103,0.1);color:var(--moss);border-radius:20px;padding:2px 10px;font-size:0.78rem;">{{ sk }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="selectedVolunteer?.opis" style="background:var(--surface);border-radius:10px;padding:14px;margin-bottom:20px;font-size:0.9rem;color:var(--text-light);line-height:1.6;">
+      {{ selectedVolunteer.opis }}
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-size:1rem;font-weight:600;color:var(--text-dark);">Recenzije</div>
+      <div *ngIf="volunteerReviews.length > 0" style="display:flex;align-items:center;gap:6px;font-size:0.88rem;color:var(--moss);">
+        <i class="ph-fill ph-star" style="color:#ffd700;"></i>
+        <strong>{{ volunteerAvgRating }}</strong>
+        <span style="color:var(--text-light);">({{ volunteerReviews.length }} recenzija)</span>
+      </div>
+    </div>
+
+    <div *ngIf="volunteerReviewsLoading" style="text-align:center;padding:24px;color:var(--text-light);">
+      <i class="ph ph-circle-notch" style="font-size:1.5rem;"></i> Učitavanje recenzija...
+    </div>
+
+    <div *ngIf="!volunteerReviewsLoading && volunteerReviews.length === 0" style="text-align:center;padding:24px;color:var(--text-light);font-size:0.9rem;">
+      Još uvijek nema recenzija za ovog volontera.
+    </div>
+
+    <div *ngFor="let r of volunteerReviews" style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+        <div>
+          <div style="font-weight:600;font-size:0.9rem;color:var(--text-dark);">{{ r.author }}</div>
+          <div style="font-size:0.78rem;color:var(--text-light);">{{ r.serviceName }} · {{ r.date }}</div>
+        </div>
+        <div style="color:#ffd700;font-size:0.95rem;letter-spacing:1px;">{{ r.starsDisplay }}</div>
+      </div>
+      <p style="font-size:0.88rem;color:var(--text-light);margin:0;line-height:1.5;">{{ r.comment }}</p>
+    </div>
+
+    <button class="btn-primary" style="width:100%;margin-top:16px;" routerLink="/usluge">Unajmi volontera →</button>
+  </div>
+</div>
+
+<!-- Donation modal -->
+<div class="modal-backdrop" *ngIf="donationModalOpen" (click)="closeDonation()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeDonation()"><i class="ph ph-x"></i></button>
+    <h2 style="font-size:1.4rem;margin-bottom:6px;">Donirajte</h2>
+    <p style="color:var(--text-light);font-size:0.88rem;margin-bottom:24px;">Pomoć za: <strong>{{ selectedCase?.name }}</strong></p>
+    <div class="donation-amounts">
+      <button *ngFor="let a of donationAmounts" [class.selected]="donationAmount===a" (click)="donationAmount=a" class="amount-btn">{{ a }}€</button>
+    </div>
+    <div class="form-group" style="margin-top:16px;">
+      <label class="form-label">Ili unesite iznos (€)</label>
+      <input type="number" class="form-input" [(ngModel)]="donationAmount" min="0.01" placeholder="Npr. 25"/>
+    </div>
+    <div class="form-group" style="margin-top:12px;">
+      <label class="form-label">Prikazati se kao</label>
+      <select class="form-select" [(ngModel)]="donorDisplay">
+        <option value="name">Ime i prezime</option>
+        <option value="anon">Anonimno</option>
+      </select>
+    </div>
+    <button class="btn-primary" style="width:100%;margin-top:24px;" (click)="confirmDonation()">
+      Potvrdi donaciju → {{ donationAmount }}€
+    </button>
+  </div>
+</div>

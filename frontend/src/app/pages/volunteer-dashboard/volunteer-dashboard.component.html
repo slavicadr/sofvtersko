@@ -1,0 +1,501 @@
+<!-- Volonter Dashboard -->
+<app-navbar [logoImagePath]="logoPath"></app-navbar>
+
+<div class="dashboard-page">
+  <!-- ── Sidebar ─────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img *ngIf="logoPath" [src]="logoPath" style="height:32px;border-radius:8px;"/>
+      <div *ngIf="!logoPath" style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#2d6b55,#7ab648);display:flex;align-items:center;justify-content:center;">
+        <i class="ph-fill ph-heart" style="color:#fff;font-size:1rem;"></i>
+      </div>
+      <div>
+        <div class="sidebar-logo-text">Dobrobit</div>
+        <div class="sidebar-logo-badge">Volonter Panel</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Glavni meni</div>
+      <a class="nav-item" [class.active]="activeSection === 'overview'" (click)="setSection('overview')">
+        <div class="nav-item-icon"><i class="ph-fill ph-squares-four"></i></div> Pregled
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'services'" (click)="setSection('services')">
+        <div class="nav-item-icon"><i class="ph-fill ph-toolbox"></i></div> Moje Ponude
+        <span class="nav-badge" *ngIf="pendingOffers > 0">{{ pendingOffers }}</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'prodaje'" (click)="setSection('prodaje')">
+        <div class="nav-item-icon"><i class="ph-fill ph-receipt"></i></div> Moje Prodaje
+        <span class="nav-badge" *ngIf="myProdaje.length > 0">{{ myProdaje.length }}</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'reviews'" (click)="setSection('reviews')">
+        <div class="nav-item-icon"><i class="ph-fill ph-star"></i></div> Recenzije
+      </a>
+
+      <div class="nav-section-label" style="margin-top:12px;">Profil</div>
+      <a class="nav-item" [class.active]="activeSection === 'profile'" (click)="setSection('profile')">
+        <div class="nav-item-icon"><i class="ph-fill ph-user"></i></div> Moj Profil
+      </a>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">
+        <img *ngIf="volunteer.avatarUrl" [src]="volunteer.avatarUrl" [alt]="volunteer.firstName" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
+        <span *ngIf="!volunteer.avatarUrl">{{ volunteer.firstName[0] }}{{ volunteer.lastName[0] }}</span>
+      </div>
+      <div>
+        <div class="sidebar-user-name">{{ volunteer.firstName }} {{ volunteer.lastName }}</div>
+        <div class="sidebar-user-role">{{ getStatusLabel(volunteer.status) }}</div>
+      </div>
+      <a class="sidebar-user-logout" routerLink="/login" title="Odjava">
+        <i class="ph ph-sign-out"></i>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main ───────────────────────────────────────────────── -->
+  <main class="main-content">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">{{ getSectionTitle() }}</div>
+        <div class="topbar-subtitle">{{ getSectionSubtitle() }}</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-primary" *ngIf="activeSection === 'services'" (click)="openAddService()">
+          <i class="ph-fill ph-plus-circle"></i> Dodaj Ponudu
+        </button>
+        <div class="notif-btn" (click)="showNotifications()">
+          <i class="ph-fill ph-bell"></i>
+          <span class="notif-dot" *ngIf="hasNotifications"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── OVERVIEW ──────────────────────────────────────────── -->
+    <ng-container *ngIf="activeSection === 'overview'">
+      <div class="status-banner" [class]="'status-' + volunteer.status" *ngIf="volunteer.status !== 'VERIFIED'">
+        <i class="ph-fill ph-warning-circle"></i> {{ getStatusMessage() }}
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon" style="background:linear-gradient(135deg,var(--mint-to),var(--mint-from));">
+              <i class="ph-fill ph-toolbox" style="font-size:1.3rem;color:#fff;"></i>
+            </div>
+            <span class="badge badge-active">Aktivno</span>
+          </div>
+          <div class="kpi-num">{{ stats.activeOffers }}</div>
+          <div class="kpi-label">Aktivnih ponuda</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon" style="background:linear-gradient(135deg,var(--lime-to),var(--lime-from));">
+              <i class="ph-fill ph-check-circle" style="font-size:1.3rem;color:#fff;"></i>
+            </div>
+            <span class="badge badge-success">Završeno</span>
+          </div>
+          <div class="kpi-num">{{ stats.completedServices }}</div>
+          <div class="kpi-label">Realizovanih usluga</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon" style="background:linear-gradient(135deg,var(--peach-to),var(--peach-from));">
+              <i class="ph-fill ph-star" style="font-size:1.3rem;color:#fff;"></i>
+            </div>
+          </div>
+          <div class="kpi-num">{{ avgRating }}</div>
+          <div class="kpi-label">Prosječna ocjena</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon" style="background:linear-gradient(135deg,var(--mint-from),var(--teal));">
+              <i class="ph-fill ph-hand-heart" style="font-size:1.3rem;color:#fff;"></i>
+            </div>
+          </div>
+          <div class="kpi-num">{{ stats.totalRaised }}€</div>
+          <div class="kpi-label">Prikupljeno za korisnike</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <!-- Profil preview -->
+          <div class="section-card">
+            <div class="section-card-header">
+              <i class="ph-fill ph-user-circle"></i> Pregled Profila
+            </div>
+            <div class="profile-preview">
+              <div class="profile-avatar-wrap">
+                <div class="img-placeholder" style="width:80px;height:80px;border-radius:50%;font-size:2rem;">
+                  <img *ngIf="volunteer.avatarUrl" [src]="volunteer.avatarUrl" [alt]="volunteer.firstName" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
+                  <span *ngIf="!volunteer.avatarUrl">{{ volunteer.firstName[0] }}</span>
+                  <div class="upload-overlay" (click)="uploadAvatar()">
+                    <i class="ph-fill ph-camera"></i>
+                  </div>
+                </div>
+                <span class="verified-badge" *ngIf="volunteer.status === 'VERIFIED'">
+                  <i class="ph-fill ph-check-circle"></i>
+                </span>
+              </div>
+              <div>
+                <div class="profile-name">{{ volunteer.firstName }} {{ volunteer.lastName }}</div>
+                <div class="profile-tagline">{{ volunteer.bio }}</div>
+                <div class="profile-meta">
+                  <span><i class="ph ph-envelope-simple"></i> {{ volunteer.email }}</span>
+                  <span><i class="ph ph-phone"></i> {{ volunteer.phone }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aktivne ponude -->
+          <div class="section-card">
+            <div class="section-card-header">
+              <i class="ph-fill ph-toolbox"></i> Aktivne Ponude
+            </div>
+            <div class="offers-list">
+              <div class="offer-item" *ngFor="let o of activeOffers">
+                <div class="offer-info">
+                  <div class="offer-name">{{ o.name }}</div>
+                  <div class="offer-category">{{ o.category }}</div>
+                </div>
+                <div class="offer-price">{{ o.price }}€</div>
+                <span class="badge" [class]="'badge-' + o.status.toLowerCase()">{{ getOfferStatusLabel(o.status) }}</span>
+              </div>
+              <div class="empty-state" *ngIf="activeOffers.length === 0">
+                <p>Nemate aktivnih ponuda.</p>
+                <button class="btn-primary" (click)="openAddService()">+ Dodaj prvu ponudu</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nedavne recenzije -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <i class="ph-fill ph-star"></i> Nedavne Recenzije
+          </div>
+          <div class="reviews-list">
+            <div class="review-item" *ngFor="let r of recentReviews">
+              <div class="review-header">
+                <div class="review-avatar-sm">{{ r.buyerInitials }}</div>
+                <div>
+                  <div class="review-buyer">{{ r.buyerName }}</div>
+                  <div class="stars-row">
+                    <i class="ph-fill ph-star" *ngFor="let s of r.starsArray" style="color:#f39c12;font-size:0.8rem;"></i>
+                    <i class="ph ph-star" *ngFor="let s of r.emptyStars" style="color:#ddd;font-size:0.8rem;"></i>
+                  </div>
+                </div>
+                <div class="review-date">{{ r.date }}</div>
+              </div>
+              <p class="review-body">{{ r.comment }}</p>
+              <div class="review-offer">
+                <i class="ph ph-toolbox" style="font-size:0.75rem;"></i> {{ r.offerName }}
+              </div>
+              <div class="review-reply" *ngIf="r.reply">
+                <i class="ph-fill ph-chat-circle"></i> <span class="reply-label">Vaš odgovor:</span> {{ r.reply }}
+              </div>
+              <button class="btn-outline reply-btn" *ngIf="!r.reply && !r.replyOpen" (click)="r.replyOpen = true">
+                <i class="ph ph-chat-circle-text"></i> Odgovori
+              </button>
+              <div class="reply-form" *ngIf="r.replyOpen">
+                <textarea class="form-textarea" placeholder="Vaš odgovor..." [(ngModel)]="r.replyDraft" style="min-height:70px;"></textarea>
+                <div style="display:flex;gap:8px;margin-top:8px;">
+                  <button class="btn-primary" (click)="submitReply(r)">Pošalji</button>
+                  <button class="btn-outline" (click)="r.replyOpen = false">Otkaži</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── SERVICES ────────────────────────────────────────── -->
+    <ng-container *ngIf="activeSection === 'services'">
+      <div class="section-card">
+        <div class="section-card-header">
+          <i class="ph-fill ph-toolbox"></i> Aktivne Ponude
+        </div>
+        <div class="offers-table">
+          <div class="offers-table-row header">
+            <span>Naziv</span><span>Kategorija</span><span>Cijena</span><span>Status</span><span>Akcije</span>
+          </div>
+          <div class="offers-table-row" *ngFor="let o of allOffers">
+            <span class="offer-name-cell">
+              <div class="offer-thumb img-placeholder" style="width:40px;height:40px;border-radius:8px;">
+                <img *ngIf="o.imageUrl" [src]="o.imageUrl" [alt]="o.name" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"/>
+                <i *ngIf="!o.imageUrl" class="ph-fill ph-image" style="font-size:1.2rem;color:#7a8a8e;"></i>
+                <div class="upload-overlay" (click)="uploadOfferImage(o)">
+                  <i class="ph-fill ph-camera"></i>
+                </div>
+              </div>
+              {{ o.name }}
+            </span>
+            <span>{{ o.category }}</span>
+            <span>{{ o.price }}€</span>
+            <span><span class="badge" [class]="'badge-' + o.status.toLowerCase()">{{ getOfferStatusLabel(o.status) }}</span></span>
+            <span class="offer-actions">
+              <button class="btn-outline" style="padding:6px 14px;font-size:0.8rem;" (click)="editOffer(o)">
+                <i class="ph ph-pencil-simple"></i> Uredi
+              </button>
+              <button class="btn-danger" style="padding:6px 14px;font-size:0.8rem;" (click)="deleteOffer(o)">
+                <i class="ph ph-trash"></i> Obriši
+              </button>
+            </span>
+          </div>
+          <div class="empty-state" *ngIf="allOffers.length === 0">
+            <i class="ph-fill ph-toolbox" style="font-size:2.5rem;color:#d0d9e0;"></i>
+            <p>Nemate ponuda. Dodajte prvu uslugu ili proizvod.</p>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── PRODAJE ────────────────────────────────────────────── -->
+    <ng-container *ngIf="activeSection === 'prodaje'">
+      <div class="section-card">
+        <div class="section-card-header">Kupovine mojih usluga</div>
+
+        <div *ngIf="myProdaje.length === 0" class="empty-state-inline">
+          Nema kupovina vaših usluga.
+        </div>
+
+        <div class="prodaje-list" *ngIf="myProdaje.length > 0">
+          <div class="prodaja-item" *ngFor="let p of myProdaje">
+            <div class="prodaja-info">
+              <div class="prodaja-name">{{ p.serviceName }}</div>
+              <div class="prodaja-meta">
+                <span><i class="bi bi-person-fill"></i> Kupac: {{ p.buyerName }}</span>
+                <span><i class="bi bi-heart-fill" style="color:#2d6b55;"></i> {{ p.beneficiaryName }}</span>
+                <span><i class="bi bi-calendar3"></i> {{ p.date }}</span>
+                <span *ngIf="p.datumRealizacije" style="color:#16a34a;"><i class="bi bi-check-circle-fill"></i> Završeno: {{ p.datumRealizacije }}</span>
+              </div>
+            </div>
+            <div class="prodaja-price">{{ p.amount }}€</div>
+            <ng-container *ngIf="p.statusIsporuke === 'realizovano'">
+              <span class="badge badge-success">✓ Realizovano</span>
+              <button class="btn-certificate" (click)="printCertificate(p)" title="Otvori certifikat za štampu ili čuvanje kao PDF">
+                <i class="ph-fill ph-certificate"></i> Certifikat
+              </button>
+            </ng-container>
+            <ng-container *ngIf="p.statusIsporuke !== 'realizovano'">
+              <span class="badge badge-pending">Na čekanju</span>
+              <button class="btn-mark-done" (click)="oznaciRealizovano(p)">Označi završenim</button>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── REVIEWS (odvojena sekcija) ────────────────────────── -->
+    <ng-container *ngIf="activeSection === 'reviews'">
+      <div class="section-card">
+        <div class="section-card-header">
+          <i class="ph-fill ph-star"></i> Sve Recenzije
+          <span class="header-badge">{{ recentReviews.length }} recenzija · prosj. {{ avgRating }} ⭐</span>
+        </div>
+
+        <!-- Nema recenzija -->
+        <div class="empty-state" *ngIf="recentReviews.length === 0">
+          <i class="ph-fill ph-star" style="font-size:2.5rem;color:#d0d9e0;"></i>
+          <p>Nema recenzija za vaše usluge.</p>
+        </div>
+
+        <!-- Lista recenzija -->
+        <div class="reviews-full-list">
+          <div class="review-full-item" *ngFor="let r of recentReviews">
+            <div class="review-full-header">
+              <div class="review-avatar-lg">{{ r.buyerInitials }}</div>
+              <div class="review-full-meta">
+                <div class="review-buyer-name">{{ r.buyerName }}</div>
+                <div class="stars-row">
+                  <i class="ph-fill ph-star" *ngFor="let s of r.starsArray" style="color:#f39c12;"></i>
+                  <i class="ph ph-star" *ngFor="let s of r.emptyStars" style="color:#ddd;"></i>
+                  <span class="rating-num-sm">{{ r.rating }}/5</span>
+                </div>
+                <div class="review-full-offer">
+                  <i class="ph ph-toolbox"></i> {{ r.offerName }} · {{ r.date }}
+                </div>
+              </div>
+            </div>
+            <p class="review-full-body">{{ r.comment }}</p>
+            <div class="review-reply filled" *ngIf="r.reply">
+              <i class="ph-fill ph-chat-circle"></i>
+              <div>
+                <div class="reply-label">Vaš odgovor</div>
+                <div>{{ r.reply }}</div>
+              </div>
+            </div>
+            <button class="btn-outline reply-btn" *ngIf="!r.reply && !r.replyOpen" (click)="r.replyOpen = true">
+              <i class="ph ph-chat-circle-text"></i> Odgovori na recenziju
+            </button>
+            <div class="reply-form" *ngIf="r.replyOpen">
+              <textarea class="form-textarea" placeholder="Napišite odgovor kupcu..." [(ngModel)]="r.replyDraft"></textarea>
+              <div style="display:flex;gap:8px;margin-top:8px;">
+                <button class="btn-primary" (click)="submitReply(r)">
+                  <i class="ph-fill ph-paper-plane-tilt"></i> Pošalji odgovor
+                </button>
+                <button class="btn-outline" (click)="r.replyOpen = false">Otkaži</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── PROFILE ────────────────────────────────────────── -->
+    <ng-container *ngIf="activeSection === 'profile'">
+      <div class="section-card">
+        <div class="section-card-header">
+          <i class="ph-fill ph-user-circle"></i> Moj Profil
+        </div>
+        <div class="profile-edit-form">
+          <div class="avatar-upload-area">
+            <div class="img-placeholder" style="width:120px;height:120px;border-radius:50%;font-size:3rem;margin:0 auto 16px;">
+              <img *ngIf="volunteer.avatarUrl" [src]="volunteer.avatarUrl" [alt]="volunteer.firstName" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
+              <span *ngIf="!volunteer.avatarUrl">{{ volunteer.firstName[0] }}</span>
+              <div class="upload-overlay" (click)="uploadAvatar()">
+                <i class="ph-fill ph-camera" style="font-size:1.5rem;"></i>
+                <span>Promijeni sliku</span>
+              </div>
+            </div>
+            <p style="text-align:center;font-size:0.78rem;color:var(--text-light);">
+              Postavi u: <code>assets/images/avatars/</code>
+            </p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Ime</label>
+              <input type="text" class="form-input" [(ngModel)]="editProfile.firstName"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prezime</label>
+              <input type="text" class="form-input" [(ngModel)]="editProfile.lastName"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-mail</label>
+            <input type="email" class="form-input" [(ngModel)]="editProfile.email"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telefon</label>
+            <input type="tel" class="form-input" [(ngModel)]="editProfile.phone"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bio / Opis</label>
+            <textarea class="form-textarea" [(ngModel)]="editProfile.bio"></textarea>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:8px;">
+            <button class="btn-primary" (click)="saveProfile()">
+              <i class="ph-fill ph-floppy-disk"></i> Sačuvaj promjene
+            </button>
+            <button class="btn-danger" (click)="confirmDeleteProfile()">
+              <i class="ph ph-trash"></i> Obriši profil
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+  </main>
+</div>
+
+<!-- ── Add/Edit Service Modal ──────────────────────────────── -->
+<div class="modal-backdrop" *ngIf="serviceModalOpen" (click)="closeServiceModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeServiceModal()">
+      <i class="ph ph-x"></i>
+    </button>
+    <h2 style="font-size:1.4rem;margin-bottom:20px;">
+      <i class="ph-fill" [class]="editingOffer ? 'ph-pencil-simple' : 'ph-plus-circle'" style="color:#2d6b55;"></i>
+      {{ editingOffer ? 'Uredi Ponudu' : 'Dodaj Novu Ponudu' }}
+    </h2>
+
+    <!-- Slika ponude -->
+    <div class="form-group" style="margin-bottom:20px;">
+      <label class="form-label">Slika ponude</label>
+      <div class="img-placeholder" style="height:160px;border-radius:var(--radius-md);">
+        <img *ngIf="newOffer.imageUrl" [src]="newOffer.imageUrl" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);"/>
+        <i *ngIf="!newOffer.imageUrl" class="ph-fill ph-image" style="font-size:2.5rem;color:#b0bec5;"></i>
+        <div class="upload-overlay" (click)="uploadNewOfferImage()">
+          <i class="ph-fill ph-camera" style="font-size:1.5rem;"></i>
+          <span>Postavi sliku</span>
+        </div>
+      </div>
+      <p style="font-size:0.75rem;color:var(--text-light);margin-top:4px;">
+        Postavi u: <code>assets/images/offers/naziv.jpg</code>
+      </p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Naziv *</label>
+      <input type="text" class="form-input" [(ngModel)]="newOffer.name" placeholder="Npr. Online lekcije matematike"/>
+    </div>
+
+    <!-- Kategorija sa opcijom "Nova kategorija" -->
+    <div class="form-group" style="margin-top:14px;">
+      <label class="form-label">Kategorija *</label>
+      <select class="form-select" [(ngModel)]="newOffer.category" (ngModelChange)="onCategoryChange()">
+        <option value="">Odaberi kategoriju</option>
+        <option *ngFor="let c of categories" [value]="c">
+          {{ c === 'NOVA_KATEGORIJA' ? '+ Predloži novu kategoriju' : c }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Polje za novu kategoriju — pojavljuje se samo ako je odabrano "NOVA_KATEGORIJA" -->
+    <div class="form-group new-category-field" *ngIf="showNewCategory" style="margin-top:10px;">
+      <label class="form-label">
+        <i class="ph-fill ph-tag" style="color:#f39c12;"></i>
+        Naziv nove kategorije *
+      </label>
+      <input type="text" class="form-input" [(ngModel)]="newCategoryName" placeholder="Npr. Muzičke lekcije, Prevođenje..."/>
+      <div class="new-category-info">
+        <i class="ph ph-clock" style="color:#f39c12;font-size:0.85rem;"></i>
+        Nova kategorija bit će poslana adminu na odobrenje.
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top:14px;">
+      <label class="form-label">Cijena (€) *</label>
+      <input type="number" class="form-input" [(ngModel)]="newOffer.price" placeholder="0.00" min="0"/>
+    </div>
+    <div class="form-group" style="margin-top:14px;">
+      <label class="form-label">Opis</label>
+      <textarea class="form-textarea" [(ngModel)]="newOffer.description" placeholder="Detaljan opis usluge ili proizvoda..."></textarea>
+    </div>
+    <div class="form-group" style="margin-top:14px;">
+      <label class="form-label">
+        Limit zahtjeva <span style="font-weight:400;color:#94a3b8;">(opcionalno)</span>
+      </label>
+      <input type="number" class="form-input" [(ngModel)]="newOffer.limit" placeholder="Npr. 10 — kada se popuni, usluga postaje nedostupna" min="1"/>
+      <span style="font-size:0.74rem;color:#64748b;margin-top:4px;display:block;">
+        <i class="ph ph-info"></i> Ostavite prazno za neograničen broj zahtjeva.
+      </span>
+    </div>
+    <div class="form-group" style="margin-top:14px;">
+      <label class="form-label">Korisnik pomoći (primalac sredstava) *</label>
+      <select class="form-select" [(ngModel)]="newOffer.beneficiaryId">
+        <option value="">Odaberi korisnika pomoći</option>
+        <option *ngFor="let b of beneficiaries" [value]="b.id">{{ b.name }}</option>
+      </select>
+      <span style="font-size:0.75rem;color:var(--text-light);">
+        <i class="ph ph-info"></i> Sredstva od ove ponude idu direktno odabranom korisniku.
+      </span>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:24px;">
+      <button class="btn-primary" style="flex:1;" (click)="saveOffer()">
+        <i class="ph-fill" [class]="editingOffer ? 'ph-floppy-disk' : 'ph-paper-plane-tilt'"></i>
+        {{ editingOffer ? 'Sačuvaj' : 'Pošalji na odobrenje' }}
+      </button>
+      <button class="btn-outline" (click)="closeServiceModal()">Otkaži</button>
+    </div>
+    <p *ngIf="!editingOffer" style="font-size:0.76rem;color:var(--text-light);text-align:center;margin-top:12px;">
+      <i class="ph ph-clock"></i> Ponuda će biti na čekanju dok je administrator ne odobri.
+    </p>
+  </div>
+</div>

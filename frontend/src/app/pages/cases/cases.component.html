@@ -1,0 +1,130 @@
+<!-- Humanitarian Cases Page -->
+<app-navbar [logoImagePath]="logoPath"></app-navbar>
+
+<div class="cases-page">
+  <!-- Hero -->
+  <section class="cases-hero">
+    <div class="cases-hero-inner">
+      <div class="hero-tag">Humanitarni Slučajevi</div>
+      <h1>Aktivni Humanitarni Slučajevi</h1>
+      <p>Svaka donacija ide direktno osobi kojoj je pomoć najpotrebnija,bez ikakvog posredovanja</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hs-value">{{ totalRaised | number }}</div><div class="hs-label">€ Prikupljeno</div></div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat"><div class="hs-value">{{ cases.length }}</div><div class="hs-label">Aktivnih Slučajeva</div></div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat"><div class="hs-value">{{ totalDonors }}</div><div class="hs-label">Donatora</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cases-container">
+    <div class="cases-grid">
+      <div class="case-card" *ngFor="let c of cases">
+        <!-- Photo -->
+        <div class="case-photo-wrap" (click)="uploadCasePhoto(c)">
+          <img *ngIf="c.imageUrl" [src]="c.imageUrl" [alt]="c.name" class="case-photo">
+          <div *ngIf="!c.imageUrl" class="case-photo-placeholder">{{ c.initials }}</div>
+          <div class="case-photo-overlay"><i class="ph-fill ph-camera"></i> Promijeni sliku</div>
+          <div class="case-progress-badge">{{ progressPercent(c) }}%</div>
+        </div>
+
+        <div class="case-body">
+          <div class="case-header">
+            <h3 class="case-name">{{ c.name }}</h3>
+            <span class="case-category">{{ c.category }}</span>
+          </div>
+          <p class="case-description">{{ c.description }}</p>
+
+          <div class="case-progress-section">
+            <div class="case-amounts">
+              <span class="raised-amount">€{{ c.raised | number }}</span>
+              <span class="goal-amount"> / €{{ c.goal | number }}</span>
+            </div>
+            <div class="case-progress-bar">
+              <div class="case-progress-fill" [style.width.%]="progressPercent(c)"></div>
+            </div>
+            <div class="case-progress-label">{{ progressPercent(c) }}% od cilja</div>
+          </div>
+
+          <div class="case-volunteers" *ngIf="c.volunteers?.length">
+            <span class="volunteers-label">Volonteri:</span>
+            <div class="volunteer-chips">
+              <span class="volunteer-chip" *ngFor="let v of c.volunteers">{{ v }}</span>
+            </div>
+          </div>
+
+          <div class="case-actions">
+            <button class="btn-donate" (click)="donateToCase(c)"><i class="ph-fill ph-hand-heart"></i> Doniraj</button>
+            <button class="btn-details" (click)="openCaseDetails(c)">Detalji →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showDonationModal" (click)="closeDonationModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <button class="modal-close-btn" (click)="closeDonationModal()"><i class="ph ph-x"></i></button>
+      <div class="modal-icon"><i class="ph-fill ph-hand-heart" style="font-size:2.5rem;color:#2d6b55;"></i></div>
+      <h2 class="modal-title">Donirajte za {{ selectedCase?.name }}</h2>
+      <p class="modal-subtitle">Vaša donacija ide direktno osobi kojoj je pomoć najpotrebnija.</p>
+
+      <div class="quick-amounts">
+        <button class="quick-btn" *ngFor="let amt of [5, 10, 20, 50, 100]"
+          [class.selected]="donationAmount === amt"
+          (click)="donationAmount = amt">€{{ amt }}</button>
+      </div>
+      <div class="custom-amount-wrap">
+        <span class="currency-prefix">€</span>
+        <input class="custom-amount-input" type="number" [(ngModel)]="donationAmount" min="0.01" placeholder="Unesite iznos...">
+      </div>
+
+      <div class="donor-display-row">
+        <input type="checkbox" id="anonCheck" [(ngModel)]="donorAnonymous">
+        <label for="anonCheck">Doniraj anonimno</label>
+      </div>
+
+      <div class="modal-total">Ukupno: <strong>€{{ donationAmount || 0 }}</strong></div>
+      <button class="btn-confirm-donation" (click)="confirmDonation()" [disabled]="!donationAmount || donationAmount < 1">
+        Nastavi na Plaćanje →
+      </button>
+    </div>
+  </div>
+
+  <!-- Case Details Modal -->
+  <div class="modal-overlay" *ngIf="selectedCaseDetails" (click)="selectedCaseDetails = null">
+    <div class="modal-box details-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close-btn" (click)="selectedCaseDetails = null"><i class="ph ph-x"></i></button>
+      <div class="details-photo-wrap">
+        <img *ngIf="selectedCaseDetails.imageUrl" [src]="selectedCaseDetails.imageUrl" class="details-photo">
+        <div *ngIf="!selectedCaseDetails.imageUrl" class="details-photo-placeholder">{{ selectedCaseDetails.initials }}</div>
+      </div>
+      <h2 class="modal-title">{{ selectedCaseDetails.name }}</h2>
+      <p class="details-desc">{{ selectedCaseDetails.fullDescription || selectedCaseDetails.description }}</p>
+
+      <div class="details-progress-section">
+        <div class="case-amounts">
+          <span class="raised-amount">€{{ selectedCaseDetails.raised | number }}</span>
+          <span class="goal-amount"> / €{{ selectedCaseDetails.goal | number }}</span>
+        </div>
+        <div class="case-progress-bar">
+          <div class="case-progress-fill" [style.width.%]="progressPercent(selectedCaseDetails)"></div>
+        </div>
+      </div>
+
+      <div class="details-history" *ngIf="selectedCaseDetails.history?.length">
+        <h4>Istorija Donacija</h4>
+        <div class="history-item" *ngFor="let h of selectedCaseDetails.history">
+          <span class="history-donor">{{ h.anonymous ? 'Anonimno' : h.donor }}</span>
+          <span class="history-amount">€{{ h.amount }}</span>
+          <span class="history-date">{{ h.date }}</span>
+        </div>
+      </div>
+
+      <button class="btn-donate" style="width:100%;margin-top:16px;" (click)="selectedCaseDetails = null; donateToCase(selectedCaseDetails)"><i class="ph-fill ph-hand-heart"></i> Doniraj</button>
+    </div>
+  </div>
+</div>
+
+<app-footer [logoWhitePath]="logoWhitePath"></app-footer>

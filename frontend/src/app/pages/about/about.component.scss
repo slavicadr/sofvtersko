@@ -1,0 +1,155 @@
+/* ════════════════════════════════════════════════════════════
+   About stranica — identični stilovi kao about sekcija na home
+   ════════════════════════════════════════════════════════════ */
+
+.about-page {
+  min-height: 100vh;
+  font-family: 'DM Sans', sans-serif;
+  background: #fff;
+}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.about-hero {
+  background: linear-gradient(135deg, #1a3a2e 0%, #2d6b55 60%, #7ab648 100%);
+  padding: 80px 5% 64px;
+  text-align: center;
+}
+.about-hero-inner { max-width: 640px; margin: 0 auto; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(122,182,72,0.2); color: #b8e080;
+  border: 1px solid rgba(122,182,72,0.3);
+  padding: 6px 16px; border-radius: 20px;
+  font-size: 0.85rem; font-weight: 600; margin-bottom: 18px;
+}
+.about-hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem; color: #fff; margin: 0 0 14px; line-height: 1.2;
+}
+.about-hero p {
+  color: rgba(255,255,255,0.75); font-size: 1rem; line-height: 1.6;
+}
+
+/* ── Wrapper — isti padding kao .section na home ─────────── */
+.about-page-content {
+  padding: 96px 5%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── Section tag + title — kopirano iz home ─────────────── */
+.section-tag {
+  display: inline-block;
+  background: rgba(45,107,85,0.08);
+  color: #2d6b55;
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 0.8rem; font-weight: 600;
+  margin-bottom: 8px;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; color: #1a3a2e;
+  margin: 0 0 48px; line-height: 1.2;
+}
+
+/* ── About grid — 1.4fr 0.8fr + gap 120px, identično home ── */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr;
+  gap: 120px;
+  margin-bottom: 80px;
+
+  @media(max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+}
+
+/* Story */
+.about-story {
+  p {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--text-mid, #4a5568);
+    margin-bottom: 16px;
+  }
+}
+.about-lead {
+  font-size: 1.1rem !important;
+  font-weight: 500;
+  color: #1a3a2e !important;
+}
+
+.about-mission-box {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: linear-gradient(135deg, rgba(168,221,208,0.2), rgba(184,224,128,0.15));
+  border: 1px solid rgba(45,107,85,0.15);
+  border-radius: 14px; padding: 18px; margin-top: 20px;
+}
+.amb-title { font-weight: 700; font-size: 0.9rem; color: #2d6b55; margin-bottom: 4px; }
+.amb-text  { font-size: 0.85rem; color: #4a5568; line-height: 1.55; }
+
+/* Values */
+.about-values { display: flex; flex-direction: column; gap: 16px; }
+.value-item   { display: flex; align-items: flex-start; gap: 14px; }
+.value-icon {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.value-title { font-weight: 700; font-size: 0.92rem; color: #1a3a2e; margin-bottom: 3px; }
+.value-desc  { font-size: 0.8rem; color: #7a8a8e; line-height: 1.45; }
+
+/* ── Team — identično home ───────────────────────────────── */
+.team-section {
+  border-top: 1px solid #f0f4f8;
+  padding-top: 64px;
+}
+
+.team-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem; color: #1a3a2e;
+  text-align: center;
+  padding: 0 0 32px;
+  margin: 0;
+}
+
+.team-grid {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.team-card {
+  width: 220px;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  background: #f8fafc;
+  border: 1px solid #e5eaf0;
+  border-radius: 16px;
+  padding: 32px 16px;
+  transition: box-shadow 0.2s, transform 0.2s;
+
+  &:hover {
+    box-shadow: 0 8px 32px rgba(45,107,85,0.12);
+    transform: translateY(-3px);
+  }
+}
+
+.team-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; font-weight: 700; color: #2d6b55;
+}
+
+.team-name {
+  width: 100%; text-align: center;
+  font-weight: 700; font-size: 0.92rem; color: #1a3a2e;
+  margin-bottom: 6px;
+}
+
+.team-role {
+  width: 100%; text-align: center;
+  font-size: 0.78rem; color: #7a8a8e;
+}

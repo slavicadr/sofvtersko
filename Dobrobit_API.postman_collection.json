@@ -1,0 +1,842 @@
+{
+  "info": {
+    "name": "Dobrobit API",
+    "description": "Kompletna kolekcija za testiranje Dobrobit backend API-ja.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",    "value": "http://localhost:8080" },
+    { "key": "kupacId",    "value": "" },
+    { "key": "volonterId", "value": "" },
+    { "key": "adminId",    "value": "" },
+    { "key": "pomocId",    "value": "" },
+    { "key": "donacijaId", "value": "" },
+    { "key": "kategorijaId", "value": "" },
+    { "key": "uslugaId",   "value": "" },
+    { "key": "kupovinaId", "value": "" },
+    { "key": "recenzijaId","value": "" },
+    { "key": "verifikacijaId","value": "" }
+  ],
+  "item": [
+
+    {
+      "name": "1. Korisnici",
+      "item": [
+        {
+          "name": "Registracija kupca",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/korisnici/registracija/kupac",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ime\": \"Ana\",\n  \"prezime\": \"Anić\",\n  \"email\": \"ana@test.com\",\n  \"lozinkaHash\": \"Lozinka123\",\n  \"tipKorisnika\": \"kupac\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "var json = pm.response.json();",
+            "pm.test('Has korisnikId', () => pm.expect(json).to.have.property('korisnikId'));",
+            "pm.test('No password in response', () => { pm.expect(json).to.not.have.property('lozinkaHash'); pm.expect(json).to.not.have.property('password'); });",
+            "pm.collectionVariables.set('kupacId', json.korisnikId);"
+          ]}}]
+        },
+        {
+          "name": "Registracija volontera",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/korisnici/registracija",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ime\": \"Marko\",\n  \"prezime\": \"Marković\",\n  \"email\": \"marko@test.com\",\n  \"lozinkaHash\": \"Lozinka123\",\n  \"tipKorisnika\": \"volonter\",\n  \"opis\": \"Iskusan volonter s 5 godina radnog iskustva.\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('volonterId', pm.response.json().korisnikId);"
+          ]}}]
+        },
+        {
+          "name": "Registracija admina",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/korisnici/registracija",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ime\": \"Admin\",\n  \"prezime\": \"Adminović\",\n  \"email\": \"admin@test.com\",\n  \"lozinkaHash\": \"Lozinka123\",\n  \"tipKorisnika\": \"administrator\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('adminId', pm.response.json().korisnikId);"
+          ]}}]
+        },
+        {
+          "name": "Registracija — duplikat email (400)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/korisnici/registracija/kupac",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ime\": \"Ana\",\n  \"prezime\": \"Anić\",\n  \"email\": \"ana@test.com\",\n  \"lozinkaHash\": \"Lozinka123\",\n  \"tipKorisnika\": \"kupac\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400 za duplikat', () => pm.response.to.have.status(400));"
+          ]}}]
+        },
+        {
+          "name": "Login (kupac)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/korisnici/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana@test.com\",\n  \"lozinka\": \"Lozinka123\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "var json = pm.response.json();",
+            "pm.test('Lozinka skrivena', () => { pm.expect(json).to.not.have.property('lozinkaHash'); pm.expect(json).to.not.have.property('password'); });"
+          ]}}]
+        },
+        {
+          "name": "Login — pogrešna lozinka (401)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/korisnici/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana@test.com\",\n  \"lozinka\": \"POGRESNA\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.response.to.have.status(401));"
+          ]}}]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/korisnici/logout",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"korisnikId\": {{kupacId}}\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Svi korisnici (admin)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/korisnici",
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "admin@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]}
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]}}]
+        },
+        {
+          "name": "Korisnik po ID (admin)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/korisnici/{{kupacId}}",
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "admin@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]}
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Promjena statusa (admin)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/korisnici/{{kupacId}}/status",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "admin@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"noviStatus\": \"suspendovan\",\n  \"razlog\": \"Kršenje pravila platforme\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        }
+      ]
+    },
+
+    {
+      "name": "2. Kategorije",
+      "item": [
+        {
+          "name": "Sve kategorije",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/kategorije"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]}}]
+        },
+        {
+          "name": "Dodaj kategoriju",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/kategorije",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "ana@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"naziv\": \"Nova Kategorija\",\n  \"opis\": \"Opis kategorije\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('kategorijaId', pm.response.json().kategorijaId);"
+          ]}}]
+        },
+        {
+          "name": "Pretraga kategorija",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/kategorije/pretraga?naziv=IT",
+              "query": [{ "key": "naziv", "value": "IT" }]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        }
+      ]
+    },
+
+    {
+      "name": "3. Korisnici Pomoći",
+      "item": [
+        {
+          "name": "Svi korisnici pomoći",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/korisnici-pomoci"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Kreiraj korisnik pomoći",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/korisnici-pomoci",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"korisnik\": { \"korisnikId\": {{kupacId}} },\n  \"naziv\": \"Porodica Anić\",\n  \"opisPotrebe\": \"Potrebna finansijska pomoć za liječenje\",\n  \"brojRacuna\": \"111-222-333-444\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('pomocId', pm.response.json().pomocId);"
+          ]}}]
+        },
+        {
+          "name": "Korisnik pomoći po ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/korisnici-pomoci/{{pomocId}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Pretraga korisnika pomoći",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/korisnici-pomoci/pretraga?naziv=Anić",
+              "query": [{ "key": "naziv", "value": "Anić" }]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Ažuriraj korisnik pomoći",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/korisnici-pomoci/{{pomocId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"naziv\": \"Porodica Anić — ažurirano\",\n  \"opisPotrebe\": \"Ažuriran opis potrebe\",\n  \"brojRacuna\": \"111-222-333-444\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        }
+      ]
+    },
+
+    {
+      "name": "4. Donacije",
+      "item": [
+        {
+          "name": "Sve donacije",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/donacije"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Nova donacija",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/donacije",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"donatorId\": {{kupacId}},\n  \"pomocId\": {{pomocId}},\n  \"iznos\": 150.00,\n  \"nacinPlacanja\": \"KARTICA\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has donacijaId', () => pm.expect(pm.response.json()).to.have.property('donacijaId'));",
+            "pm.collectionVariables.set('donacijaId', pm.response.json().donacijaId);"
+          ]}}]
+        },
+        {
+          "name": "Ažuriraj status donacije",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/donacije/{{donacijaId}}/status?noviStatus=placeno",
+              "query": [{ "key": "noviStatus", "value": "placeno" }]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        }
+      ]
+    },
+
+    {
+      "name": "5. Usluge i Proizvodi",
+      "item": [
+        {
+          "name": "Sve usluge",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usluge-proizvodi"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Kreiraj uslugu (volonter)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/usluge-proizvodi",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "marko@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"volonter\": { \"korisnikId\": {{volonterId}} },\n  \"kategorija\": { \"kategorijaId\": {{kategorijaId}} },\n  \"naziv\": \"Web Development\",\n  \"opis\": \"Izrada web stranica i aplikacija\",\n  \"tip\": \"usluga\",\n  \"cijena\": 75.00\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('uslugaId', pm.response.json().uslugaProizvodId);"
+          ]}}]
+        },
+        {
+          "name": "Pretraga usluga po nazivu",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/usluge-proizvodi/pretraga?naziv=Web",
+              "query": [{ "key": "naziv", "value": "Web" }]
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Filter usluga po volonteru",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/usluge-proizvodi/filter-volonter",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "ana@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"korisnikId\": {{volonterId}}\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]}}]
+        },
+        {
+          "name": "Filter usluga po kategoriji",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/usluge-proizvodi/filter-kategorija",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "ana@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kategorijaId\": {{kategorijaId}}\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]}}]
+        },
+        {
+          "name": "Promjena statusa usluge (admin)",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/api/usluge-proizvodi/{{uslugaId}}/status?noviStatus=aktivna",
+              "query": [{ "key": "noviStatus", "value": "aktivna" }]
+            },
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "admin@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]}
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        }
+      ]
+    },
+
+    {
+      "name": "6. Kupovine",
+      "item": [
+        {
+          "name": "Sve kupovine",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/kupovine"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Kupi uslugu (kupac)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/kupovine/kupi",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "ana@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kupacId\": {{kupacId}},\n  \"uslugaId\": {{uslugaId}},\n  \"pomocId\": {{pomocId}},\n  \"nacinPlacanja\": \"KARTICA\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('kupovinaId', pm.response.json().kupovinaId);"
+          ]}}]
+        },
+        {
+          "name": "Kupovine po kupcu",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/kupovine/kupac/{{kupacId}}",
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "ana@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]}
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        }
+      ]
+    },
+
+    {
+      "name": "7. Recenzije",
+      "item": [
+        {
+          "name": "Sve recenzije",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/recenzije"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Dodaj recenziju (kupac)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/recenzije/dodaj",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "ana@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kupovinaId\": {{kupovinaId}},\n  \"kupacId\": {{kupacId}},\n  \"brojZvjezdica\": 5,\n  \"komentar\": \"Odlična usluga, toplo preporučujem!\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('recenzijaId', pm.response.json().ocjenaId);"
+          ]}}]
+        },
+        {
+          "name": "Recenzije po uslugama",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/recenzije/usluga/{{uslugaId}}"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Prosječna ocjena volontera",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/recenzije/volonter/{{volonterId}}/prosjek"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has prosjecnaOcjena', () => pm.expect(pm.response.json()).to.have.property('prosjecnaOcjena'));"
+          ]}}]
+        }
+      ]
+    },
+
+    {
+      "name": "8. Volonter Info",
+      "item": [
+        {
+          "name": "Svi volonteri",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/volonter-info"
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Kreiraj volonter info",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/volonter-info",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "marko@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"volonterId\": {{volonterId}},\n  \"biografija\": \"Strastveni web developer sa 5 godina iskustva.\",\n  \"portfolioLink\": \"https://marko.dev\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Dashboard volontera",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/volonter-info/{{volonterId}}/dashboard",
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "marko@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]}
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Ažuriraj volonter info",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/volonter-info/{{volonterId}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "marko@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"biografija\": \"Ažurirana biografija volontera.\",\n  \"portfolioLink\": \"https://marko-novo.dev\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        }
+      ]
+    },
+
+    {
+      "name": "9. Profili",
+      "item": [
+        {
+          "name": "Svi profili",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/profili",
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "ana@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]}
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Kreiraj profil",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/profili",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "ana@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"korisnik\": { \"korisnikId\": {{kupacId}} },\n  \"opis\": \"Opis mog profila\",\n  \"grad\": \"Sarajevo\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Pretraga profila po korisniku",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/profili/pretraga-korisnik",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "ana@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"korisnikId\": {{kupacId}}\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        }
+      ]
+    },
+
+    {
+      "name": "10. Verifikacije",
+      "item": [
+        {
+          "name": "Sve verifikacije (admin)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/verifikacije",
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "admin@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]}
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Kreiraj verifikaciju (admin)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/verifikacije",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "admin@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"korisnik\": { \"korisnikId\": {{volonterId}} },\n  \"administrator\": { \"korisnikId\": {{adminId}} },\n  \"tipVerifikacije\": \"volonter\",\n  \"napomena\": \"Provjera dokumentacije volontera\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.collectionVariables.set('verifikacijaId', pm.response.json().verifikacijaId);"
+          ]}}]
+        },
+        {
+          "name": "Kreiraj verifikaciju kao kupac (403)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/verifikacije",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "ana@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipVerifikacije\": \"volonter\"\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('403 za ne-admina', () => pm.response.to.have.status(403));"
+          ]}}]
+        },
+        {
+          "name": "Filter verifikacija po adminu",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/verifikacije/filter-admin",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "admin@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]},
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"korisnikId\": {{adminId}}\n}"
+            }
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Obradi verifikaciju (admin)",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/verifikacije/{{verifikacijaId}}/obradi?status=odobreno&napomena=Sve u redu",
+              "query": [
+                { "key": "status", "value": "odobreno" },
+                { "key": "napomena", "value": "Sve u redu" }
+              ]
+            },
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "admin@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]}
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        }
+      ]
+    },
+
+    {
+      "name": "11. Log Aktivnosti",
+      "item": [
+        {
+          "name": "Svi logovi (admin)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/logovi",
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "admin@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]}
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        },
+        {
+          "name": "Statistike (admin)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/logovi/statistike",
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "admin@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]}
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Has LOGIN stat', () => pm.expect(pm.response.json()).to.have.property('LOGIN'));"
+          ]}}]
+        },
+        {
+          "name": "Logovi po tipu (admin)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/logovi/tip/LOGIN",
+            "auth": { "type": "basic", "basic": [
+              { "key": "username", "value": "admin@test.com" },
+              { "key": "password", "value": "Lozinka123" }
+            ]}
+          },
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}]
+        }
+      ]
+    }
+
+  ]
+}

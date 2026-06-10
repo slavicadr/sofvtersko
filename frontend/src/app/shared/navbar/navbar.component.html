@@ -1,0 +1,245 @@
+<nav class="navbar" [class.scrolled]="isScrolled">
+
+  <!-- Logo -->
+  <a routerLink="/" class="navbar-logo">
+    <img *ngIf="logoImagePath" [src]="logoImagePath" alt="Dobrobit" class="logo-img"/>
+    <div *ngIf="!logoImagePath" class="logo-fallback">
+      <i class="ph-fill ph-heart" style="color:#fff;font-size:1.1rem;"></i>
+    </div>
+    <span class="navbar-brand">Dobrobit</span>
+  </a>
+
+  <!-- Nav links -->
+  <ul class="navbar-links hide-mobile">
+    <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Početna</a></li>
+    <li><a routerLink="/slucajevi" routerLinkActive="active">Humanitarni Slučajevi</a></li>
+    <li><a routerLink="/usluge" routerLinkActive="active">Usluge &amp; Proizvodi</a></li>
+    <li><a routerLink="/donacije" routerLinkActive="active">Donacije</a></li>
+    <li><a routerLink="/o-nama" routerLinkActive="active">O nama</a></li>
+  </ul>
+
+  <div class="navbar-right">
+
+    <!-- Search -->
+    <div class="search-wrap hide-mobile">
+      <i class="ph ph-magnifying-glass search-ico"></i>
+      <input class="navbar-search" type="text" placeholder="Pretraži..." [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"/>
+    </div>
+
+    <!-- Quick access (role-specific) -->
+    <div class="quick-access hide-mobile">
+      <a *ngIf="currentUser?.role === 'volonter'" routerLink="/volonter/dashboard" class="qa-btn qa-vol" title="Volonter zona">
+        <i class="ph-fill ph-handshake"></i><span>Volonter</span>
+      </a>
+      <a *ngIf="currentUser?.role === 'administrator'" routerLink="/admin/dashboard" class="qa-btn qa-adm" title="Admin panel">
+        <i class="ph-fill ph-shield-check"></i><span>Admin</span>
+      </a>
+    </div>
+
+    <!-- A11y button -->
+    <!-- Not logged in -->
+    <ng-container *ngIf="!currentUser">
+      <button class="btn-nav hide-mobile" routerLink="/login">Prijava</button>
+      <button class="btn-primary-nav hide-mobile" routerLink="/registracija">Registracija</button>
+    </ng-container>
+
+    <!-- Logged in dropdown -->
+    <ng-container *ngIf="currentUser">
+      <div class="navbar-user" (click)="toggleUserMenu()">
+        <div class="navbar-avatar">
+          <img *ngIf="currentUser.avatarUrl" [src]="currentUser.avatarUrl"/>
+          <span *ngIf="!currentUser.avatarUrl">{{ currentUser.firstName[0] }}{{ currentUser.lastName[0] }}</span>
+        </div>
+        <span class="hide-mobile user-name-sm">{{ currentUser.firstName }}</span>
+        <i class="ph ph-caret-down" style="font-size:0.75rem;color:#7a8a8e;"></i>
+      </div>
+      <div class="navbar-dropdown" *ngIf="userMenuOpen">
+        <a [routerLink]="getDashboardRoute()" class="dd-item"><i class="ph-fill ph-squares-four"></i> Moj Dashboard</a>
+        <a routerLink="/profil" class="dd-item"><i class="ph ph-user"></i> Profil</a>
+        <div class="dd-divider"></div>
+        <button class="dd-item dd-logout" (click)="logout()"><i class="ph ph-sign-out"></i> Odjava</button>
+      </div>
+    </ng-container>
+
+    <!-- Hamburger -->
+    <button class="hamburger hide-desktop" (click)="toggleMobileMenu()">
+      <i class="ph" [class.ph-list]="!mobileMenuOpen" [class.ph-x]="mobileMenuOpen" style="font-size:1.4rem;color:#2d6b55;"></i>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="mobile-menu" [class.open]="mobileMenuOpen">
+  <a routerLink="/"          (click)="closeMobileMenu()"><i class="ph-fill ph-house"></i> Početna</a>
+  <a routerLink="/slucajevi" (click)="closeMobileMenu()"><i class="ph-fill ph-heart"></i> Humanitarni Slučajevi</a>
+  <a routerLink="/usluge"    (click)="closeMobileMenu()"><i class="ph-fill ph-shopping-bag"></i> Usluge &amp; Proizvodi</a>
+  <a routerLink="/donacije"  (click)="closeMobileMenu()"><i class="ph-fill ph-hand-heart"></i> Donacije</a>
+  <a routerLink="/o-nama"    (click)="closeMobileMenu()"><i class="ph-fill ph-info"></i> O nama</a>
+  <div class="mm-divider"></div>
+  <a *ngIf="currentUser?.role === 'volonter'" routerLink="/volonter/dashboard" (click)="closeMobileMenu()" class="mm-special vol"><i class="ph-fill ph-handshake"></i> Volonter Zona</a>
+  <a *ngIf="currentUser?.role === 'administrator'" routerLink="/admin/dashboard" (click)="closeMobileMenu()" class="mm-special adm"><i class="ph-fill ph-shield-check"></i> Admin Panel</a>
+  <div class="mm-actions">
+    <button class="btn-nav" routerLink="/login"        (click)="closeMobileMenu()">Prijava</button>
+    <button class="btn-primary-nav" routerLink="/registracija" (click)="closeMobileMenu()">Registracija</button>
+  </div>
+</div>
+
+<!-- ══ ACCESSIBILITY FAB (fixed round button) ════════════════ -->
+<button class="a11y-fab" (click)="toggleA11yPanel()" [class.active]="a11yPanelOpen"
+  title="Podešavanja pristupačnosti" aria-label="Podešavanja pristupačnosti">
+  <i class="ph-fill ph-person-arms-spread"></i>
+</button>
+
+<!-- ══ ACCESSIBILITY PANEL ═══════════════════════════════════ -->
+<div class="a11y-overlay" *ngIf="a11yPanelOpen" (click)="closeA11yPanel()"></div>
+
+<aside class="a11y-panel" [class.open]="a11yPanelOpen" role="dialog" aria-label="Podešavanja pristupačnosti">
+
+  <div class="a11y-header">
+    <div class="a11y-title-row">
+      <i class="ph-fill ph-person-arms-spread" style="font-size:1.2rem;color:#2d6b55;"></i>
+      <span>Pristupačnost</span>
+    </div>
+    <button class="a11y-close-btn" (click)="closeA11yPanel()" aria-label="Zatvori panel">
+      <i class="ph ph-x"></i>
+    </button>
+  </div>
+
+  <!-- ── Veličina teksta ───────────────────────────────────── -->
+  <div class="a11y-group">
+    <div class="a11y-group-label"><i class="ph ph-text-aa"></i> Veličina teksta</div>
+    <div class="a11y-font-sizes">
+      <button class="fsz-btn" [class.active]="a11y.fontSize === 'small'"  (click)="setFontSize('small')"  title="Malo">A<sup>-</sup></button>
+      <button class="fsz-btn" [class.active]="a11y.fontSize === 'normal'" (click)="setFontSize('normal')" title="Normalno">A</button>
+      <button class="fsz-btn" [class.active]="a11y.fontSize === 'large'"  (click)="setFontSize('large')"  title="Veliko">A<sup>+</sup></button>
+      <button class="fsz-btn" [class.active]="a11y.fontSize === 'xlarge'"(click)="setFontSize('xlarge')" title="Najveće">A<sup>++</sup></button>
+    </div>
+  </div>
+
+  <!-- ── Disleksija ────────────────────────────────────────── -->
+  <div class="a11y-group">
+    <div class="a11y-group-label"><i class="ph ph-book-open"></i> Font za disleksiju</div>
+
+    <div class="a11y-toggle-item" (click)="toggleDyslexia()" role="button" tabindex="0">
+      <div class="ati-icon" style="background:rgba(59,130,246,0.1);"><i class="ph-fill ph-text-t" style="color:#3b82f6;"></i></div>
+      <div class="ati-info">
+        <div class="ati-label">OpenDyslexic font</div>
+        <div class="ati-desc">Font dizajniran za čitljivost kod disleksije</div>
+      </div>
+      <div class="a11y-switch" [class.on]="a11y.dyslexiaFont"><div class="sw-thumb"></div></div>
+    </div>
+
+    <div class="a11y-toggle-item" (click)="toggleLineSpacing()" role="button" tabindex="0">
+      <div class="ati-icon" style="background:rgba(139,92,246,0.1);"><i class="ph-fill ph-rows" style="color:#8b5cf6;"></i></div>
+      <div class="ati-info">
+        <div class="ati-label">Povećan razmak redova</div>
+        <div class="ati-desc">Lakše čitanje za vizuelnu disleksiju</div>
+      </div>
+      <div class="a11y-switch" [class.on]="a11y.lineSpacing"><div class="sw-thumb"></div></div>
+    </div>
+
+    <div class="a11y-toggle-item" (click)="toggleLetterSpacing()" role="button" tabindex="0">
+      <div class="ati-icon" style="background:rgba(236,72,153,0.1);"><i class="ph-fill ph-text-columns" style="color:#ec4899;"></i></div>
+      <div class="ati-info">
+        <div class="ati-label">Razmak između slova</div>
+        <div class="ati-desc">Konzistentna terminologija za površinsku disleksiju</div>
+      </div>
+      <div class="a11y-switch" [class.on]="a11y.letterSpacing"><div class="sw-thumb"></div></div>
+    </div>
+  </div>
+
+  <!-- ── Visoki kontrast ───────────────────────────────────── -->
+  <div class="a11y-group">
+    <div class="a11y-group-label"><i class="ph ph-circle-half"></i> Kontrast & Vidljivost</div>
+
+    <div class="a11y-toggle-item" (click)="toggleHighContrast()" role="button" tabindex="0">
+      <div class="ati-icon" style="background:rgba(15,23,42,0.08);"><i class="ph-fill ph-circle-half" style="color:#0f172a;"></i></div>
+      <div class="ati-info">
+        <div class="ati-label">Visoki kontrast</div>
+        <div class="ati-desc">Tamna pozadina, jasan bijeli tekst za slabovide</div>
+      </div>
+      <div class="a11y-switch" [class.on]="a11y.highContrast"><div class="sw-thumb"></div></div>
+    </div>
+
+    <div class="a11y-toggle-item" (click)="toggleDarkMode()" role="button" tabindex="0">
+      <div class="ati-icon" style="background:rgba(30,30,60,0.1);"><i class="ph-fill ph-moon" style="color:#6366f1;"></i></div>
+      <div class="ati-info">
+        <div class="ati-label">Tamni način (Dark Mode)</div>
+        <div class="ati-desc">Tamna pozadina, manje zamora očiju</div>
+      </div>
+      <div class="a11y-switch" [class.on]="a11y.darkMode"><div class="sw-thumb"></div></div>
+    </div>
+
+    <div class="a11y-toggle-item" (click)="toggleReduceMotion()" role="button" tabindex="0">
+      <div class="ati-icon" style="background:rgba(245,158,11,0.1);"><i class="ph-fill ph-wind" style="color:#f59e0b;"></i></div>
+      <div class="ati-info">
+        <div class="ati-label">Smanji animacije</div>
+        <div class="ati-desc">Za osobe osjetljive na pokret</div>
+      </div>
+      <div class="a11y-switch" [class.on]="a11y.reduceMotion"><div class="sw-thumb"></div></div>
+    </div>
+
+    <div class="a11y-toggle-item" (click)="toggleFocusHighlight()" role="button" tabindex="0">
+      <div class="ati-icon" style="background:rgba(234,179,8,0.1);"><i class="ph-fill ph-crosshair" style="color:#ca8a04;"></i></div>
+      <div class="ati-info">
+        <div class="ati-label">Istakni fokus</div>
+        <div class="ati-desc">Vidljiv okvir oko fokusiranog elementa</div>
+      </div>
+      <div class="a11y-switch" [class.on]="a11y.focusHighlight"><div class="sw-thumb"></div></div>
+    </div>
+
+    <div class="a11y-toggle-item" (click)="toggleLargeCursor()" role="button" tabindex="0">
+      <div class="ati-icon" style="background:rgba(239,68,68,0.1);"><i class="ph-fill ph-cursor" style="color:#ef4444;"></i></div>
+      <div class="ati-info">
+        <div class="ati-label">Veliki kursor</div>
+        <div class="ati-desc">Uvećani pokazivač miša</div>
+      </div>
+      <div class="a11y-switch" [class.on]="a11y.largeCursor"><div class="sw-thumb"></div></div>
+    </div>
+  </div>
+
+  <!-- ── Daltonizam ────────────────────────────────────────── -->
+  <div class="a11y-group">
+    <div class="a11y-group-label"><i class="ph ph-eye"></i> Daltonizam</div>
+    <p class="a11y-group-desc">Bezbjedne kombinacije boja za najčešće tipove daltonizma</p>
+    <div class="cb-grid">
+      <button *ngFor="let m of colorblindModes"
+        class="cb-btn" [class.active]="a11y.colorblindMode === m.value"
+        (click)="setColorblindMode(m.value)">
+        <div class="cb-swatches">
+          <span [style.background]="m.c1"></span>
+          <span [style.background]="m.c2"></span>
+          <span [style.background]="m.c3"></span>
+        </div>
+        <span>{{ m.label }}</span>
+        <i class="ph-fill ph-check cb-check" *ngIf="a11y.colorblindMode === m.value"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Audio ─────────────────────────────────────────────── -->
+  <div class="a11y-group">
+    <div class="a11y-group-label"><i class="ph ph-speaker-high"></i> Audio pristupačnost</div>
+
+    <div class="a11y-toggle-item" (click)="toggleAudio()" role="button" tabindex="0">
+      <div class="ati-icon" style="background:rgba(16,185,129,0.1);"><i class="ph-fill ph-microphone" style="color:#10b981;"></i></div>
+      <div class="ati-info">
+        <div class="ati-label">Audio čitač sadržaja</div>
+        <div class="ati-desc">Ključni sadržaj čita se naglas (dolazi uskoro)</div>
+      </div>
+      <div class="a11y-switch disabled" [class.on]="a11y.audioEnabled"><div class="sw-thumb"></div></div>
+    </div>
+
+    <div class="audio-coming-soon">
+      <i class="ph-fill ph-info"></i>
+      Audio varijanta sadržaja biće dostupna u sljedećoj verziji platforme.
+    </div>
+  </div>
+
+  <!-- ── Reset ─────────────────────────────────────────────── -->
+  <div class="a11y-footer">
+    <button class="a11y-reset-btn" (click)="resetA11y()">
+      <i class="ph ph-arrow-counter-clockwise"></i> Resetuj sve postavke
+    </button>
+  </div>
+</aside>

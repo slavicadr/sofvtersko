@@ -1,0 +1,110 @@
+<app-navbar [logoImagePath]="logoPath"></app-navbar>
+
+<div class="thankyou-page">
+
+  <!-- Hero -->
+  <section class="ty-hero">
+    <div class="ty-hero-inner">
+      <div class="ty-icon-wrap">
+        <i class="ph-fill ph-heart" style="color:#7ab648; font-size:2.2rem;"></i>
+      </div>
+      <div class="hero-tag">Zahvalnost</div>
+      <h1>Hvala Vam!</h1>
+      <p>Jedan klik za nečiji bolji život</p>
+    </div>
+  </section>
+
+  <!-- Card -->
+  <div class="ty-card-wrap">
+    <div class="ty-card">
+
+      <!-- Check animation -->
+      <div class="ty-check">
+        <i class="ph-fill ph-check-circle"></i>
+      </div>
+
+      <h2 class="ty-title">Donacija je uspješno zabilježena</h2>
+
+      <!-- Transaction summary -->
+      <div class="ty-summary" *ngIf="transactionId">
+        <div class="ty-summary-row">
+          <span class="ty-label">Referentni broj</span>
+          <span class="ty-value ty-mono">{{ transactionId }}</span>
+        </div>
+        <div class="ty-summary-row" *ngIf="amount">
+          <span class="ty-label">Iznos donacije</span>
+          <span class="ty-value ty-amount">€{{ amount }}</span>
+        </div>
+        <div class="ty-summary-row" *ngIf="beneficiaryName">
+          <span class="ty-label">Korisnik pomoći</span>
+          <span class="ty-value">{{ beneficiaryName }}</span>
+        </div>
+        <div class="ty-summary-row">
+          <span class="ty-label">Datum</span>
+          <span class="ty-value">{{ donationDate }}</span>
+        </div>
+      </div>
+
+      <!-- Info box -->
+      <div class="ty-infobox">
+        <i class="ph-fill ph-list-checks ty-info-icon"></i>
+        <p>Vaša donacija je uvrštena u <strong>javnu listu donacija</strong>. Možete je pogledati u sekciji <em>Donacije</em>.</p>
+      </div>
+
+      <!-- Share / invite -->
+      <div class="ty-share-section">
+        <p class="ty-share-label">Podijelite i inspirirajte druge</p>
+        <div class="ty-share-btns">
+          <button class="share-btn share-fb" (click)="shareOnFacebook()">
+            <i class="ph-fill ph-facebook-logo"></i> Facebook
+          </button>
+          <button class="share-btn share-wa" (click)="shareOnWhatsapp()">
+            <i class="ph-fill ph-whatsapp-logo"></i> WhatsApp
+          </button>
+          <button class="share-btn share-copy" (click)="copyLink()">
+            <i class="ph-fill ph-copy"></i> Kopiraj link
+          </button>
+        </div>
+        <span class="copy-confirm" *ngIf="linkCopied">✓ Link je kopiran!</span>
+      </div>
+
+      <!-- CTA buttons -->
+      <div class="ty-actions">
+        <button class="btn-primary" (click)="goToDonations()">
+          <i class="ph ph-chart-bar"></i> Pogledaj javnu listu
+        </button>
+        <button class="btn-secondary" (click)="donatAgain()">
+          <i class="ph ph-heart"></i> Doniraj ponovo
+        </button>
+        <button class="btn-ghost" (click)="goHome()">
+          ← Nazad na početnu
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Impact strip -->
+    <div class="ty-impact">
+      <div class="impact-item">
+        <i class="ph-fill ph-users"></i>
+        <div class="impact-num">{{ totalDonors }}+</div>
+        <div class="impact-label">donatora</div>
+      </div>
+      <div class="impact-divider"></div>
+      <div class="impact-item">
+        <i class="ph-fill ph-currency-eur"></i>
+        <div class="impact-num">€{{ totalRaised | number }}</div>
+        <div class="impact-label">prikupljeno ukupno</div>
+      </div>
+      <div class="impact-divider"></div>
+      <div class="impact-item">
+        <i class="ph-fill ph-handshake"></i>
+        <div class="impact-num">{{ activeCases }}</div>
+        <div class="impact-label">aktivnih slučajeva</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<app-footer [logoWhitePath]="logoWhitePath"></app-footer>

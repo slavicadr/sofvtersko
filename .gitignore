@@ -1,0 +1,25 @@
+# Maven build output
+sofvtersko/target/
+
+# Uploaded files
+sofvtersko/uploads/
+
+# Sensitive config — use application.properties.example as template
+sofvtersko/src/main/resources/application.properties
+
+# Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+.vscode/

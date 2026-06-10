@@ -1,0 +1,258 @@
+<!-- Kupac Dashboard -->
+<app-navbar [logoImagePath]="logoPath"></app-navbar>
+
+<div class="dashboard-page">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img *ngIf="logoPath" [src]="logoPath" style="height:32px;"/>
+      <span *ngIf="!logoPath" style="font-size:1.5rem;">💚</span>
+      <div>
+        <div class="sidebar-logo-text">Dobrobit</div>
+        <div class="sidebar-logo-badge">Kupac Panel</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Meni</div>
+      <a class="nav-item" [class.active]="activeSection === 'overview'" (click)="setSection('overview')">
+        <div class="nav-item-icon"><i class="bi bi-grid-1x2-fill"></i></div> Pregled
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'purchases'" (click)="setSection('purchases')">
+        <div class="nav-item-icon"><i class="bi bi-bag-fill"></i></div> Moje Kupovine
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'reviews'" (click)="setSection('reviews')">
+        <div class="nav-item-icon"><i class="bi bi-star-fill"></i></div> Moje Recenzije
+      </a>
+      <a class="nav-item" [class.active]="activeSection === 'donations'" (click)="setSection('donations')">
+        <div class="nav-item-icon"><i class="bi bi-heart-fill"></i></div> Moje Donacije
+      </a>
+
+      <div class="nav-section-label" style="margin-top:12px;">Profil</div>
+      <a class="nav-item" [class.active]="activeSection === 'profile'" (click)="setSection('profile')">
+        <div class="nav-item-icon"><i class="bi bi-person-fill"></i></div> Moj Profil
+      </a>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">
+        <img *ngIf="buyer.avatarUrl" [src]="buyer.avatarUrl" [alt]="buyer.firstName"
+             style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
+        <span *ngIf="!buyer.avatarUrl">{{ buyer.firstName[0] }}{{ buyer.lastName[0] }}</span>
+      </div>
+      <div>
+        <div class="sidebar-user-name">{{ buyer.firstName }} {{ buyer.lastName }}</div>
+        <div class="sidebar-user-role">Kupac</div>
+      </div>
+      <a class="sidebar-user-logout" routerLink="/login"><i class="bi bi-box-arrow-right"></i></a>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">{{ getSectionTitle() }}</div>
+        <div class="topbar-subtitle">{{ getSectionSubtitle() }}</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-primary" routerLink="/usluge">Pronađi Usluge</button>
+      </div>
+    </div>
+
+    <!-- ── OVERVIEW ── -->
+    <ng-container *ngIf="activeSection === 'overview'">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon" style="background:linear-gradient(135deg,var(--mint-to),var(--mint-from));"><i class="bi bi-bag-fill" style="font-size:1.4rem;color:#fff;"></i></div>
+          </div>
+          <div class="kpi-num">{{ stats.totalPurchases }}</div>
+          <div class="kpi-label">Ukupno kupovina</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon" style="background:linear-gradient(135deg,var(--lime-to),var(--lime-from));"><i class="bi bi-currency-euro" style="font-size:1.4rem;color:#fff;"></i></div>
+          </div>
+          <div class="kpi-num">{{ stats.totalSpent }}€</div>
+          <div class="kpi-label">Ukupno potrošeno</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon" style="background:linear-gradient(135deg,var(--peach-to),var(--peach-from));"><i class="bi bi-heart-fill" style="font-size:1.4rem;color:#fff;"></i></div>
+          </div>
+          <div class="kpi-num">{{ stats.totalDonated }}€</div>
+          <div class="kpi-label">Ukupno donirano</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon" style="background:linear-gradient(135deg,var(--mint-from),var(--teal));"><i class="bi bi-star-fill" style="font-size:1.4rem;color:#fff;"></i></div>
+          </div>
+          <div class="kpi-num">{{ stats.reviewsLeft }}</div>
+          <div class="kpi-label">Ostavljenih recenzija</div>
+        </div>
+      </div>
+
+      <!-- Recent purchases -->
+      <div class="section-card">
+        <div class="section-card-header">Nedavne Kupovine</div>
+        <div class="purchases-list">
+          <div class="purchase-item" *ngFor="let p of recentPurchases">
+            <div class="purchase-thumb img-placeholder" style="width:48px;height:48px;border-radius:12px;font-size:1.3rem;flex-shrink:0;">
+              <img *ngIf="p.serviceImageUrl" [src]="p.serviceImageUrl"
+                   style="width:100%;height:100%;object-fit:cover;border-radius:12px;"/>
+              <span *ngIf="!p.serviceImageUrl">🛍</span>
+            </div>
+            <div class="purchase-info">
+              <div class="purchase-name">{{ p.serviceName }}</div>
+              <div class="purchase-meta">
+                <span><i class="bi bi-person"></i> {{ p.volunteerName }}</span>
+                <span><i class="bi bi-heart" style="color:#2d6b55;"></i> {{ p.beneficiaryName }}</span>
+                <span>{{ p.date }}</span>
+              </div>
+            </div>
+            <div class="purchase-price">{{ p.amount }}€</div>
+            <span class="badge badge-success" *ngIf="p.statusIsporuke === 'realizovano'">✓ Realizovano</span>
+            <button class="btn-mark-done" *ngIf="p.statusIsporuke !== 'realizovano'" (click)="oznaciRealizovano(p)">
+              Označi završenim
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── PURCHASES ── -->
+    <ng-container *ngIf="activeSection === 'purchases'">
+      <div class="section-card">
+        <div class="section-card-header">Moje Kupovine</div>
+        <div class="purchases-list">
+          <div class="purchase-item" *ngFor="let p of allPurchases">
+            <div class="purchase-thumb img-placeholder" style="width:48px;height:48px;border-radius:12px;font-size:1.3rem;flex-shrink:0;">
+              <img *ngIf="p.serviceImageUrl" [src]="p.serviceImageUrl"
+                   style="width:100%;height:100%;object-fit:cover;border-radius:12px;"/>
+              <span *ngIf="!p.serviceImageUrl">🛍</span>
+            </div>
+            <div class="purchase-info">
+              <div class="purchase-name">{{ p.serviceName }}</div>
+              <div class="purchase-meta">
+                <span><i class="bi bi-person"></i> {{ p.volunteerName }}</span>
+                <span><i class="bi bi-heart" style="color:#2d6b55;"></i> {{ p.beneficiaryName }}</span>
+                <span>{{ p.date }}</span>
+                <span *ngIf="p.datumRealizacije" style="color:#16a34a;"><i class="bi bi-check-circle-fill"></i> Završeno: {{ p.datumRealizacije }}</span>
+              </div>
+            </div>
+            <div class="purchase-price">{{ p.amount }}€</div>
+            <ng-container *ngIf="p.statusIsporuke === 'realizovano'">
+              <span class="badge badge-success">✓ Realizovano</span>
+              <button class="btn-outline review-btn" *ngIf="!p.reviewed" (click)="openReviewModal(p)">Ocijeni</button>
+              <span *ngIf="p.reviewed" style="font-size:0.8rem;color:#16a34a;margin-left:6px;">✓ Ocijenjeno</span>
+            </ng-container>
+            <ng-container *ngIf="p.statusIsporuke !== 'realizovano'">
+              <span class="badge badge-pending">Na čekanju</span>
+              <button class="btn-mark-done" (click)="oznaciRealizovano(p)">Označi završenim</button>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── REVIEWS ── -->
+    <ng-container *ngIf="activeSection === 'reviews'">
+      <div class="section-card">
+        <div class="section-card-header">Moje Recenzije</div>
+        <div class="reviews-display">
+          <div class="review-display-item" *ngFor="let r of myReviews">
+            <div class="review-display-header">
+              <div class="stars">{{ r.starsDisplay }}</div>
+              <div class="review-display-service">{{ r.serviceName }}</div>
+              <div class="review-display-date">{{ r.date }}</div>
+            </div>
+            <p class="review-display-text">{{ r.comment }}</p>
+            <div class="review-display-reply" *ngIf="r.volunteerReply">
+              <span><i class="bi bi-chat-fill" style="color:#2d6b55;"></i> Odgovor volontera:</span> {{ r.volunteerReply }}
+            </div>
+          </div>
+          <div class="empty-state" *ngIf="myReviews.length === 0">
+            <p>Niste ostavili nijednu recenziju.</p>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── PROFILE ── -->
+    <ng-container *ngIf="activeSection === 'profile'">
+      <div class="section-card">
+        <div class="section-card-header">Moj Profil</div>
+        <div class="profile-edit-form">
+          <!-- Avatar -->
+          <div class="avatar-upload-area">
+            <div class="img-placeholder" style="width:100px;height:100px;border-radius:50%;font-size:2.5rem;margin:0 auto 12px;">
+              <img *ngIf="buyer.avatarUrl" [src]="buyer.avatarUrl" [alt]="buyer.firstName"
+                   style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
+              <span *ngIf="!buyer.avatarUrl">{{ buyer.firstName[0] }}</span>
+              <div class="upload-overlay" (click)="uploadAvatar()">
+                <i class="bi bi-camera-fill"></i><span style="font-size:0.75rem;">Promijeni</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Ime</label>
+              <input type="text" class="form-input" [(ngModel)]="editBuyer.firstName"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prezime</label>
+              <input type="text" class="form-input" [(ngModel)]="editBuyer.lastName"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-mail (opcionalno)</label>
+            <input type="email" class="form-input" [(ngModel)]="editBuyer.email"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telefon (opcionalno)</label>
+            <input type="tel" class="form-input" [(ngModel)]="editBuyer.phone"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prikaz u javnoj listi</label>
+            <select class="form-select" [(ngModel)]="editBuyer.displayPreference">
+              <option value="name">Prikaži moje ime</option>
+              <option value="anon">Anonimno</option>
+            </select>
+          </div>
+          <button class="btn-primary" style="margin-top:8px;" (click)="saveProfile()">Sačuvaj promjene</button>
+        </div>
+      </div>
+    </ng-container>
+  </main>
+</div>
+
+<!-- Review Modal -->
+<div class="modal-backdrop" *ngIf="reviewModalOpen" (click)="closeReviewModal($event)">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeReviewModal()">✕</button>
+    <h2 style="font-size:1.4rem;margin-bottom:6px;">Ostavi Recenziju</h2>
+    <p style="color:var(--text-light);font-size:0.88rem;margin-bottom:24px;">
+      Za: <strong>{{ reviewingPurchase?.serviceName }}</strong>
+    </p>
+
+    <div class="star-rating">
+      <span *ngFor="let s of [1,2,3,4,5]" (click)="reviewForm.rating = s"
+        [class.active]="reviewForm.rating >= s">★</span>
+    </div>
+
+    <div class="form-group" style="margin-top:16px;">
+      <label class="form-label">Komentar</label>
+      <textarea class="form-textarea" [(ngModel)]="reviewForm.comment"
+                placeholder="Podijelite vaše iskustvo..."></textarea>
+    </div>
+
+    <button class="btn-primary" style="width:100%;margin-top:20px;"
+            [disabled]="reviewForm.rating === 0"
+            (click)="submitReview()">
+      Objavi recenziju
+    </button>
+  </div>
+</div>
+

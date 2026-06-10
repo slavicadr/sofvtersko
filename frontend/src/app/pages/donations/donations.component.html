@@ -1,0 +1,100 @@
+<app-navbar [logoImagePath]="logoPath"></app-navbar>
+
+<div class="donations-page">
+  <section class="donations-hero">
+    <div class="hero-inner">
+      <div class="hero-tag">Javna Lista</div>
+      <h1>Javna Lista Donacija</h1>
+      <p>Gradimo društvo gdje je pomaganje dio svakodnevnice.</p>
+    </div>
+  </section>
+
+  <div class="beneficiary-summary-section">
+    <h2 class="section-title">Prikupljeno:</h2>
+    <p>
+
+    </p>
+    <div class="beneficiary-summary-grid">
+      <div class="beneficiary-summary-card" *ngFor="let b of beneficiarySummaries">
+        <div class="bsc-photo">
+          <img *ngIf="b.imageUrl" [src]="b.imageUrl" [alt]="b.name" class="bsc-img">
+          <div *ngIf="!b.imageUrl" class="bsc-initials">{{ b.initials }}</div>
+        </div>
+        <div class="bsc-info">
+          <div class="bsc-name">{{ b.name }}</div>
+          <div class="bsc-desc">{{ b.description }}</div>
+          <div class="bsc-total">€{{ b.totalRaised | number }}</div>
+          <div class="bsc-progress-bar">
+            <div class="bsc-progress-fill" [style.width.%]="b.percent"></div>
+          </div>
+          <div class="bsc-percent">{{ b.percent }}% od cilja</div>
+        </div>
+        <div class="bsc-volunteers">
+          <div class="bsv-label">Volonteri koji su učestvovali:</div>
+          <div class="volunteer-tags">
+            <span class="vol-tag" *ngFor="let v of b.volunteers"><i class="ph-fill ph-handshake"></i> {{ v }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="donations-table-section">
+    <div class="table-header-row">
+      <h2 class="section-title">Sve Donacije</h2>
+      <div class="table-controls">
+        <div class="search-wrap">
+          <i class="ph ph-magnifying-glass s-icon"></i>
+          <input class="table-search" [(ngModel)]="searchQuery" (ngModelChange)="filterDonations()" placeholder="Pretraži...">
+        </div>
+        <select class="filter-sel" [(ngModel)]="filterBeneficiary" (ngModelChange)="filterDonations()">
+          <option value="">Svi korisnici</option>
+          <option *ngFor="let b of beneficiarySummaries" [value]="b.name">{{ b.name }}</option>
+        </select>
+        <select class="filter-sel" [(ngModel)]="filterType" (ngModelChange)="filterDonations()">
+          <option value="">Sve vrste</option>
+          <option value="Direktna">Direktna donacija</option>
+          <option value="Kupovina">Kupovina usluge</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table class="donations-table">
+          <thead>
+            <tr>
+              <th>Donator</th>
+              <th>Korisnik Pomoći</th>
+              <th>Vrsta</th>
+              <th>Usluga/Opis</th>
+              <th>Iznos</th>
+              <th>Datum</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of filteredDonations">
+              <td>
+                <div class="donor-cell">
+                  <div class="donor-avatar">{{ d.anonymous ? '?' : d.donorInitials }}</div>
+                  <span [class.anonymous]="d.anonymous">{{ d.anonymous ? 'Anonimno' : d.donor }}</span>
+                </div>
+              </td>
+              <td><span class="beneficiary-link">{{ d.beneficiary }}</span></td>
+              <td><span class="type-badge" [ngClass]="d.type === 'Direktna' ? 'type-direct' : 'type-purchase'">{{ d.type }}</span></td>
+              <td class="desc-cell">{{ d.description }}</td>
+              <td><span class="amount-cell">€{{ d.amount }}</span></td>
+              <td class="date-cell">{{ d.date }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span class="total-label">Ukupno prikazano: <strong>{{ filteredDonations.length }}</strong> donacija | Ukupan iznos: <strong>€{{ totalFiltered | number }}</strong></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer [logoWhitePath]="logoWhitePath"></app-footer>
