@@ -1,0 +1,20 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { UslugaProizvod } from '../models/usluga-proizvod.model';
+
+@Injectable({ providedIn: 'root' })
+export class UslugaProizvodService {
+  private readonly baseUrl = `${environment.apiUrl}/api/usluge-proizvodi`;
+
+  constructor(private http: HttpClient) {}
+
+  getAll(): Observable<UslugaProizvod[]> {
+    return this.http.get<UslugaProizvod[]>(this.baseUrl, { withCredentials: true });
+  }
+
+  getById(id: number): Observable<UslugaProizvod> {
+    return this.http.get<UslugaProizvod>(`${this.baseUrl}/${id}`, { withCredentials: true });
+  }
+}

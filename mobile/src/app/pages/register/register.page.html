@@ -1,0 +1,70 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Registracija</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="register-content">
+  <form [formGroup]="form" (ngSubmit)="onRegister()">
+    <ion-list lines="none" class="form-list">
+
+      <ion-item class="form-item">
+        <ion-label position="floating">Ime *</ion-label>
+        <ion-input type="text" formControlName="ime"></ion-input>
+      </ion-item>
+
+      <ion-item class="form-item">
+        <ion-label position="floating">Prezime *</ion-label>
+        <ion-input type="text" formControlName="prezime"></ion-input>
+      </ion-item>
+
+      <ion-item class="form-item">
+        <ion-label position="floating">Email *</ion-label>
+        <ion-input type="email" formControlName="email" inputmode="email"></ion-input>
+      </ion-item>
+      <div class="error-msg" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+        Unesite ispravnu email adresu.
+      </div>
+
+      <ion-item class="form-item">
+        <ion-label position="floating">Lozinka * (min. 6 znakova)</ion-label>
+        <ion-input type="password" formControlName="lozinkaHash"></ion-input>
+      </ion-item>
+      <div class="error-msg" *ngIf="form.get('lozinkaHash')?.invalid && form.get('lozinkaHash')?.touched">
+        Lozinka mora imati najmanje 6 znakova.
+      </div>
+
+      <ion-item class="form-item">
+        <ion-label position="floating">Telefon</ion-label>
+        <ion-input type="tel" formControlName="telefon" inputmode="tel"></ion-input>
+      </ion-item>
+
+      <ion-item class="form-item">
+        <ion-label position="floating">Adresa</ion-label>
+        <ion-input type="text" formControlName="adresa"></ion-input>
+      </ion-item>
+
+      <ion-item class="form-item">
+        <ion-label>Tip korisnika *</ion-label>
+        <ion-select formControlName="tipKorisnika" interface="popover">
+          <ion-select-option *ngFor="let tip of tipovi" [value]="tip.value">
+            {{ tip.label }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-list>
+
+    <div class="btn-section">
+      <ion-button expand="block" type="submit" [disabled]="form.invalid" class="register-btn">
+        Kreiraj nalog
+      </ion-button>
+      <div class="login-link">
+        <span>Već imate nalog? </span>
+        <ion-button fill="clear" (click)="goToLogin()">Prijavite se</ion-button>
+      </div>
+    </div>
+  </form>
+</ion-content>

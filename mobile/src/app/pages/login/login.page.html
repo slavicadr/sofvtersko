@@ -1,0 +1,46 @@
+<ion-content class="login-content" [fullscreen]="true">
+  <div class="login-container">
+    <div class="logo-section">
+      <h1 class="app-title">Dobrobit</h1>
+      <p class="app-subtitle">Humanitarna platforma</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onLogin()">
+      <ion-list lines="none" class="form-list">
+        <ion-item class="form-item">
+          <ion-label position="floating">Email adresa</ion-label>
+          <ion-input
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            inputmode="email">
+          </ion-input>
+        </ion-item>
+        <div class="error-msg" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+          Unesite ispravnu email adresu.
+        </div>
+
+        <ion-item class="form-item">
+          <ion-label position="floating">Lozinka</ion-label>
+          <ion-input
+            type="password"
+            formControlName="lozinka"
+            autocomplete="current-password">
+          </ion-input>
+        </ion-item>
+        <div class="error-msg" *ngIf="form.get('lozinka')?.invalid && form.get('lozinka')?.touched">
+          Lozinka je obavezna.
+        </div>
+      </ion-list>
+
+      <ion-button expand="block" type="submit" [disabled]="form.invalid" class="login-btn">
+        Prijavi se
+      </ion-button>
+    </form>
+
+    <div class="register-link">
+      <span>Nemate nalog? </span>
+      <ion-button fill="clear" (click)="goToRegister()">Registrujte se</ion-button>
+    </div>
+  </div>
+</ion-content>

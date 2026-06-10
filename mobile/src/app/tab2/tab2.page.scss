@@ -1,0 +1,51 @@
+.loader {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.usluga-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+}
+
+.kategorija-chip {
+  margin: 0 0 8px 0;
+  height: 24px;
+  font-size: 12px;
+}
+
+.opis {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.usluga-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--ion-color-primary);
+
+  ion-icon {
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 24px;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+}

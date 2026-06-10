@@ -1,0 +1,67 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Usluge volontera</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Pretraži usluge..."
+      (ionInput)="onPretraga($event)"
+      animated>
+    </ion-searchbar>
+  </ion-toolbar>
+  <ion-toolbar *ngIf="kategorije.length > 0">
+    <ion-segment (ionChange)="filterPoKategoriji($event.detail.value?.toString() ?? null)" scrollable>
+      <ion-segment-button value="">
+        <ion-label>Sve</ion-label>
+      </ion-segment-button>
+      <ion-segment-button
+        *ngFor="let k of kategorije"
+        [value]="k.kategorijaId.toString()">
+        <ion-label>{{ k.naziv }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="ucitaj(); $event.target.complete()">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="ucitava" class="loader">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <ion-list *ngIf="!ucitava">
+    <ion-card *ngFor="let u of filtrirane" class="usluga-card">
+      <ion-card-header>
+        <ion-chip color="tertiary" class="kategorija-chip">
+          <ion-label>{{ u.kategorija?.naziv }}</ion-label>
+        </ion-chip>
+        <ion-card-title>{{ u.naziv }}</ion-card-title>
+        <ion-card-subtitle>
+          <ion-icon name="person-circle-outline"></ion-icon>
+          {{ u.volonter?.ime + ' ' + u.volonter?.prezime }}
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="opis" *ngIf="u.opis">{{ u.opis }}</p>
+        <div class="usluga-meta">
+          <span *ngIf="u.cijena">
+            <ion-icon name="cash-outline"></ion-icon>
+            {{ u.cijena }} KM
+          </span>
+          <span *ngIf="u.kapacitet">
+            <ion-icon name="people-outline"></ion-icon>
+            Kapacitet: {{ u.kapacitet }}
+          </span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+
+  <div *ngIf="!ucitava && filtrirane.length === 0" class="empty-state">
+    <ion-icon name="construct-outline" color="medium"></ion-icon>
+    <p>Nema pronađenih usluga.</p>
+  </div>
+</ion-content>

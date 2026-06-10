@@ -1,0 +1,71 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Detalji slučaja</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div *ngIf="ucitava" class="loader">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <ng-container *ngIf="!ucitava && slucaj">
+    <ion-card class="slucaj-card">
+      <ion-card-header>
+        <ion-card-title>{{ slucaj.naziv }}</ion-card-title>
+        <ion-card-subtitle>
+          {{ slucaj.korisnik?.prikazAnonimno ? 'Anonimno' : (slucaj.korisnik?.ime + ' ' + slucaj.korisnik?.prezime) }}
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p *ngIf="slucaj.opisPotrebe">{{ slucaj.opisPotrebe }}</p>
+        <ion-item lines="none" class="racun-item">
+          <ion-icon name="card-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>
+            <p>Broj računa za uplatu</p>
+            <h3>{{ slucaj.brojRacuna }}</h3>
+          </ion-label>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="donacija-card">
+      <ion-card-header>
+        <ion-card-title>Donirajte</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <form [formGroup]="donacijaForm" (ngSubmit)="onDoniraj()">
+          <ion-item>
+            <ion-label position="floating">Iznos (KM) *</ion-label>
+            <ion-input type="number" formControlName="iznos" inputmode="decimal" min="1"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>Način plaćanja</ion-label>
+            <ion-select formControlName="nacinPlacanja" interface="popover">
+              <ion-select-option *ngFor="let n of naciniPlacanja" [value]="n">{{ n }}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-label>Donirajte anonimno</ion-label>
+            <ion-toggle formControlName="anonimno" slot="end"></ion-toggle>
+          </ion-item>
+
+          <ion-button expand="block" type="submit" [disabled]="donacijaForm.invalid" class="ion-margin-top">
+            <ion-icon name="heart" slot="start"></ion-icon>
+            Pošaljite donaciju
+          </ion-button>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <div *ngIf="!ucitava && !slucaj" class="empty-state">
+    <ion-icon name="alert-circle-outline" color="medium"></ion-icon>
+    <p>Slučaj nije pronađen.</p>
+  </div>
+</ion-content>

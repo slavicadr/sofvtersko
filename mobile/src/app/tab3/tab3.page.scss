@@ -1,0 +1,52 @@
+.profil-content {
+  --background: #f4f5f8;
+}
+
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 16px;
+
+  .avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--ion-color-primary);
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 22px;
+    font-weight: 600;
+  }
+}
+
+.info-list {
+  background: white;
+  border-radius: 16px;
+  margin: 8px 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+
+  ion-item {
+    --padding-start: 16px;
+  }
+}
+
+.odjava-section {
+  padding: 24px 16px;
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  padding: 60px;
+}

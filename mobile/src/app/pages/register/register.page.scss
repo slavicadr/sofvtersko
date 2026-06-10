@@ -1,0 +1,40 @@
+.register-content {
+  --background: #f4f5f8;
+}
+
+.form-list {
+  background: transparent;
+  padding: 16px;
+}
+
+.form-item {
+  --background: white;
+  --border-radius: 12px;
+  margin-bottom: 12px;
+  --padding-start: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.error-msg {
+  color: var(--ion-color-danger);
+  font-size: 12px;
+  padding: 0 32px 8px;
+}
+
+.btn-section {
+  padding: 0 16px 32px;
+}
+
+.register-btn {
+  --border-radius: 12px;
+  height: 52px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 12px;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+}
