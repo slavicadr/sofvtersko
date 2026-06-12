@@ -1,0 +1,183 @@
+/* ════════════════════════════════════════════════════════════
+   Donatori stranica
+   ════════════════════════════════════════════════════════════ */
+
+.donatori-hero {
+  background: linear-gradient(135deg, #1a3a2e 0%, #2d6b55 60%, #7ab648 100%);
+  padding: 80px 5% 64px;
+  text-align: center;
+}
+.donatori-hero-inner { max-width: 640px; margin: 0 auto; }
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(122,182,72,0.2); color: #b8e080;
+  border: 1px solid rgba(122,182,72,0.3);
+  padding: 6px 16px; border-radius: 20px;
+  font-size: 0.85rem; font-weight: 600; margin-bottom: 18px;
+}
+
+.donatori-hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem; color: #fff; margin: 0 0 16px; line-height: 1.2;
+}
+.donatori-hero p {
+  color: rgba(255,255,255,0.8); font-size: 1rem; line-height: 1.7;
+}
+
+/* ── Intro strip ──────────────────────────────────────────── */
+.intro-strip {
+  display: flex; justify-content: center;
+  background: #fff; border-bottom: 1px solid #e8f0ea;
+  flex-wrap: wrap;
+}
+.intro-item {
+  flex: 1; min-width: 140px; max-width: 200px;
+  padding: 28px 20px; text-align: center;
+  border-right: 1px solid #e8f0ea;
+  &:last-child { border-right: none; }
+}
+.intro-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem; font-weight: 700; color: #2d6b55; line-height: 1;
+}
+.intro-label {
+  font-size: 0.82rem; color: #7a8a8e; margin-top: 6px; font-weight: 500;
+}
+
+/* ── Donatori sekcija ─────────────────────────────────────── */
+.donatori-section {
+  max-width: 1100px; margin: 0 auto;
+  padding: 64px 5%; text-align: center;
+}
+.section-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(45,107,85,0.08); color: #2d6b55;
+  border: 1px solid rgba(45,107,85,0.2);
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 0.8rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; color: #1a2e25; margin: 0 0 12px; line-height: 1.25;
+}
+.section-sub {
+  color: #7a8a8e; font-size: 0.95rem; max-width: 580px;
+  margin: 0 auto 48px; line-height: 1.7;
+}
+
+/* ── Kartice grid ─────────────────────────────────────────── */
+.donatori-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.donator-card {
+  background: #fff; border-radius: 16px;
+  border: 1px solid #e8f0ea; overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: transform 0.25s, box-shadow 0.25s;
+  text-align: left;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 32px rgba(0,0,0,0.12);
+  }
+}
+
+/* ── Logo zona ────────────────────────────────────────────── */
+.donator-logo-zone {
+  height: 130px;
+  background: #f8faf9;
+  border-bottom: 1px solid #e8f0ea;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.donator-logo-img {
+  max-height: 80px;
+  max-width: 80%;
+  object-fit: contain;
+  filter: none;
+  transition: transform 0.3s;
+
+  .donator-card:hover & {
+    transform: scale(1.05);
+  }
+}
+
+/* ── Tijelo kartice ───────────────────────────────────────── */
+.donator-card-body {
+  padding: 20px;
+}
+
+.donator-kategorija-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(45,107,85,0.08); color: #2d6b55;
+  border-radius: 20px; padding: 4px 12px;
+  font-size: 0.75rem; font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.donator-naziv {
+  font-size: 1.15rem; font-weight: 700; color: #1a2e25; margin: 0 0 10px;
+}
+
+.donator-opis {
+  font-size: 0.875rem; color: #7a8a8e; line-height: 1.65; margin: 0 0 16px;
+}
+
+.donator-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #2d6b55; font-size: 0.85rem; font-weight: 600;
+  text-decoration: none;
+  border: 1px solid rgba(45,107,85,0.3);
+  border-radius: 8px; padding: 7px 14px;
+  transition: background 0.2s, color 0.2s;
+
+  &:hover { background: #2d6b55; color: #fff; }
+}
+
+/* ── CTA sekcija ──────────────────────────────────────────── */
+.donator-cta {
+  background: linear-gradient(135deg, #f0f7f2 0%, #e8f4e0 100%);
+  padding: 64px 5%; text-align: center;
+  border-top: 1px solid #d4eadb;
+}
+.cta-inner { max-width: 580px; margin: 0 auto; }
+.cta-icon { margin-bottom: 18px; }
+
+.donator-cta h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.9rem; color: #1a2e25; margin: 0 0 14px;
+}
+.donator-cta p {
+  color: #7a8a8e; font-size: 0.95rem; line-height: 1.7; margin-bottom: 28px;
+}
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, #2d6b55, #3d8c6e);
+  color: #fff; border: none; border-radius: 12px;
+  padding: 13px 28px; font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(45,107,85,0.3);
+
+  &:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(45,107,85,0.4); }
+}
+
+.fade-in { animation: fadeInUp 0.5s ease both; }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .donatori-hero h1 { font-size: 1.8rem; }
+  .donatori-grid { grid-template-columns: 1fr; }
+  .intro-item { min-width: 50%; border-bottom: 1px solid #e8f0ea; }
+}

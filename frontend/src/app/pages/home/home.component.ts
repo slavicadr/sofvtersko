@@ -74,6 +74,23 @@ export class HomeComponent implements OnInit, AfterViewInit {
     { name:'Anastasija Bulatović', role:'Developer', initials:'AB', bg:'linear-gradient(135deg,#f0c89e,#fce0c0)' },
   ];
 
+  donatori = [
+    { naziv:'Evropska Unija',     kratko:'EU', boja:'linear-gradient(135deg,#003399,#0052cc)', logoUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/200px-Flag_of_Europe.svg.png' },
+    { naziv:'ICT Cortex',         kratko:'ICT',boja:'linear-gradient(135deg,#1a1a2e,#16213e)', logoUrl:'https://logo.clearbit.com/ictcortex.me' },
+    { naziv:'UNDP Crna Gora',     kratko:'UN', boja:'linear-gradient(135deg,#0077b6,#00b4d8)', logoUrl:'https://logo.clearbit.com/undp.org' },
+    { naziv:'Mtel',               kratko:'MT', boja:'linear-gradient(135deg,#cc0000,#ff3333)', logoUrl:'https://logo.clearbit.com/mtel.me' },
+    { naziv:'TRAG Fondacija', kratko:'TF', boja:'linear-gradient(135deg,#e67e22,#f39c12)', logoUrl:'https://logo.clearbit.com/tragfondacija.org' },
+    { naziv:'CEMI',          kratko:'CE', boja:'linear-gradient(135deg,#8e44ad,#9b59b6)', logoUrl:'https://logo.clearbit.com/cemi.org.me' },
+  ];
+
+  onHomeDonatorError(event: Event, boja: string, kratko: string) {
+    const img = event.target as HTMLImageElement;
+    const wrap = img.parentElement!;
+    img.style.display = 'none';
+    wrap.style.background = boja;
+    wrap.innerHTML = `<span style="font-size:1rem;font-weight:800;color:rgba(255,255,255,0.9);">${kratko}</span>`;
+  }
+
   private bgGradients = [
     'linear-gradient(135deg,var(--mint-to),var(--mint-from))',
     'linear-gradient(135deg,var(--lime-to),var(--lime-from))',

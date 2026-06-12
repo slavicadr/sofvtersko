@@ -1,0 +1,79 @@
+<app-navbar [logoImagePath]="logoPath"></app-navbar>
+
+<!-- ══ HERO ══════════════════════════════════════════════════ -->
+<section class="donatori-hero">
+  <div class="donatori-hero-inner">
+    <div class="hero-tag">
+      <i class="ph-fill ph-handshake"></i> Naši partneri
+    </div>
+    <h1>Partneri koji<br>mijenjaju živote</h1>
+    <p>Zahvaljujući podršci naših partnera, platforma Dobrobit može da funkcioniše i da napravi razliku u nečijim životima.</p>
+  </div>
+</section>
+
+<!-- ══ INTRO STRIP ════════════════════════════════════════════ -->
+<div class="intro-strip">
+  <div class="intro-item">
+    <div class="intro-num">6</div>
+    <div class="intro-label">Aktivnih partnera</div>
+  </div>
+  <div class="intro-item">
+    <div class="intro-num">4</div>
+    <div class="intro-label">Kategorije podrške</div>
+  </div>
+  <div class="intro-item">
+    <div class="intro-num">100%</div>
+    <div class="intro-label">Transparentno</div>
+  </div>
+  <div class="intro-item">
+    <div class="intro-num">∞</div>
+    <div class="intro-label">Zahvalnosti</div>
+  </div>
+</div>
+
+<!-- ══ PARTNERI KARTICE ═══════════════════════════════════════ -->
+<section class="donatori-section">
+  <div class="section-tag">Naši partneri</div>
+  <h2 class="section-title">Organizacije koje stoje iza Dobrobita</h2>
+  <p class="section-sub">Svaka od ovih organizacija prepoznala je vrijednost naše misije i odlučila da bude dio promjene.</p>
+
+  <div class="donatori-grid">
+    <div class="donator-card fade-in" *ngFor="let d of donatori">
+
+      <!-- Logo zona -->
+      <div class="donator-logo-zone">
+        <img
+          [src]="d.logoUrl"
+          [alt]="d.naziv"
+          class="donator-logo-img"
+          (error)="onLogoError($event, d.boja, d.kratko)"
+        />
+      </div>
+
+      <div class="donator-card-body">
+        <div class="donator-kategorija-chip">
+          <i class="ph ph-tag"></i> {{ d.kategorija }}
+        </div>
+        <h3 class="donator-naziv">{{ d.naziv }}</h3>
+        <p class="donator-opis">{{ d.opis }}</p>
+        <a *ngIf="d.website" [href]="d.website" target="_blank" rel="noopener" class="donator-link">
+          <i class="ph ph-arrow-square-out"></i> Posjetite web stranicu
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA POSTANI PARTNER ════════════════════════════════════ -->
+<section class="donator-cta">
+  <div class="cta-inner">
+    <div class="cta-icon"><i class="ph-fill ph-hand-heart" style="font-size:2.5rem;color:#7ab648;"></i></div>
+    <h2>Želite postati partner?</h2>
+    <p>Ako vaša organizacija želi da podrži humanitarnu platformu Dobrobit i doprinese zajednici, kontaktirajte nas. Svaka podrška je dragocjena.</p>
+    <a href="mailto:dobrobit2026@outlook.com" class="btn-primary">
+      <i class="ph ph-envelope-simple"></i> Kontaktirajte nas
+    </a>
+  </div>
+</section>
+
+<app-footer [logoWhitePath]="logoWhitePath"></app-footer>

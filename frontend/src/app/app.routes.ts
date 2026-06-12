@@ -14,6 +14,7 @@ export const routes: Routes = [
   { path: 'volonter/dashboard', canActivate: [roleGuard(['volonter'])], loadComponent: () => import('./pages/volunteer-dashboard/volunteer-dashboard.component').then(m => m.VolunteerDashboardComponent) },
   { path: 'kupac/dashboard', canActivate: [roleGuard(['kupac'])], loadComponent: () => import('./pages/buyer-dashboard/buyer-dashboard.component').then(m => m.BuyerDashboardComponent) },
   { path: 'admin/dashboard', canActivate: [roleGuard(['administrator'])], loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent) },
+  { path: 'partneri', loadComponent: () => import('./pages/donatori/donatori.component').then(m => m.DonatorComponent) },
   { path: 'faq', loadComponent: () => import('./pages/faq/faq.component').then(m => m.FaqComponent) },
   { path: 'uslovi', loadComponent: () => import('./pages/uslovi-koriscenja/uslovi-koriscenja.component').then(m => m.UsloviKoriscenjaComponent) },
   { path: 'uslovi-koriscenja', loadComponent: () => import('./pages/uslovi-koriscenja/uslovi-koriscenja.component').then(m => m.UsloviKoriscenjaComponent) },

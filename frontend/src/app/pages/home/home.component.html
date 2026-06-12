@@ -199,6 +199,29 @@
   </div>
 </div>
 
+<!-- ══ PARTNERI ═══════════════════════════════════════════════ -->
+<section class="donatori-strip">
+  <div class="donatori-strip-inner">
+    <div class="section-tag" style="margin-bottom:10px;">Naši partneri</div>
+    <h2 class="section-title" style="margin-bottom:8px;">Podržavaju nas</h2>
+    <p style="color:var(--text-light);font-size:0.9rem;margin-bottom:36px;">Organizacije i kompanije koje vjeruju u našu misiju</p>
+    <div class="donatori-logos">
+      <div class="donor-logo-card" *ngFor="let d of donatori">
+        <div class="dlc-img-wrap" [attr.data-boja]="d.boja" [attr.data-kratko]="d.kratko">
+          <img
+            [src]="d.logoUrl"
+            [alt]="d.naziv"
+            class="dlc-logo"
+            (error)="onHomeDonatorError($event, d.boja, d.kratko)"
+          />
+        </div>
+        <div class="dlc-naziv">{{ d.naziv }}</div>
+      </div>
+    </div>
+    <button class="btn-outline" style="margin-top:32px;" routerLink="/partneri">Saznajte više o partnerima →</button>
+  </div>
+</section>
+
 <!-- ══ ABOUT US ═══════════════════════════════════════════════ -->
 <section class="section about-section" id="o-nama">
   <div class="section-tag">O nama</div>
