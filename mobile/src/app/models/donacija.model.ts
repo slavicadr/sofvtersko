@@ -14,4 +14,5 @@ export interface Donacija {
   nacinPlacanja?: string;
   datumDonacije?: string;
   anonimno: boolean;
+  korisnikPomoci?: { pomocId: number };
 }

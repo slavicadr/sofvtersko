@@ -14,9 +14,8 @@ export class RegisterPage {
   form: FormGroup;
 
   tipovi = [
-    { label: 'Donator', value: 'donator' },
-    { label: 'Volonter', value: 'volonter' },
     { label: 'Kupac', value: 'kupac' },
+    { label: 'Volonter', value: 'volonter' },
   ];
 
   constructor(
@@ -33,7 +32,7 @@ export class RegisterPage {
       lozinkaHash: ['', [Validators.required, Validators.minLength(6)]],
       telefon: [''],
       adresa: [''],
-      tipKorisnika: ['donator', Validators.required],
+      tipKorisnika: ['kupac', Validators.required],
     });
   }
 

@@ -1,12 +1,6 @@
 /*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
+ * Dobrobit Mobile – Global Styles
+ * Mirrors the frontend design system as closely as Ionic allows.
  */
 
 /* Core CSS required for Ionic components to work properly */
@@ -18,20 +12,263 @@
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
 
-/* Optional CSS utils that can be commented out */
+/* Optional CSS utils */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
+/* Theme variables (colors, fonts) */
+@import "theme/variables";
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+// ── Typography ──────────────────────────────────────────────────
+ion-title,
+ion-card-title,
+h1, h2, h3, h4 {
+  font-family: 'Playfair Display', serif !important;
+  font-weight: 700;
+}
+
+ion-content,
+ion-label,
+ion-item,
+ion-button,
+ion-input,
+ion-searchbar,
+ion-segment-button,
+p, span, div {
+  font-family: 'DM Sans', sans-serif;
+}
+
+// ── Ion toolbar tweaks ──────────────────────────────────────────
+ion-toolbar {
+  --background: var(--db-teal);
+  --color: #fff;
+  --border-style: none;
+
+  ion-title {
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+  }
+
+  ion-searchbar {
+    --background: rgba(255,255,255,0.18);
+    --color: #fff;
+    --placeholder-color: rgba(255,255,255,0.7);
+    --icon-color: rgba(255,255,255,0.8);
+    --cancel-button-color: #fff;
+    --border-radius: 50px;
+    padding-inline: 12px;
+    padding-bottom: 8px;
+  }
+
+  ion-back-button {
+    color: #fff;
+  }
+
+  ion-segment {
+    --background: transparent;
+
+    ion-segment-button {
+      --color: rgba(255,255,255,0.7);
+      --color-checked: #fff;
+      --indicator-color: rgba(255,255,255,0.25);
+      --border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+  }
+}
+
+// ── Content background ──────────────────────────────────────────
+ion-content {
+  --background: var(--db-mint-to);
+}
+
+// ── Cards ───────────────────────────────────────────────────────
+ion-card {
+  --background: rgba(255,255,255,0.82);
+  border-radius: var(--db-radius-md) !important;
+  box-shadow: 0 2px 20px rgba(100,180,160,0.12) !important;
+  border: 1px solid rgba(255,255,255,0.9);
+  backdrop-filter: blur(8px);
+  margin: 12px 16px;
+
+  ion-card-header {
+    padding-bottom: 4px;
+  }
+
+  ion-card-title {
+    font-size: 1.05rem;
+    color: var(--db-text);
+  }
+
+  ion-card-subtitle {
+    font-size: 0.82rem;
+    color: var(--db-text-light);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
+}
+
+// ── List / Items ────────────────────────────────────────────────
+ion-list {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+ion-item {
+  --background: rgba(255,255,255,0.75);
+  --border-color: rgba(168,221,208,0.35);
+  --color: var(--db-text);
+  --padding-start: 16px;
+
+  ion-label {
+    color: var(--db-text) !important;
+
+    p {
+      color: var(--db-text-light) !important;
+      font-size: 0.78rem !important;
+    }
+
+    h3 {
+      font-size: 0.92rem !important;
+      font-weight: 500 !important;
+      color: var(--db-text) !important;
+    }
+  }
+}
+
+// ── Buttons ─────────────────────────────────────────────────────
+ion-button {
+  --border-radius: var(--db-radius-pill);
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+
+  &[expand="block"] {
+    --border-radius: var(--db-radius-pill);
+  }
+}
+
+// ── Chip ────────────────────────────────────────────────────────
+ion-chip {
+  --background: rgba(168,221,208,0.3);
+  --color: var(--db-teal);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border: 1px solid rgba(168,221,208,0.5);
+
+  &[color="primary"] {
+    --background: rgba(45,107,85,0.1);
+    --color: var(--db-teal);
+  }
+
+  &[color="tertiary"] {
+    --background: rgba(168,221,208,0.25);
+    --color: var(--db-teal);
+  }
+}
+
+// ── Tab bar ─────────────────────────────────────────────────────
+ion-tab-bar {
+  box-shadow: 0 -4px 20px rgba(100,180,160,0.15);
+  border-top: 1px solid rgba(168,221,208,0.4);
+  height: 60px;
+  padding-bottom: env(safe-area-inset-bottom);
+
+  ion-tab-button {
+    --color: #888;
+    --color-selected: var(--db-teal);
+    font-size: 0.72rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+  }
+}
+
+// ── Spinner ─────────────────────────────────────────────────────
+ion-spinner {
+  --color: var(--db-teal);
+}
+
+// ── Toggle ──────────────────────────────────────────────────────
+ion-toggle {
+  --track-background-checked: var(--db-teal);
+}
+
+// ── Refresher ───────────────────────────────────────────────────
+ion-refresher {
+  --color: var(--db-teal);
+}
+
+// ── Shared utility: empty state ─────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 24px;
+  color: var(--db-text-light);
+  text-align: center;
+
+  ion-icon {
+    font-size: 52px;
+    margin-bottom: 14px;
+    color: var(--db-mint-from);
+  }
+
+  p {
+    font-size: 0.92rem;
+    color: var(--db-text-light);
+  }
+}
+
+// ── Shared utility: loader ──────────────────────────────────────
+.loader {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+// ── Section tag (mirrors .section-tag from frontend) ────────────
+.section-tag-mobile {
+  display: inline-block;
+  background: rgba(255,255,255,0.65);
+  border-radius: 40px;
+  padding: 4px 14px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--db-teal);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255,255,255,0.8);
+  margin-bottom: 8px;
+}
+
+// ── Progress bar (mirrors frontend) ────────────────────────────
+.db-progress-bar {
+  height: 6px;
+  background: rgba(200,237,228,0.5);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 8px 0;
+
+  .db-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--db-mint-from), var(--db-teal));
+    border-radius: 10px;
+    transition: width 1.2s ease;
+  }
+}
+
+// ── Form inputs inside ion-item ─────────────────────────────────
+ion-input,
+ion-select,
+ion-textarea {
+  --color: var(--db-text);
+  --placeholder-color: var(--db-text-light);
+  font-family: 'DM Sans', sans-serif;
+}

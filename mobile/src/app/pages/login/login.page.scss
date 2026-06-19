@@ -1,66 +1,98 @@
+// Login page – matches frontend login aesthetic
+
 .login-content {
-  --background: #f4f5f8;
+  --background: var(--db-mint-to);
 }
 
 .login-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 100vh;
-  padding: 32px 24px;
+  min-height: 100%;
+  padding: 40px 24px;
 }
 
 .logo-section {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 44px;
+
+  .app-logo-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--db-teal), var(--db-teal-mid));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    box-shadow: 0 8px 28px rgba(45,107,85,0.3);
+
+    ion-icon {
+      font-size: 2rem;
+      color: #fff;
+    }
+  }
 
   .app-title {
-    font-size: 36px;
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
     font-weight: 700;
-    color: var(--ion-color-primary);
-    margin: 0;
+    color: var(--db-teal);
+    margin: 0 0 6px;
+    letter-spacing: -0.02em;
   }
 
   .app-subtitle {
-    color: var(--ion-color-medium);
-    margin-top: 4px;
+    font-size: 0.9rem;
+    color: var(--db-text-light);
+    margin: 0;
   }
 }
 
 .form-list {
-  background: transparent;
+  background: transparent !important;
   margin-bottom: 8px;
 }
 
 .form-item {
-  --background: white;
-  --border-radius: 12px;
-  margin-bottom: 12px;
+  --background: rgba(255,255,255,0.82);
+  --border-radius: var(--db-radius-md);
+  --border-color: rgba(168,221,208,0.5);
+  --border-width: 0 0 0 0;
+  margin-bottom: 14px;
   --padding-start: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: var(--db-radius-md) !important;
+  box-shadow: 0 2px 16px rgba(100,180,160,0.1);
+  border: 1.5px solid rgba(168,221,208,0.5) !important;
+  overflow: hidden;
 }
 
 .error-msg {
-  color: var(--ion-color-danger);
-  font-size: 12px;
-  padding: 0 16px 8px;
+  color: #dc2626;
+  font-size: 0.76rem;
+  padding: 0 16px 10px;
 }
 
 .login-btn {
-  margin-top: 16px;
-  --border-radius: 12px;
-  height: 52px;
-  font-size: 16px;
+  margin-top: 20px;
+  --border-radius: var(--db-radius-pill);
+  height: 54px;
+  font-size: 1rem;
   font-weight: 600;
+  --background: var(--db-teal);
+  --background-activated: var(--db-teal-mid);
+  box-shadow: 0 8px 24px rgba(45,107,85,0.28);
 }
 
 .register-link {
   text-align: center;
-  margin-top: 16px;
-  color: var(--ion-color-medium);
-  font-size: 14px;
+  margin-top: 18px;
+  color: var(--db-text-light);
+  font-size: 0.88rem;
 
   ion-button {
-    font-size: 14px;
+    font-size: 0.88rem;
+    --color: var(--db-teal);
+    font-weight: 500;
   }
 }

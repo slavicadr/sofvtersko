@@ -1,18 +1,49 @@
-.loader {
-  display: flex;
-  justify-content: center;
-  padding: 40px;
+// ── Kategorije (segment pills) ───────────────────────────────
+ion-segment {
+  --background: transparent;
+  padding: 4px 0;
+
+  ion-segment-button {
+    --background: rgba(255,255,255,0.6);
+    --background-checked: var(--db-teal);
+    --color: var(--db-text-mid);
+    --color-checked: #fff;
+    --indicator-color: transparent;
+    --border-radius: 50px;
+    min-width: 80px;
+    height: 32px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    text-transform: none;
+    margin: 0 3px;
+    border: 1.5px solid rgba(168,221,208,0.5);
+
+    &.segment-button-checked {
+      border-color: var(--db-teal);
+      box-shadow: 0 4px 12px rgba(45,107,85,0.2);
+    }
+  }
 }
 
+// ── Kartice usluga ───────────────────────────────────────────
 .usluga-card {
-  border-radius: 16px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:active { transform: scale(0.98); }
+  &:hover  { box-shadow: 0 8px 24px rgba(45,107,85,0.12); }
+
+  ion-card-title { font-size: 1rem; }
 }
 
 .kategorija-chip {
+  --background: rgba(168,221,208,0.25);
+  --color: var(--db-teal);
   margin: 0 0 8px 0;
-  height: 24px;
-  font-size: 12px;
+  height: 26px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid rgba(168,221,208,0.5);
 }
 
 .opis {
@@ -20,32 +51,444 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  color: var(--ion-color-medium);
-  font-size: 14px;
-  margin-bottom: 8px;
+  color: var(--db-text-mid);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin-bottom: 10px;
 }
 
 .usluga-meta {
   display: flex;
-  gap: 16px;
-  font-size: 13px;
-  color: var(--ion-color-primary);
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: var(--db-teal);
+  font-weight: 500;
+  margin-top: 4px;
+  padding: 8px 0 4px;
+  border-top: 1px solid rgba(168,221,208,0.25);
+
+  ion-icon { margin-right: 3px; vertical-align: middle; }
+}
+
+// ── Zajednički overlay ───────────────────────────────────────
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+// ── Zajednički bottom-sheet ──────────────────────────────────
+.bottom-sheet {
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
+  padding: 12px 20px 36px;
+}
+
+.sheet-drag-bar {
+  width: 40px;
+  height: 4px;
+  background: rgba(0,0,0,0.12);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+.sheet-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.07);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--db-text-mid);
+}
+
+// ── Modal 1: Detalji usluge ──────────────────────────────────
+.usluga-sheet {
+  max-height: 80vh;
+}
+
+.sheet-chip {
+  display: inline-block;
+  background: rgba(168,221,208,0.25);
+  color: var(--db-teal);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(168,221,208,0.5);
+  margin-bottom: 10px;
+}
+
+.sheet-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--db-text);
+  line-height: 1.3;
+  margin: 0 0 18px;
+}
+
+.volonter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(200,237,228,0.2);
+  border: 1.5px solid rgba(168,221,208,0.5);
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: background 0.15s;
+
+  &:active { background: rgba(200,237,228,0.4); }
+}
+
+.vol-avatar-sm {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--db-teal), var(--db-teal-mid));
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Playfair Display', serif;
+}
+
+.vol-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.vol-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--db-text);
+}
+
+.vol-label {
+  font-size: 0.75rem;
+  color: var(--db-text-light);
+}
+
+.vol-arrow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--db-teal);
+  font-size: 0.78rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(249,250,251,0.9);
+  border-radius: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(168,221,208,0.2);
 
   ion-icon {
-    margin-right: 4px;
-    vertical-align: middle;
+    font-size: 1.2rem;
+    color: var(--db-teal);
+    flex-shrink: 0;
   }
 }
 
-.empty-state {
+.info-label {
+  font-size: 0.7rem;
+  color: var(--db-text-light);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+}
+
+.info-val {
+  font-size: 0.95rem;
+  color: var(--db-text);
+  font-weight: 500;
+}
+
+.sheet-opis {
+  background: rgba(249,250,251,0.9);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(168,221,208,0.2);
+
+  p {
+    font-size: 0.9rem;
+    color: var(--db-text-mid);
+    line-height: 1.6;
+    margin: 6px 0 0;
+  }
+}
+
+.opis-label {
+  font-size: 0.7rem;
+  color: var(--db-text-light);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.btn-profil-cta {
+  --background: var(--db-teal);
+  --border-radius: 50px;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(45,107,85,0.25);
+  margin-bottom: 10px;
+}
+
+.btn-zatvori-outline {
+  --border-radius: 50px;
+  --border-color: rgba(168,221,208,0.5);
+  --color: var(--db-text-mid);
+}
+
+// ── Modal 2: Profil volontera ────────────────────────────────
+.profil-sheet {
+  max-height: 90vh;
+}
+
+.profil-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.profil-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--db-teal), var(--db-teal-mid));
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Playfair Display', serif;
+  box-shadow: 0 4px 16px rgba(45,107,85,0.3);
+}
+
+.profil-ime {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--db-text);
+  margin-bottom: 4px;
+}
+
+.profil-chip {
+  display: inline-block;
+  background: rgba(168,221,208,0.25);
+  color: var(--db-teal);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.ocjena-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.zvjezdice {
+  display: flex;
+  gap: 2px;
+}
+
+.ocjena-broj {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--db-text);
+}
+
+.ocjena-meta {
+  font-size: 0.8rem;
+  color: var(--db-text-light);
+}
+
+.kontakt-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--db-text-mid);
+  margin-bottom: 8px;
+
+  ion-icon { color: var(--db-teal); font-size: 1rem; flex-shrink: 0; }
+}
+
+.profil-loader {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 24px;
-  color: var(--ion-color-medium);
+  padding: 32px 0;
+  color: var(--db-text-light);
+  gap: 10px;
+  font-size: 0.9rem;
+}
 
-  ion-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
-  }
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--db-text-light);
+  margin: 20px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(168,221,208,0.3);
+
+  ion-icon { color: var(--db-teal); font-size: 1rem; }
+}
+
+.prazno-info {
+  font-size: 0.88rem;
+  color: var(--db-text-light);
+  text-align: center;
+  padding: 16px 0;
+}
+
+.recenzija-card {
+  background: rgba(249,250,251,0.9);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(168,221,208,0.2);
+}
+
+.rec-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.rec-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d4f09a, #b8e080);
+  color: #4a6e1a;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rec-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.rec-ime {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--db-text);
+}
+
+.rec-usluga {
+  font-size: 0.75rem;
+  color: var(--db-teal);
+  font-weight: 500;
+}
+
+.rec-zvjezdice {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.rec-komentar {
+  font-size: 0.88rem;
+  color: var(--db-text-mid);
+  font-style: italic;
+  line-height: 1.5;
+  margin: 0 0 6px;
+}
+
+.rec-datum {
+  font-size: 0.72rem;
+  color: var(--db-text-light);
+}
+
+// ── Mini kartice ostalih usluga ──────────────────────────────
+.mini-usluga-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(249,250,251,0.9);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(168,221,208,0.2);
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:active { background: rgba(200,237,228,0.3); }
+}
+
+.mini-usluga-info { flex: 1; min-width: 0; }
+
+.mini-usluga-naziv {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--db-text);
+  margin-bottom: 2px;
+}
+
+.mini-usluga-kat {
+  font-size: 0.75rem;
+  color: var(--db-teal);
+}
+
+.mini-usluga-cijena {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--db-text);
+  flex-shrink: 0;
 }

@@ -10,7 +10,9 @@
     </ion-searchbar>
   </ion-toolbar>
   <ion-toolbar *ngIf="kategorije.length > 0">
-    <ion-segment (ionChange)="filterPoKategoriji($event.detail.value?.toString() ?? null)" scrollable>
+    <ion-segment
+      (ionChange)="filterPoKategoriji($event.detail.value?.toString() ?? null)"
+      scrollable>
       <ion-segment-button value="">
         <ion-label>Sve</ion-label>
       </ion-segment-button>
@@ -33,15 +35,18 @@
   </div>
 
   <ion-list *ngIf="!ucitava">
-    <ion-card *ngFor="let u of filtrirane" class="usluga-card">
+    <ion-card
+      *ngFor="let u of filtrirane"
+      class="usluga-card"
+      (click)="klikNaUslugu(u)">
       <ion-card-header>
-        <ion-chip color="tertiary" class="kategorija-chip">
+        <ion-chip class="kategorija-chip">
           <ion-label>{{ u.kategorija?.naziv }}</ion-label>
         </ion-chip>
         <ion-card-title>{{ u.naziv }}</ion-card-title>
         <ion-card-subtitle>
           <ion-icon name="person-circle-outline"></ion-icon>
-          {{ u.volonter?.ime + ' ' + u.volonter?.prezime }}
+          {{ u.volonter?.ime }} {{ u.volonter?.prezime }}
         </ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
@@ -49,7 +54,7 @@
         <div class="usluga-meta">
           <span *ngIf="u.cijena">
             <ion-icon name="cash-outline"></ion-icon>
-            {{ u.cijena }} KM
+            {{ u.cijena }} €
           </span>
           <span *ngIf="u.kapacitet">
             <ion-icon name="people-outline"></ion-icon>
@@ -65,3 +70,186 @@
     <p>Nema pronađenih usluga.</p>
   </div>
 </ion-content>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- MODAL 1: Detalji usluge                               -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="overlay" *ngIf="uslugaOtvorena" (click)="zatvoriUslugu()">
+  <div class="bottom-sheet usluga-sheet" (click)="$event.stopPropagation()">
+
+    <div class="sheet-drag-bar"></div>
+
+    <button class="sheet-close" (click)="zatvoriUslugu()">
+      <ion-icon name="close"></ion-icon>
+    </button>
+
+    <!-- Kategorija chip -->
+    <div class="sheet-chip">{{ odabranaUsluga?.kategorija?.naziv }}</div>
+
+    <!-- Naziv usluge -->
+    <h2 class="sheet-title">{{ odabranaUsluga?.naziv }}</h2>
+
+    <!-- Volonter row -->
+    <div class="volonter-row" (click)="otvoriProfilVolontera(odabranaUsluga!.volonter)">
+      <div class="vol-avatar-sm">{{ uslugaInicijali }}</div>
+      <div class="vol-info">
+        <div class="vol-name">{{ odabranaUsluga?.volonter?.ime }} {{ odabranaUsluga?.volonter?.prezime }}</div>
+        <div class="vol-label">Volonter</div>
+      </div>
+      <div class="vol-arrow">
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+        <span>Profil</span>
+      </div>
+    </div>
+
+    <!-- Info stavke -->
+    <div class="info-list">
+      <div class="info-item" *ngIf="odabranaUsluga?.cijena">
+        <ion-icon name="cash-outline"></ion-icon>
+        <div>
+          <div class="info-label">Cijena</div>
+          <div class="info-val">{{ odabranaUsluga?.cijena }} €</div>
+        </div>
+      </div>
+      <div class="info-item" *ngIf="odabranaUsluga?.kapacitet">
+        <ion-icon name="people-outline"></ion-icon>
+        <div>
+          <div class="info-label">Kapacitet</div>
+          <div class="info-val">{{ odabranaUsluga?.kapacitet }} mjesta</div>
+        </div>
+      </div>
+      <div class="info-item" *ngIf="odabranaUsluga?.tip">
+        <ion-icon name="pricetag-outline"></ion-icon>
+        <div>
+          <div class="info-label">Tip</div>
+          <div class="info-val">{{ odabranaUsluga?.tip }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Opis -->
+    <div class="sheet-opis" *ngIf="odabranaUsluga?.opis">
+      <div class="opis-label">Opis usluge</div>
+      <p>{{ odabranaUsluga?.opis }}</p>
+    </div>
+
+    <!-- CTA -->
+    <ion-button expand="block" class="btn-profil-cta"
+                (click)="otvoriProfilVolontera(odabranaUsluga!.volonter)">
+      <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+      Pogledaj profil volontera
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" color="medium" class="btn-zatvori-outline"
+                (click)="zatvoriUslugu()">
+      Zatvori
+    </ion-button>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- MODAL 2: Profil volontera                             -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="overlay" *ngIf="profilOtvoren" (click)="zatvoriProfil()">
+  <div class="bottom-sheet profil-sheet" (click)="$event.stopPropagation()">
+
+    <div class="sheet-drag-bar"></div>
+
+    <button class="sheet-close" (click)="zatvoriProfil()">
+      <ion-icon name="close"></ion-icon>
+    </button>
+
+    <!-- Header profila -->
+    <div class="profil-header">
+      <div class="profil-avatar">{{ profilInicijali }}</div>
+      <div class="profil-meta">
+        <div class="profil-ime">{{ odabraniVolonter?.ime }} {{ odabraniVolonter?.prezime }}</div>
+        <div class="profil-chip">Volonter</div>
+      </div>
+    </div>
+
+    <!-- Prosječna ocjena -->
+    <div class="ocjena-row" *ngIf="!ucitavaProfil">
+      <div class="zvjezdice">
+        <ion-icon name="star" *ngFor="let s of zvjezdicaArray(prosjecnaOcjena)"
+                  style="color:#ffd700;font-size:1.1rem;"></ion-icon>
+        <ion-icon name="star-outline" *ngFor="let s of praznihZvjezdica(prosjecnaOcjena)"
+                  style="color:#ccc;font-size:1.1rem;"></ion-icon>
+      </div>
+      <span class="ocjena-broj">{{ prosjecnaOcjena | number:'1.1-1' }}</span>
+      <span class="ocjena-meta">({{ volonterRecenzije.length }} recenzija)</span>
+    </div>
+
+    <!-- Kontakt -->
+    <div class="kontakt-row" *ngIf="odabraniVolonter?.email">
+      <ion-icon name="mail-outline"></ion-icon>
+      <span>{{ odabraniVolonter?.email }}</span>
+    </div>
+    <div class="kontakt-row" *ngIf="odabraniVolonter?.telefon">
+      <ion-icon name="call-outline"></ion-icon>
+      <span>{{ odabraniVolonter?.telefon }}</span>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="ucitavaProfil" class="profil-loader">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Učitavam podatke...</p>
+    </div>
+
+    <!-- Recenzije -->
+    <div *ngIf="!ucitavaProfil">
+      <div class="section-heading">
+        <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
+        Recenzije
+      </div>
+
+      <div *ngIf="volonterRecenzije.length === 0" class="prazno-info">
+        Nema recenzija za ovog volontera.
+      </div>
+
+      <div class="recenzija-card" *ngFor="let r of volonterRecenzije">
+        <div class="rec-top">
+          <div class="rec-avatar">
+            {{ (r.ocjenjivac?.ime?.[0] ?? '') + (r.ocjenjivac?.prezime?.[0] ?? '') }}
+          </div>
+          <div class="rec-meta">
+            <div class="rec-ime">{{ r.ocjenjivac?.ime }} {{ r.ocjenjivac?.prezime }}</div>
+            <div class="rec-usluga">{{ r.kupovina?.uslugaProizvod?.naziv }}</div>
+          </div>
+          <div class="rec-zvjezdice">
+            <ion-icon name="star" *ngFor="let s of zvjezdicaArray(r.brojZvjezdica)"
+                      style="color:#ffd700;font-size:0.9rem;"></ion-icon>
+            <ion-icon name="star-outline" *ngFor="let s of praznihZvjezdica(r.brojZvjezdica)"
+                      style="color:#ccc;font-size:0.9rem;"></ion-icon>
+          </div>
+        </div>
+        <p class="rec-komentar" *ngIf="r.komentar">"{{ r.komentar }}"</p>
+        <div class="rec-datum">{{ formatirajDatum(r.datumOcjene) }}</div>
+      </div>
+
+      <!-- Ostale usluge volontera -->
+      <div class="section-heading" *ngIf="volonterUsluge.length > 0">
+        <ion-icon name="construct-outline"></ion-icon>
+        Ostale usluge
+      </div>
+
+      <div class="mini-usluga-card" *ngFor="let u of volonterUsluge"
+           (click)="zatvoriProfil(); zatvoriUslugu(); klikNaUslugu(u)">
+        <div class="mini-usluga-info">
+          <div class="mini-usluga-naziv">{{ u.naziv }}</div>
+          <div class="mini-usluga-kat">{{ u.kategorija?.naziv }}</div>
+        </div>
+        <div class="mini-usluga-cijena" *ngIf="u.cijena">{{ u.cijena }} €</div>
+        <ion-icon name="chevron-forward-outline" style="color:var(--db-teal);flex-shrink:0;"></ion-icon>
+      </div>
+
+    </div>
+
+    <ion-button expand="block" fill="outline" color="medium" class="btn-zatvori-outline"
+                style="margin-top:16px;" (click)="zatvoriProfil()">
+      Zatvori
+    </ion-button>
+
+  </div>
+</div>

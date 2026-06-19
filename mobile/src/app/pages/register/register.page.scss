@@ -1,40 +1,53 @@
+// Register page – matches frontend aesthetic
+
 .register-content {
-  --background: #f4f5f8;
+  --background: var(--db-mint-to);
 }
 
 .form-list {
-  background: transparent;
+  background: transparent !important;
   padding: 16px;
 }
 
 .form-item {
-  --background: white;
-  --border-radius: 12px;
-  margin-bottom: 12px;
+  --background: rgba(255,255,255,0.82);
+  --border-radius: var(--db-radius-md);
+  margin-bottom: 14px;
   --padding-start: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: var(--db-radius-md) !important;
+  box-shadow: 0 2px 16px rgba(100,180,160,0.1);
+  border: 1.5px solid rgba(168,221,208,0.5) !important;
+  overflow: hidden;
 }
 
 .error-msg {
-  color: var(--ion-color-danger);
-  font-size: 12px;
-  padding: 0 32px 8px;
+  color: #dc2626;
+  font-size: 0.76rem;
+  padding: 0 32px 10px;
 }
 
 .btn-section {
-  padding: 0 16px 32px;
+  padding: 4px 16px 40px;
 }
 
 .register-btn {
-  --border-radius: 12px;
-  height: 52px;
-  font-size: 16px;
+  --border-radius: var(--db-radius-pill);
+  height: 54px;
+  font-size: 1rem;
   font-weight: 600;
+  --background: var(--db-teal);
+  --background-activated: var(--db-teal-mid);
+  box-shadow: 0 8px 24px rgba(45,107,85,0.28);
 }
 
 .login-link {
   text-align: center;
-  margin-top: 12px;
-  color: var(--ion-color-medium);
-  font-size: 14px;
+  margin-top: 14px;
+  color: var(--db-text-light);
+  font-size: 0.88rem;
+
+  ion-button {
+    --color: var(--db-teal);
+    font-weight: 500;
+  }
 }

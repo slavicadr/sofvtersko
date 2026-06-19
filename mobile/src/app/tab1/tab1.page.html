@@ -1,49 +1,239 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Slučajevi</ion-title>
-  </ion-toolbar>
-  <ion-toolbar>
-    <ion-searchbar
-      placeholder="Pretraži slučajeve..."
-      (ionInput)="onPretraga($event)"
-      animated>
-    </ion-searchbar>
+<ion-header>
+  <ion-toolbar class="home-toolbar">
+    <div class="home-brand">
+      <ion-icon name="heart" class="brand-heart"></ion-icon>
+      <span class="brand-name">Dobrobit</span>
+    </div>
+    <ion-buttons slot="end">
+      <ion-button fill="outline" color="light" size="small" routerLink="/register" class="reg-btn">
+        Registracija
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-refresher slot="fixed" (ionRefresh)="ucitaj(); $event.target.complete()">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
+<ion-content [fullscreen]="true" class="home-content">
 
-  <div *ngIf="ucitava" class="loader">
-    <ion-spinner name="crescent"></ion-spinner>
+  <!-- ── HERO ─────────────────────────────────────────── -->
+  <section class="hero-section">
+    <div class="hero-label">Platforma za humanitarnu pomoć</div>
+    <h1 class="hero-title">Ova ruka putuje da se<br>sa tvojom <em>rukuje</em></h1>
+    <p class="hero-sub">Donirajte novac ili kupite usluge od volontera.</p>
+    <div class="hero-actions">
+      <ion-button class="btn-donate-hero" (click)="scrollToCases()">
+        <ion-icon name="heart" slot="start"></ion-icon>
+        Donirajte sada
+      </ion-button>
+      <ion-button fill="outline" color="medium" routerLink="/tabs/tab2" class="btn-services-hero">
+        Pronađite uslugu
+        <ion-icon name="arrow-forward" slot="end"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- Floating badge -->
+    <div class="floating-badge">
+      <ion-icon name="sparkles" style="color:#ffd700;margin-right:4px;font-size:0.9rem;"></ion-icon>
+      <span class="badge-amount">1.250€</span> prikupljeno danas
+    </div>
+  </section>
+
+  <!-- ── STATS ─────────────────────────────────────────── -->
+  <div class="stats-strip">
+    <div class="stat-item" *ngFor="let s of stats">
+      <div class="stat-num">{{ s.value }}</div>
+      <div class="stat-label">{{ s.label }}</div>
+    </div>
   </div>
 
-  <ion-list *ngIf="!ucitava">
-    <ion-card
-      *ngFor="let s of filtrirani"
-      class="slucaj-card"
-      (click)="otvoriDetalj(s.pomocId)">
-      <ion-card-header>
-        <ion-card-title>{{ s.naziv }}</ion-card-title>
-        <ion-card-subtitle>
-          <ion-icon name="person-outline"></ion-icon>
-          {{ s.korisnik?.prikazAnonimno ? 'Anonimno' : (s.korisnik?.ime + ' ' + s.korisnik?.prezime) }}
-        </ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <p class="opis" *ngIf="s.opisPotrebe">{{ s.opisPotrebe }}</p>
-        <ion-button fill="clear" size="small" class="ion-float-right">
-          Donirajte
-          <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+  <!-- ── KAKO FUNKCIONIŠE ──────────────────────────────── -->
+  <section class="section section-lime">
+    <div class="section-tag-mobile">Kako funkcioniše</div>
+    <h2 class="section-title-m">Transparentno, sigurno, bez posrednika</h2>
+    <div class="steps-list">
+      <div class="step-card" *ngFor="let step of steps; let i = index">
+        <div class="step-num">0{{ i + 1 }}</div>
+        <div class="step-icon-wrap" [style.background]="step.iconBg">
+          <ion-icon [name]="step.icon" style="font-size:1.5rem;color:#fff;"></ion-icon>
+        </div>
+        <div>
+          <div class="step-title">{{ step.title }}</div>
+          <p class="step-desc">{{ step.desc }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── AKTIVNI SLUČAJEVI ─────────────────────────────── -->
+  <section class="section section-peach" id="slucajevi-section">
+    <div class="section-header">
+      <div>
+        <div class="section-tag-mobile">Humanitarni slučajevi</div>
+        <h2 class="section-title-m" style="margin-bottom:0;">Aktivni slučajevi</h2>
+      </div>
+      <ion-button fill="clear" size="small" routerLink="/tabs/tab1/lista" class="view-all-btn">
+        Prikaži sve <ion-icon name="arrow-forward" slot="end"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div *ngIf="ucitava" class="loader">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <div class="cases-list" *ngIf="!ucitava">
+      <div class="case-card" *ngFor="let c of aktivniSlucajevi; let i = index"
+           (click)="otvoriDetalj(c.pomocId)" [style.border-top]="'3px solid ' + caseColors[i % 3]">
+        <div class="case-card-top">
+          <span class="case-tag" [style.background]="caseTagBg[i % 3]" [style.color]="caseTagColor[i % 3]">
+            Humanitarni slučaj
+          </span>
+          <span class="case-raised">{{ c.raised | number }}€</span>
+        </div>
+        <div class="case-name">{{ c.naziv }}</div>
+        <p class="case-desc" *ngIf="c.opisPotrebe">{{ c.opisPotrebe }}</p>
+        <div class="db-progress-bar">
+          <div class="db-progress-fill" [style.width.%]="c.percent"></div>
+        </div>
+        <div class="case-meta">
+          <span>{{ c.raised | number }}€ / 5.000€</span>
+          <span style="color:var(--db-teal);font-weight:600;">{{ c.percent }}%</span>
+        </div>
+        <ion-button expand="block" size="small" class="btn-donacije"
+                    (click)="$event.stopPropagation(); otvoriDetalj(c.pomocId)">
+          <ion-icon name="heart" slot="start"></ion-icon>
+          Doniraj
         </ion-button>
-      </ion-card-content>
-    </ion-card>
-  </ion-list>
+      </div>
 
-  <div *ngIf="!ucitava && filtrirani.length === 0" class="empty-state">
-    <ion-icon name="search-outline" color="medium"></ion-icon>
-    <p>Nema pronađenih slučajeva.</p>
+      <div *ngIf="aktivniSlucajevi.length === 0" class="empty-state">
+        <ion-icon name="heart-dislike-outline"></ion-icon>
+        <p>Nema aktivnih slučajeva.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── KO MOŽE UČESTVOVATI ───────────────────────────── -->
+  <section class="section section-lime-soft">
+    <div class="section-tag-mobile">Ko može učestvovati</div>
+    <h2 class="section-title-m">Platforma za sve</h2>
+    <div class="roles-list">
+      <div class="role-card" *ngFor="let r of roles">
+        <div class="role-icon" [style.background]="r.iconBg">
+          <ion-icon [name]="r.icon" style="font-size:1.5rem;color:#fff;"></ion-icon>
+        </div>
+        <div>
+          <div class="role-title">{{ r.title }}</div>
+          <p class="role-desc">{{ r.desc }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RECENZIJE ─────────────────────────────────────── -->
+  <section class="section section-mint">
+    <div class="section-tag-mobile">Recenzije</div>
+    <h2 class="section-title-m">Šta kažu naši korisnici</h2>
+    <div class="reviews-scroll">
+      <div class="review-card" *ngFor="let r of reviews">
+        <div class="stars-row">
+          <ion-icon name="star" *ngFor="let s of [1,2,3,4,5]" style="color:#ffd700;font-size:0.9rem;"></ion-icon>
+        </div>
+        <p class="review-text">"{{ r.text }}"</p>
+        <div class="review-author">
+          <div class="review-avatar">{{ r.initials }}</div>
+          <div>
+            <div class="review-name">{{ r.name }}</div>
+            <div class="review-service">{{ r.service }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── VOLONTER CTA ──────────────────────────────────── -->
+  <div class="volunteer-cta">
+    <h2>Postanite volonter i<br><em>napravite razliku</em></h2>
+    <p>Registrujte se kao volonter, ponudite svoje znanje i promijenite nečiji život.</p>
+    <div class="vol-stats">
+      <div class="vol-stat" *ngFor="let s of volStats">
+        <div class="vol-stat-num">{{ s.value }}</div>
+        <div class="vol-stat-label">{{ s.label }}</div>
+      </div>
+    </div>
+    <ion-button expand="block" routerLink="/register" class="btn-vol-register">
+      <ion-icon name="person-add" slot="start"></ion-icon>
+      Registrujte se kao volonter
+    </ion-button>
   </div>
+
+  <!-- ── PARTNERI ──────────────────────────────────────── -->
+  <section class="donatori-strip">
+    <div class="section-tag-mobile">Naši partneri</div>
+    <h2 class="section-title-m">Podržavaju nas</h2>
+    <p class="donatori-sub">Organizacije i kompanije koje vjeruju u našu misiju</p>
+    <div class="donatori-scroll">
+      <div class="donor-card" *ngFor="let d of donatori">
+        <div class="donor-logo-wrap" [style.background]="d.boja">
+          <img [src]="d.logoUrl" [alt]="d.naziv" class="donor-logo"
+               (error)="onLogoError($event, d.kratko)"/>
+        </div>
+        <div class="donor-naziv">{{ d.naziv }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ────────────────────────────────────────── -->
+  <footer class="mobile-footer">
+    <div class="footer-brand">
+      <ion-icon name="heart" class="footer-heart"></ion-icon>
+      <span class="footer-logo-text">Dobrobit</span>
+    </div>
+    <p class="footer-tagline">
+      Platforma koja spaja.<br>Hvala što ste dio nečije ljepše priče.
+    </p>
+
+    <div class="footer-socials">
+      <a href="#" class="social-btn"><ion-icon name="logo-facebook"></ion-icon></a>
+      <a href="#" class="social-btn"><ion-icon name="logo-instagram"></ion-icon></a>
+      <a href="#" class="social-btn"><ion-icon name="logo-linkedin"></ion-icon></a>
+    </div>
+
+    <div class="footer-columns">
+      <div class="footer-col">
+        <div class="footer-col-title">Platforma</div>
+        <a (click)="scrollToCases()"><ion-icon name="heart-outline"></ion-icon> Humanitarni slučajevi</a>
+        <a routerLink="/tabs/tab2"><ion-icon name="construct-outline"></ion-icon> Usluge &amp; Proizvodi</a>
+        <a routerLink="/register"><ion-icon name="person-add-outline"></ion-icon> Registracija</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Kontakt</div>
+        <a href="mailto:dobrobit2026@outlook.com">
+          <ion-icon name="mail-outline"></ion-icon> dobrobit2026&#64;outlook.com
+        </a>
+        <a href="tel:+38220123456">
+          <ion-icon name="call-outline"></ion-icon> +382 20 123 456
+        </a>
+        <span><ion-icon name="location-outline"></ion-icon> PMF, Podgorica</span>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Dokumenti</div>
+        <a (click)="otvoriDokument('faq')">
+          <ion-icon name="chat-bubble-outline"></ion-icon> FAQ
+        </a>
+        <a (click)="otvoriDokument('uslovi')">
+          <ion-icon name="document-text-outline"></ion-icon> Uslovi korišćenja
+        </a>
+        <a (click)="otvoriDokument('privatnost')">
+          <ion-icon name="shield-checkmark-outline"></ion-icon> Politika privatnosti
+        </a>
+        <a (click)="otvoriDokument('ugovor')">
+          <ion-icon name="document-outline"></ion-icon> Pravni ugovor
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© {{ currentYear }} DobroBit. Sva prava zadržana.</span>
+    </div>
+  </footer>
+
 </ion-content>
