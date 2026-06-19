@@ -5,6 +5,70 @@
 
 ---
 
+## BRZI START — Kako pokrenuti projekat
+
+> Za detaljna uputstva (MySQL setup, application.properties, inicijalni podaci) pogledaj sekciju **15** na dnu dokumenta.
+
+### Šta pokrenuti i kojim redoslijedom
+
+```
+1. MySQL baza         → pokreni servis (port 3306)
+2. Spring Boot backend → port 8080
+3. Web sajt (Angular)  → port 4200
+4. Mobilna aplikacija  → port 4300  (opciono)
+```
+
+### Backend (Spring Boot)
+
+```bash
+cd sofvtersko
+
+# Windows
+mvnw.cmd spring-boot:run
+
+# Linux / Mac
+./mvnw spring-boot:run
+```
+
+Sačekaj poruku `Started DobrobitApplication` u konzoli (~30 sekundi).  
+Backend je dostupan na: **http://localhost:8080**
+
+---
+
+### Web sajt (Angular)
+
+```bash
+cd frontend
+npm install       # samo prvi put — preuzima pakete
+npm start
+```
+
+Sajt je dostupan na: **http://localhost:4200**
+
+---
+
+### Mobilna aplikacija (Ionic)
+
+```bash
+cd mobile
+npm install       # samo prvi put
+npm start -- --port 4300
+```
+
+Mobilna je dostupna na: **http://localhost:4300**
+
+---
+
+### Kratka provjera da li sve radi
+
+| Komponenta | URL | Šta treba da se vidi |
+|------------|-----|----------------------|
+| Backend | http://localhost:8080/api/kategorije | JSON niz (može biti prazan `[]`) |
+| Web sajt | http://localhost:4200 | Dobrobit početna stranica |
+| Mobilna | http://localhost:4300 | Login ekran s teal dizajnom |
+
+---
+
 ## SADRŽAJ
 
 1. [Pregled projekta](#1-pregled-projekta)
