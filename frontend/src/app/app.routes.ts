@@ -21,5 +21,7 @@ export const routes: Routes = [
   { path: 'privatnost', loadComponent: () => import('./pages/politika-privatnosti/politika-privatnosti.component').then(m => m.PolitikaPrivatnostiComponent) },
   { path: 'politika-privatnosti', loadComponent: () => import('./pages/politika-privatnosti/politika-privatnosti.component').then(m => m.PolitikaPrivatnostiComponent) },
   { path: 'pravni-ugovor', loadComponent: () => import('./pages/pravni-ugovor/pravni-ugovor.component').then(m => m.PravniUgovorComponent) },
+  { path: 'slucajevi-kojima-smo-pomogli', loadComponent: () => import('./pages/slucajevi-pomoci/slucajevi-pomoci.component').then(m => m.SlucajeviPomociComponent) },
+  { path: 'profil-volontera/:id', loadComponent: () => import('./pages/volonter-profil/volonter-profil.component').then(m => m.VolonterProfilComponent) },
   { path: '**', redirectTo: '' }
 ];

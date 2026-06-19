@@ -1,0 +1,134 @@
+<app-navbar [logoImagePath]="logoPath"></app-navbar>
+
+<div class="vp-page">
+
+  <!-- Loading -->
+  <div class="vp-loading" *ngIf="loading">
+    <div class="vp-spinner"></div>
+    <p>Učitavanje profila...</p>
+  </div>
+
+  <!-- Greška -->
+  <div class="vp-error" *ngIf="error && !loading">
+    <i class="ph-fill ph-warning-circle" style="font-size:2.5rem;color:#e74c3c;"></i>
+    <p>{{ error }}</p>
+    <button (click)="router.navigate(['/usluge'])">← Nazad na usluge</button>
+  </div>
+
+  <ng-container *ngIf="!loading && !error && dashboard">
+
+    <!-- ═══ HERO PROFIL ════════════════════════════════════════ -->
+    <div class="vp-hero">
+      <div class="vp-hero-inner">
+        <button class="vp-back-btn" (click)="router.navigate(['/usluge'])">
+          <i class="ph ph-arrow-left"></i> Nazad na usluge
+        </button>
+
+        <div class="vp-avatar-wrap">
+          <div class="vp-avatar">
+            {{ (volonter?.ime?.[0] ?? '') + (volonter?.prezime?.[0] ?? '') }}
+          </div>
+          <div class="vp-online-badge">Aktivan volonter</div>
+        </div>
+
+        <div class="vp-hero-info">
+          <h1 class="vp-name">{{ volonter?.ime }} {{ volonter?.prezime }}</h1>
+
+          <div class="vp-rating-row" *ngIf="prosjecnaOcjena > 0">
+            <span class="vp-stars">{{ zvjezdicePrikaz(prosjecnaOcjena) }}</span>
+            <span class="vp-rating-num">{{ prosjecnaOcjena | number:'1.1-1' }}</span>
+            <span class="vp-rating-count">({{ recenzije.length }} recenzija)</span>
+          </div>
+          <div class="vp-rating-row" *ngIf="prosjecnaOcjena === 0">
+            <span style="color:rgba(255,255,255,0.6);font-size:0.9rem;">Bez recenzija</span>
+          </div>
+
+          <div class="vp-stats-row">
+            <div class="vp-stat">
+              <div class="vp-stat-num">{{ dashboard?.brojRealizovanihUsluga ?? 0 }}</div>
+              <div class="vp-stat-lbl">Završenih usluga</div>
+            </div>
+            <div class="vp-stat">
+              <div class="vp-stat-num">{{ usluge.length }}</div>
+              <div class="vp-stat-lbl">Aktivnih ponuda</div>
+            </div>
+            <div class="vp-stat">
+              <div class="vp-stat-num">{{ recenzije.length }}</div>
+              <div class="vp-stat-lbl">Recenzija</div>
+            </div>
+          </div>
+
+          <p *ngIf="dashboard?.biografija" class="vp-bio">{{ dashboard.biografija }}</p>
+
+          <a *ngIf="dashboard?.portfolioLink" [href]="dashboard.portfolioLink" target="_blank"
+             rel="noopener" class="vp-portfolio-link">
+            <i class="ph ph-link"></i> Portfolio / web stranica
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SADRŽAJ ═══════════════════════════════════════════ -->
+    <div class="vp-content">
+
+      <!-- ── Aktivne usluge ─────────────────────────────────── -->
+      <section class="vp-section" *ngIf="usluge.length > 0">
+        <div class="vp-section-header">
+          <i class="ph-fill ph-storefront vp-sec-icon"></i>
+          <h2>Aktivne ponude</h2>
+        </div>
+        <div class="vp-services-grid">
+          <div class="vp-service-card" *ngFor="let u of usluge">
+            <div class="vp-sc-top">
+              <span class="vp-sc-cat">{{ u.category }}</span>
+              <span class="vp-sc-type" [class.type-usluga]="u.type==='Usluga'">{{ u.type }}</span>
+            </div>
+            <h3 class="vp-sc-title">{{ u.title }}</h3>
+            <p class="vp-sc-desc">{{ u.description }}</p>
+            <div class="vp-sc-footer">
+              <span class="vp-sc-price">€{{ u.price }}</span>
+              <button *ngIf="!u.isFull" (click)="kupiUslugu(u)" class="vp-sc-btn">
+                Kupi sada <i class="ph ph-heart"></i>
+              </button>
+              <span *ngIf="u.isFull" class="vp-sc-full">Popunjeno</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Recenzije ──────────────────────────────────────── -->
+      <section class="vp-section">
+        <div class="vp-section-header">
+          <i class="ph-fill ph-star vp-sec-icon" style="color:#f59e0b;"></i>
+          <h2>Recenzije kupaca</h2>
+        </div>
+
+        <div class="vp-reviews" *ngIf="recenzije.length > 0">
+          <div class="vp-review-card" *ngFor="let r of recenzije">
+            <div class="vp-rev-header">
+              <div class="vp-rev-avatar">{{ r.autor[0] }}</div>
+              <div class="vp-rev-meta">
+                <div class="vp-rev-autor">{{ r.autor }}</div>
+                <div class="vp-rev-datum">{{ r.datum }}</div>
+              </div>
+              <div class="vp-rev-stars">{{ r.prikaz }}</div>
+            </div>
+            <p *ngIf="r.komentar" class="vp-rev-komentar">{{ r.komentar }}</p>
+            <div *ngIf="r.uslugaNaziv" class="vp-rev-usluga">
+              <i class="ph ph-tag"></i> {{ r.uslugaNaziv }}
+            </div>
+          </div>
+        </div>
+
+        <div class="vp-no-reviews" *ngIf="recenzije.length === 0">
+          <i class="ph-fill ph-star" style="font-size:2.5rem;color:#d0d9e0;"></i>
+          <p>Ovaj volonter još nema recenzija.</p>
+        </div>
+      </section>
+
+    </div>
+  </ng-container>
+
+</div>
+
+<app-footer [logoWhitePath]="logoWhitePath"></app-footer>

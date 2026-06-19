@@ -1,3 +1,162 @@
+/* ── Partneri admin sekcija ── */
+.partneri-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.partner-admin-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.pac-logo-wrap {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: #f8faf9;
+  border: 2px solid #e8f0ea;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; flex-shrink: 0;
+}
+
+.pac-logo {
+  width: 68%; height: 68%; object-fit: contain;
+}
+
+.pac-body { flex: 1; min-width: 0; }
+.pac-naziv { font-weight: 700; font-size: 0.95rem; color: #1a202c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pac-kat   { font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
+.pac-link  { font-size: 0.72rem; color: #2d6b55; text-decoration: none; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
+
+.pac-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* Upload tabovi */
+.logo-input-tabs {
+  display: flex; gap: 6px; margin-bottom: 8px; margin-top: 6px;
+}
+.lit-tab {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 7px 12px; border-radius: 8px; border: 1px solid #e5e7eb;
+  background: #f9fafb; color: #6b7280; font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  transition: all 0.18s;
+  &.active { background: #edf7f2; border-color: #2d6b55; color: #2d6b55; }
+  &:hover:not(.active) { background: #f3f4f6; }
+}
+
+/* Upload area */
+.logo-upload-area {
+  border: 2px dashed #d1d5db; border-radius: 10px;
+  background: #fafafa; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  &:hover { border-color: #2d6b55; background: #f0faf5; }
+}
+.lua-content {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 20px 16px; gap: 4px;
+}
+.lua-text {
+  font-size: 0.84rem; color: #64748b; text-align: center; line-height: 1.5;
+  small { color: #94a3b8; font-size: 0.77rem; }
+}
+.lua-status { font-size: 0.82rem; color: #6b7280; margin-top: 4px; }
+.lua-ok { color: #16a34a; }
+.lua-err { color: #dc2626; }
+
+/* Modal partner logo preview */
+.partner-logo-preview {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+}
+.plp-circle {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: #f8faf9;
+  border: 2px solid #e8f0ea;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  img { width: 68%; height: 68%; object-fit: contain; }
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* ── Pomogli smo admin sekcija ── */
+.sp-admin-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+}
+
+.sp-admin-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.spa-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+
+  &.spa-roza1 { background: linear-gradient(135deg, #fce7f3, #fdf2f8); border-left: 5px solid #ec4899; }
+  &.spa-roza2 { background: linear-gradient(135deg, #ffe4e6, #fff1f2); border-left: 5px solid #f43f5e; }
+  &.spa-plava { background: linear-gradient(135deg, #dbeafe, #eff6ff); border-left: 5px solid #3b82f6; }
+}
+
+.spa-heart-icon {
+  font-size: 1.6rem;
+
+  .spa-roza1 & { color: #ec4899; }
+  .spa-roza2 & { color: #f43f5e; }
+  .spa-plava & { color: #3b82f6; }
+}
+
+.spa-naslov { font-weight: 700; font-size: 1rem; color: #1a202c; }
+
+.spa-boja-tag {
+  display: inline-block;
+  background: rgba(0,0,0,0.07);
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.72rem;
+  color: #374151;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.spa-tekst {
+  padding: 12px 20px;
+  font-size: 0.88rem;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.spa-actions {
+  display: flex;
+  gap: 8px;
+  padding: 8px 20px 14px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #94a3b8;
+  p { margin-top: 12px; font-size: 0.9rem; }
+}
+
 /* ══════════════════════════════════════════════════════════════
    ADMIN PANEL – Complete Redesign with Phosphor Icons
    ══════════════════════════════════════════════════════════════ */

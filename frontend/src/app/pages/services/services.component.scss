@@ -163,6 +163,15 @@
   cursor: pointer; transition: all 0.2s;
   &:hover { background: #245647; }
 }
+.btn-vol-profil {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 10px; padding: 7px 14px;
+  background: #f0f7f2; color: #2d6b55;
+  border: 1.5px solid #c6e4d4; border-radius: 8px;
+  font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  transition: all 0.2s;
+  &:hover { background: #2d6b55; color: #fff; border-color: #2d6b55; }
+}
 .badge-full {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 6px 14px; background: #fef2f2; color: #dc2626;

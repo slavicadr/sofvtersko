@@ -68,6 +68,21 @@ public class SecurityConfig {
                         // Provjera dostupnosti emaila — javno dostupno za registraciju
                         .requestMatchers(HttpMethod.GET, "/api/korisnici/provjeri-email").permitAll()
 
+                        // Kontakt forma — javno dostupno
+                        .requestMatchers(HttpMethod.POST, "/api/kontakt").permitAll()
+
+                        // Pomogli smo — čitanje javno, upravljanje samo admin
+                        .requestMatchers(HttpMethod.GET, "/api/pomogli-slucajevi/**").permitAll()
+                        .requestMatchers("/api/pomogli-slucajevi/**").hasRole("administrator")
+
+                        // Partneri — čitanje javno, upravljanje samo admin
+                        .requestMatchers(HttpMethod.GET, "/api/partneri/**").permitAll()
+                        .requestMatchers("/api/partneri/**").hasRole("administrator")
+
+                        // Upload logoa i statički fajlovi
+                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/api/upload/**").hasRole("administrator")
+
                         // PRIVREMENO za testiranje — inače radi administrator
                         .requestMatchers(HttpMethod.POST, "/api/korisnici-pomoci").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/korisnici-pomoci/").permitAll()

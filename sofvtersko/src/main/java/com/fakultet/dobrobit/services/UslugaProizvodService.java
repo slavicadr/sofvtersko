@@ -64,6 +64,10 @@ import java.util.List;
             return repository.findByVolonter(volonter);
         }
 
+        public List<UslugaProizvod> getByVolonterPublic(int volonterId) {
+            return repository.findByVolonter_KorisnikId(volonterId);
+        }
+
         public List<UslugaProizvod> getByKategorija(Kategorija kategorija) {
             return repository.findByKategorija(kategorija);
         }

@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════
-   Donatori stranica
+   Donatori / Partneri stranica
    ════════════════════════════════════════════════════════════ */
 
 .donatori-hero {
@@ -67,54 +67,79 @@
   margin: 0 auto 48px; line-height: 1.7;
 }
 
-/* ── Kartice grid ─────────────────────────────────────────── */
+/* ── Grid ────────────────────────────────────────────────── */
 .donatori-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 28px;
 }
 
-.donator-card {
-  background: #fff; border-radius: 16px;
-  border: 1px solid #e8f0ea; overflow: hidden;
+/* ── Partner kartica ──────────────────────────────────────── */
+.partner-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #e8f0ea;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  padding: 32px 24px 28px;
+  text-align: center;
   transition: transform 0.25s, box-shadow 0.25s;
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 32px rgba(0,0,0,0.12);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.12);
   }
 }
 
-/* ── Logo zona ────────────────────────────────────────────── */
-.donator-logo-zone {
-  height: 130px;
+/* ── Okrugli logo ──────────────────────────────────────────
+   Ovo je glavna promjena — logo je krug sa sjenom
+───────────────────────────────────────────────────────────── */
+.partner-logo-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
   background: #f8faf9;
-  border-bottom: 1px solid #e8f0ea;
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
+  border: 3px solid #e8f0ea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
   overflow: hidden;
-}
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+  transition: box-shadow 0.25s, transform 0.25s;
 
-.donator-logo-img {
-  max-height: 80px;
-  max-width: 80%;
-  object-fit: contain;
-  filter: none;
-  transition: transform 0.3s;
-
-  .donator-card:hover & {
+  .partner-card:hover & {
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18);
     transform: scale(1.05);
   }
 }
 
-/* ── Tijelo kartice ───────────────────────────────────────── */
-.donator-card-body {
-  padding: 20px;
+.partner-logo-img {
+  width: 68%;
+  height: 68%;
+  object-fit: contain;
 }
 
-.donator-kategorija-chip {
+/* Fallback tekst kad nema loga */
+:host ::ng-deep .logo-fallback-text {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.95);
+  letter-spacing: 1px;
+}
+
+/* ── Tijelo kartice ───────────────────────────────────────── */
+.partner-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.partner-kategorija-chip {
   display: inline-flex; align-items: center; gap: 5px;
   background: rgba(45,107,85,0.08); color: #2d6b55;
   border-radius: 20px; padding: 4px 12px;
@@ -122,15 +147,17 @@
   margin-bottom: 10px;
 }
 
-.donator-naziv {
-  font-size: 1.15rem; font-weight: 700; color: #1a2e25; margin: 0 0 10px;
+.partner-naziv {
+  font-size: 1.15rem; font-weight: 700; color: #1a2e25;
+  margin: 0 0 10px;
 }
 
-.donator-opis {
-  font-size: 0.875rem; color: #7a8a8e; line-height: 1.65; margin: 0 0 16px;
+.partner-opis {
+  font-size: 0.875rem; color: #7a8a8e; line-height: 1.65;
+  margin: 0 0 20px; flex: 1;
 }
 
-.donator-link {
+.partner-link {
   display: inline-flex; align-items: center; gap: 6px;
   color: #2d6b55; font-size: 0.85rem; font-weight: 600;
   text-decoration: none;
@@ -139,6 +166,13 @@
   transition: background 0.2s, color 0.2s;
 
   &:hover { background: #2d6b55; color: #fff; }
+}
+
+.partneri-empty {
+  text-align: center;
+  padding: 48px;
+  color: #94a3b8;
+  p { margin-top: 12px; }
 }
 
 /* ── CTA sekcija ──────────────────────────────────────────── */

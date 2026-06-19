@@ -17,15 +17,10 @@
     <li><a routerLink="/donacije" routerLinkActive="active">Donacije</a></li>
     <li><a routerLink="/o-nama" routerLinkActive="active">O nama</a></li>
     <li><a routerLink="/partneri" routerLinkActive="active">Partneri</a></li>
+    <li><a routerLink="/slucajevi-kojima-smo-pomogli" routerLinkActive="active">Pomogli smo</a></li>
   </ul>
 
   <div class="navbar-right">
-
-    <!-- Search -->
-    <div class="search-wrap hide-mobile">
-      <i class="ph ph-magnifying-glass search-ico"></i>
-      <input class="navbar-search" type="text" placeholder="Pretraži..." [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"/>
-    </div>
 
     <!-- Quick access (role-specific) -->
     <div class="quick-access hide-mobile">
@@ -77,6 +72,7 @@
   <a routerLink="/donacije"  (click)="closeMobileMenu()"><i class="ph-fill ph-hand-heart"></i> Donacije</a>
   <a routerLink="/o-nama"    (click)="closeMobileMenu()"><i class="ph-fill ph-info"></i> O nama</a>
   <a routerLink="/partneri" (click)="closeMobileMenu()"><i class="ph-fill ph-handshake"></i> Partneri</a>
+  <a routerLink="/slucajevi-kojima-smo-pomogli" (click)="closeMobileMenu()"><i class="ph-fill ph-heart"></i> Pomogli smo</a>
   <div class="mm-divider"></div>
   <a *ngIf="currentUser?.role === 'volonter'" routerLink="/volonter/dashboard" (click)="closeMobileMenu()" class="mm-special vol"><i class="ph-fill ph-handshake"></i> Volonter Zona</a>
   <a *ngIf="currentUser?.role === 'administrator'" routerLink="/admin/dashboard" (click)="closeMobileMenu()" class="mm-special adm"><i class="ph-fill ph-shield-check"></i> Admin Panel</a>

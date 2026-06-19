@@ -74,6 +74,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
     { name:'Anastasija Bulatović', role:'Developer', initials:'AB', bg:'linear-gradient(135deg,#f0c89e,#fce0c0)' },
   ];
 
+  kontakt = { ime: '', prezime: '', email: '', poruka: '' };
+  kontaktSaljem  = false;
+  kontaktUspjeh  = false;
+  kontaktGreska  = '';
+
   donatori = [
     { naziv:'Evropska Unija',     kratko:'EU', boja:'linear-gradient(135deg,#003399,#0052cc)', logoUrl:'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Europe.svg/200px-Flag_of_Europe.svg.png' },
     { naziv:'ICT Cortex',         kratko:'ICT',boja:'linear-gradient(135deg,#1a1a2e,#16213e)', logoUrl:'https://logo.clearbit.com/ictcortex.me' },
@@ -215,6 +220,20 @@ export class HomeComponent implements OnInit, AfterViewInit {
   get volunteerAvgRating(): number {
     if (!this.volunteerReviews.length) return 0;
     return Math.round(this.volunteerReviews.reduce((s, r) => s + r.stars, 0) / this.volunteerReviews.length * 10) / 10;
+  }
+
+  posaljiKontakt() {
+    const { ime, prezime, email, poruka } = this.kontakt;
+    if (!ime.trim() || !prezime.trim() || !email.trim() || !poruka.trim()) {
+      this.kontaktGreska = 'Molimo popunite sva polja.';
+      return;
+    }
+    this.kontaktGreska = '';
+    this.kontaktSaljem = true;
+    this.http.post('/api/kontakt', this.kontakt).subscribe({
+      next: () => { this.kontaktUspjeh = true; this.kontaktSaljem = false; },
+      error: () => { this.kontaktGreska = 'Došlo je do greške. Pokušajte ponovo.'; this.kontaktSaljem = false; }
+    });
   }
 
   openDonation(c: any) { this.selectedCase = c; this.donationAmount = 10; this.donationModalOpen = true; }

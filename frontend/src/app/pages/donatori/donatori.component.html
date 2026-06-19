@@ -14,7 +14,7 @@
 <!-- ══ INTRO STRIP ════════════════════════════════════════════ -->
 <div class="intro-strip">
   <div class="intro-item">
-    <div class="intro-num">6</div>
+    <div class="intro-num">{{ donatori.length }}</div>
     <div class="intro-label">Aktivnih partnera</div>
   </div>
   <div class="intro-item">
@@ -38,29 +38,34 @@
   <p class="section-sub">Svaka od ovih organizacija prepoznala je vrijednost naše misije i odlučila da bude dio promjene.</p>
 
   <div class="donatori-grid">
-    <div class="donator-card fade-in" *ngFor="let d of donatori">
+    <div class="partner-card fade-in" *ngFor="let d of donatori">
 
-      <!-- Logo zona -->
-      <div class="donator-logo-zone">
+      <!-- Okrugli logo -->
+      <div class="partner-logo-circle">
         <img
           [src]="d.logoUrl"
           [alt]="d.naziv"
-          class="donator-logo-img"
-          (error)="onLogoError($event, d.boja, d.kratko)"
+          class="partner-logo-img"
+          (error)="onLogoError($event, d.bojaPozadine, d.kratko)"
         />
       </div>
 
-      <div class="donator-card-body">
-        <div class="donator-kategorija-chip">
+      <div class="partner-card-body">
+        <div class="partner-kategorija-chip">
           <i class="ph ph-tag"></i> {{ d.kategorija }}
         </div>
-        <h3 class="donator-naziv">{{ d.naziv }}</h3>
-        <p class="donator-opis">{{ d.opis }}</p>
-        <a *ngIf="d.website" [href]="d.website" target="_blank" rel="noopener" class="donator-link">
+        <h3 class="partner-naziv">{{ d.naziv }}</h3>
+        <p class="partner-opis">{{ d.opis }}</p>
+        <a *ngIf="d.website" [href]="d.website" target="_blank" rel="noopener" class="partner-link">
           <i class="ph ph-arrow-square-out"></i> Posjetite web stranicu
         </a>
       </div>
     </div>
+  </div>
+
+  <div *ngIf="donatori.length === 0" class="partneri-empty">
+    <i class="ph-fill ph-handshake" style="font-size:2.5rem;color:#b0bec5;"></i>
+    <p>Partneri se učitavaju...</p>
   </div>
 </section>
 
@@ -70,7 +75,7 @@
     <div class="cta-icon"><i class="ph-fill ph-hand-heart" style="font-size:2.5rem;color:#7ab648;"></i></div>
     <h2>Želite postati partner?</h2>
     <p>Ako vaša organizacija želi da podrži humanitarnu platformu Dobrobit i doprinese zajednici, kontaktirajte nas. Svaka podrška je dragocjena.</p>
-    <a href="mailto:dobrobit2026@outlook.com" class="btn-primary">
+    <a href="mailto:dobrobit2026&#64;outlook.com" class="btn-primary">
       <i class="ph ph-envelope-simple"></i> Kontaktirajte nas
     </a>
   </div>

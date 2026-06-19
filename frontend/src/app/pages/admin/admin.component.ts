@@ -113,6 +113,20 @@ export class AdminComponent implements OnInit {
   systemAlerts = 0;
   systemAlertsList: any[] = [];
 
+  // ── Partneri ─────────────────────────────────────────────────
+  adminPartneri: any[] = [];
+  partnerModalOpen = false;
+  uredivanjePartnera: any = null;
+  noviPartner: any = { naziv: '', kratko: '', opis: '', logoUrl: '', website: '', kategorija: '', redoslijed: 1 };
+  logoTabMode: 'upload' | 'url' = 'upload';
+  logoUploadStatus: '' | 'uploading' | 'done' | 'error' = '';
+
+  // ── Pomogli smo ──────────────────────────────────────────────
+  pomogliSlucajevi: any[] = [];
+  pomogliModalOpen = false;
+  uredivanjeKartice: any = null;
+  novaPomogliKartica: any = { naslov: '', tekst: '', boja: 'roza1', redoslijed: 1 };
+
   statusModalOpen = false;
   statusChangeTarget: any = null;
   newStatus = 'aktivan';
@@ -425,6 +439,144 @@ export class AdminComponent implements OnInit {
     });
   }
 
+  // ── Partneri ─────────────────────────────────────────────────
+  loadPartnere() {
+    this.http.get<any[]>('/api/partneri').subscribe({
+      next: (data) => { this.adminPartneri = data; }
+    });
+  }
+
+  otvoriPartnerFormu() {
+    this.uredivanjePartnera = null;
+    this.noviPartner = { naziv: '', kratko: '', opis: '', logoUrl: '', website: '', kategorija: '', redoslijed: this.adminPartneri.length + 1 };
+    this.logoTabMode = 'upload';
+    this.logoUploadStatus = '';
+    this.partnerModalOpen = true;
+  }
+
+  urediPartnera(p: any) {
+    this.uredivanjePartnera = p;
+    this.noviPartner = { ...p };
+    this.logoTabMode = p.logoUrl?.startsWith('/uploads/') ? 'upload' : 'url';
+    this.logoUploadStatus = p.logoUrl?.startsWith('/uploads/') ? 'done' : '';
+    this.partnerModalOpen = true;
+  }
+
+  onLogoFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.uploadLogoFile(input.files[0]);
+    }
+  }
+
+  onLogoDrop(event: DragEvent) {
+    event.preventDefault();
+    const file = event.dataTransfer?.files?.[0];
+    if (file) this.uploadLogoFile(file);
+  }
+
+  private uploadLogoFile(file: File) {
+    this.logoUploadStatus = 'uploading';
+    const formData = new FormData();
+    formData.append('file', file);
+    this.http.post<{ url: string }>('/api/upload/logo', formData).subscribe({
+      next: (res) => {
+        this.noviPartner.logoUrl = res.url;
+        this.logoUploadStatus = 'done';
+      },
+      error: () => { this.logoUploadStatus = 'error'; }
+    });
+  }
+
+  sacuvajPartnera() {
+    if (!this.noviPartner.naziv?.trim() || !this.noviPartner.logoUrl?.trim()) {
+      alert('Naziv i logo su obavezni.'); return;
+    }
+    if (this.uredivanjePartnera) {
+      this.http.put<any>(`/api/partneri/${this.uredivanjePartnera.id}`, this.noviPartner).subscribe({
+        next: (updated) => { Object.assign(this.uredivanjePartnera, updated); this.partnerModalOpen = false; },
+        error: () => alert('Greška pri čuvanju.')
+      });
+    } else {
+      this.http.post<any>('/api/partneri', this.noviPartner).subscribe({
+        next: (novi) => { this.adminPartneri.push(novi); this.partnerModalOpen = false; },
+        error: () => alert('Greška pri dodavanju.')
+      });
+    }
+  }
+
+  obrisiPartnera(p: any) {
+    if (!confirm(`Obrisati partnera "${p.naziv}"?`)) return;
+    this.http.delete(`/api/partneri/${p.id}`).subscribe({
+      next: () => { this.adminPartneri = this.adminPartneri.filter(x => x.id !== p.id); },
+      error: () => alert('Greška pri brisanju.')
+    });
+  }
+
+  zatvoriPartnerModal() { this.partnerModalOpen = false; }
+
+  onPartnerLogoError(event: Event, boja: string, kratko: string) {
+    const img = event.target as HTMLImageElement;
+    const wrap = img.parentElement!;
+    img.style.display = 'none';
+    wrap.style.background = boja || 'linear-gradient(135deg,#2d6b55,#7ab648)';
+    wrap.innerHTML = `<span style="font-size:1rem;font-weight:800;color:rgba(255,255,255,0.9);">${kratko || '?'}</span>`;
+  }
+
+  onPreviewError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+  }
+
+  // ── Pomogli smo ──────────────────────────────────────────────
+  loadPomogliSlucajevi() {
+    this.http.get<any[]>('/api/pomogli-slucajevi').subscribe({
+      next: (data) => { this.pomogliSlucajevi = data; }
+    });
+  }
+
+  otvoriPomogliFormu() {
+    this.uredivanjeKartice = null;
+    this.novaPomogliKartica = { naslov: '', tekst: '', boja: 'roza1', redoslijed: this.pomogliSlucajevi.length + 1 };
+    this.pomogliModalOpen = true;
+  }
+
+  urediPomogliSlucaj(s: any) {
+    this.uredivanjeKartice = s;
+    this.novaPomogliKartica = { naslov: s.naslov, tekst: s.tekst, boja: s.boja, redoslijed: s.redoslijed };
+    this.pomogliModalOpen = true;
+  }
+
+  sacuvajPomogliKarticu() {
+    if (!this.novaPomogliKartica.naslov?.trim() || !this.novaPomogliKartica.tekst?.trim()) {
+      alert('Naslov i tekst su obavezni.'); return;
+    }
+    if (this.uredivanjeKartice) {
+      this.http.put<any>(`/api/pomogli-slucajevi/${this.uredivanjeKartice.id}`, this.novaPomogliKartica).subscribe({
+        next: (updated) => {
+          Object.assign(this.uredivanjeKartice, updated);
+          this.pomogliModalOpen = false;
+        },
+        error: () => alert('Greška pri čuvanju.')
+      });
+    } else {
+      this.http.post<any>('/api/pomogli-slucajevi', this.novaPomogliKartica).subscribe({
+        next: (nova) => { this.pomogliSlucajevi.push(nova); this.pomogliModalOpen = false; },
+        error: () => alert('Greška pri dodavanju.')
+      });
+    }
+  }
+
+  obrisiPomogliSlucaj(s: any) {
+    if (!confirm(`Obrisati karticu "${s.naslov}"?`)) return;
+    this.http.delete(`/api/pomogli-slucajevi/${s.id}`).subscribe({
+      next: () => { this.pomogliSlucajevi = this.pomogliSlucajevi.filter(x => x.id !== s.id); },
+      error: () => alert('Greška pri brisanju.')
+    });
+  }
+
+  zatvoriPomogliModal() { this.pomogliModalOpen = false; }
+
   viewAlerts() { this.setSection('alerts'); }
   setSection(s: string) { this.activeSection = s; }
 
@@ -432,7 +584,9 @@ export class AdminComponent implements OnInit {
     const map: any = {
       dashboard: 'Pregled', volunteers: 'Volonteri', beneficiaries: 'Korisnici Pomoći',
       offers: 'Ponude', reviews: 'Recenzije', transactions: 'Transakcije',
-      donations: 'Donacije', logs: 'Logovi Aktivnosti', alerts: 'Sistemska Upozorenja'
+      donations: 'Donacije', logs: 'Logovi Aktivnosti', alerts: 'Sistemska Upozorenja',
+      pomogli: 'Pomogli smo',
+      partneri: 'Partneri'
     };
     return map[this.activeSection] || 'Admin Panel';
   }
@@ -442,7 +596,9 @@ export class AdminComponent implements OnInit {
       dashboard: 'Pregled stanja platforme', volunteers: 'Upravljanje volonterima',
       beneficiaries: 'Upravljanje korisnicima pomoći', offers: 'Pregled i moderacija ponuda',
       reviews: 'Moderacija recenzija', transactions: 'Finansijske transakcije',
-      donations: 'Lista donacija', logs: 'Sistemski logovi', alerts: 'Aktivna upozorenja'
+      donations: 'Lista donacija', logs: 'Sistemski logovi', alerts: 'Aktivna upozorenja',
+      pomogli: 'Upravljajte karticama priča koje se prikazuju na javnoj stranici',
+      partneri: 'Dodajte ili uklonite partnere i sponzore platforme'
     };
     return map[this.activeSection] || '';
   }

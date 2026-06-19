@@ -1,0 +1,58 @@
+<app-navbar [logoImagePath]="logoPath"></app-navbar>
+
+<section class="sp-hero">
+  <div class="sp-hero-inner">
+    <div class="section-tag">Naš rad</div>
+    <h1 class="sp-hero-title">Slučajevi kojima smo pomogli</h1>
+    <p class="sp-hero-sub">Svaka priča ovdje predstavlja stvarnog čovjeka čiji je život promijenjen zahvaljujući vašoj podršci i trudu naše zajednice.</p>
+  </div>
+</section>
+
+<section class="sp-section">
+
+  <div *ngIf="cards.length === 0" class="sp-empty">
+    <i class="ph-fill ph-heart" style="font-size:3rem;color:#f9a8d4;display:block;margin-bottom:12px;"></i>
+    <p>Priče dolaze uskoro.</p>
+  </div>
+
+  <!-- ── Srca ─────────────────────────────────────────────── -->
+  <div class="sp-hearts" *ngIf="cards.length > 0">
+    <div
+      *ngFor="let card of cards; let i = index"
+      class="sp-heart-btn"
+      [ngClass]="'sp-' + card.boja"
+      [class.sp-active]="selectedIndex === i"
+      (click)="select(i)"
+    >
+      <i class="ph-fill ph-heart sp-heart-icon"></i>
+      <span class="sp-heart-name">{{ card.naslov }}</span>
+    </div>
+  </div>
+
+  <!-- ── Otvorena kartica ──────────────────────────────────── -->
+  <div class="sp-story" *ngIf="selectedCard">
+    <button class="sp-close-btn" (click)="zatvori()">
+      <i class="ph ph-x"></i>
+    </button>
+    <div class="sp-story-header" [ngClass]="'sp-header-' + selectedCard.boja">
+      <i class="ph-fill ph-heart sp-story-heart"></i>
+      <h2 class="sp-story-title">{{ selectedCard.naslov }}</h2>
+    </div>
+    <p class="sp-story-text">{{ selectedCard.tekst }}</p>
+  </div>
+
+  <p class="sp-hint" *ngIf="cards.length > 0 && !selectedCard">
+    <i class="ph ph-cursor-click"></i> Kliknite na srce da pročitate priču
+  </p>
+
+  <div class="sp-cta">
+    <p>Želite da pomognete nekom ko je trenutno u potrebi?</p>
+    <div class="sp-cta-btns">
+      <button class="btn-primary" routerLink="/slucajevi">Pogledaj aktivne slučajeve</button>
+      <button class="btn-outline" routerLink="/donacije">Donirajte</button>
+    </div>
+  </div>
+
+</section>
+
+<app-footer [logoWhitePath]="logoWhitePath"></app-footer>

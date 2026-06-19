@@ -232,6 +232,11 @@
              target="_blank" style="font-size:0.8rem;color:#2d6b55;">
             <i class="bi bi-link-45deg"></i> Portfolio
           </a>
+          <button *ngIf="selectedService.volunteerId"
+                  (click)="goToVolonterProfil(selectedService.volunteerId)"
+                  class="btn-vol-profil">
+            <i class="bi bi-person-circle"></i> Pogledaj profil volontera
+          </button>
         </div>
       </div>
 

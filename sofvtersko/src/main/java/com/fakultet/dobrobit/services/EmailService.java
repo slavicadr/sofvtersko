@@ -89,6 +89,20 @@ public class EmailService {
         posalji(email, naslov, tekst);
     }
 
+    // Poruka sa kontakt forme — šalje se na info adresu platforme
+    public void posaljiKontaktFormu(String ime, String prezime, String email, String poruka) {
+        String naslov = "Dobrobit — Nova poruka: " + ime + " " + prezime;
+        String tekst = String.format(
+                "Nova poruka primljena putem kontakt forme.\n\n" +
+                "Ime i prezime: %s %s\n" +
+                "E-mail pošiljaoca: %s\n\n" +
+                "Poruka:\n%s\n\n" +
+                "---\nDobrobit platforma",
+                ime, prezime, email, poruka
+        );
+        posalji("dobrobit2026@outlook.com", naslov, tekst);
+    }
+
     // Obavještenje donatoru nakon donacije (SRS 7.4)
     public void posaljiPotvrdaDonacije(String email, String ime, String iznos) {
         String naslov = "Dobrobit — Potvrda donacije";

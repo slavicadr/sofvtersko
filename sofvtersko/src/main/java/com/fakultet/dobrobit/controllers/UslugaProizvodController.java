@@ -40,6 +40,12 @@ public class UslugaProizvodController {
         return service.pretrazi(naziv);
     }
 
+    // Javne usluge određenog volontera — za profil stranicu
+    @GetMapping("/volonter/{volonterId}")
+    public List<UslugaProizvod> uslugePovoljneZaVolontera(@PathVariable int volonterId) {
+        return service.getByVolonterPublic(volonterId);
+    }
+
     //filtriranje usluga po volonteru koji ih nudi
     @PostMapping("/filter-volonter")
     public List<UslugaProizvod> poVolonteru(@RequestBody Korisnik volonter) {

@@ -61,6 +61,16 @@
         <span *ngIf="!sidebarCollapsed">Donacije</span>
       </a>
 
+      <div class="nav-group-label" *ngIf="!sidebarCollapsed">Sadržaj stranice</div>
+      <a class="nav-item" [class.active]="activeSection==='pomogli'" (click)="setSection('pomogli'); loadPomogliSlucajevi()" title="Pomogli smo">
+        <i class="ph-fill ph-heart nav-icon" style="color:#ec4899;"></i>
+        <span *ngIf="!sidebarCollapsed">Pomogli smo</span>
+      </a>
+      <a class="nav-item" [class.active]="activeSection==='partneri'" (click)="setSection('partneri'); loadPartnere()" title="Partneri">
+        <i class="ph-fill ph-handshake nav-icon"></i>
+        <span *ngIf="!sidebarCollapsed">Partneri</span>
+      </a>
+
       <div class="nav-group-label" *ngIf="!sidebarCollapsed">Sistem</div>
       <a class="nav-item" [class.active]="activeSection==='logs'" (click)="setSection('logs')" title="Logovi">
         <i class="ph-fill ph-clipboard-text nav-icon"></i>
@@ -580,6 +590,81 @@
         </div>
       </ng-container>
 
+      <!-- ── POMOGLI SMO ─────────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'pomogli'">
+        <div class="section-toolbar">
+          <button class="btn-primary-sm" (click)="otvoriPomogliFormu()">
+            <i class="ph-fill ph-plus-circle"></i> Dodaj karticu
+          </button>
+          <p style="font-size:0.83rem;color:var(--text-light);margin:0;">
+            Boje: <strong>roza1</strong> (roze-ljubičasta), <strong>roza2</strong> (crveno-roze), <strong>plava</strong>
+          </p>
+        </div>
+
+        <div class="sp-admin-cards">
+          <div class="sp-admin-card" *ngFor="let s of pomogliSlucajevi">
+            <div class="spa-header" [ngClass]="'spa-' + s.boja">
+              <i class="ph-fill ph-heart spa-heart-icon"></i>
+              <div class="spa-meta">
+                <div class="spa-naslov">{{ s.naslov || '(bez naslova)' }}</div>
+                <span class="spa-boja-tag">{{ s.boja }}</span>
+              </div>
+            </div>
+            <div class="spa-tekst">{{ s.tekst | slice:0:140 }}{{ s.tekst?.length > 140 ? '...' : '' }}</div>
+            <div class="spa-actions">
+              <button class="ca-btn ca-edit" (click)="urediPomogliSlucaj(s)" title="Uredi">
+                <i class="ph ph-pencil-simple"></i>
+              </button>
+              <button class="ca-btn ca-reject" (click)="obrisiPomogliSlucaj(s)" title="Obriši">
+                <i class="ph-fill ph-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="pomogliSlucajevi.length === 0">
+            <i class="ph-fill ph-heart" style="font-size:2.5rem;color:#f9a8d4;"></i>
+            <p>Još nema kartica. Kliknite "Dodaj karticu" da dodate prvu priču.</p>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── PARTNERI ─────────────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'partneri'">
+        <div class="section-toolbar">
+          <button class="btn-primary-sm" (click)="otvoriPartnerFormu()">
+            <i class="ph-fill ph-plus-circle"></i> Dodaj partnera
+          </button>
+        </div>
+
+        <div class="partneri-admin-grid">
+          <div class="partner-admin-card" *ngFor="let p of adminPartneri">
+            <div class="pac-logo-wrap">
+              <img [src]="p.logoUrl" [alt]="p.naziv" class="pac-logo"
+                   (error)="onPartnerLogoError($event, p.bojaPozadine, p.kratko)"/>
+            </div>
+            <div class="pac-body">
+              <div class="pac-naziv">{{ p.naziv }}</div>
+              <div class="pac-kat">{{ p.kategorija }}</div>
+              <a *ngIf="p.website" [href]="p.website" target="_blank" rel="noopener"
+                 class="pac-link">{{ p.website }}</a>
+            </div>
+            <div class="pac-actions">
+              <button class="ca-btn ca-edit" (click)="urediPartnera(p)" title="Uredi">
+                <i class="ph ph-pencil-simple"></i>
+              </button>
+              <button class="ca-btn ca-reject" (click)="obrisiPartnera(p)" title="Obriši">
+                <i class="ph-fill ph-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="adminPartneri.length === 0">
+            <i class="ph-fill ph-handshake" style="font-size:2.5rem;color:#d0d9e0;"></i>
+            <p>Nema partnera. Kliknite "Dodaj partnera" da dodate prvog.</p>
+          </div>
+        </div>
+      </ng-container>
+
       <!-- ── ALERTS ─────────────────────────────────────────── -->
       <ng-container *ngIf="activeSection === 'alerts'">
         <div class="alerts-grid">
@@ -703,6 +788,139 @@
         <i class="ph-fill ph-paper-plane-tilt"></i> Potvrdi i pošalji email
       </button>
       <button class="btn-modal-cancel" (click)="closeStatusModal()">Otkaži</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PARTNER MODAL ═════════════════════════════════════════ -->
+<div class="modal-backdrop" *ngIf="partnerModalOpen" (click)="zatvoriPartnerModal()">
+  <div class="modal-card" style="max-width:540px;" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <i class="ph-fill ph-handshake"></i>
+        {{ uredivanjePartnera ? 'Uredi partnera' : 'Dodaj partnera' }}
+      </h3>
+      <button class="modal-close" (click)="zatvoriPartnerModal()"><i class="ph ph-x"></i></button>
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-group">
+        <label class="form-label">Naziv <span style="color:#e74c3c;">*</span></label>
+        <input type="text" class="form-input" [(ngModel)]="noviPartner.naziv" placeholder="Npr. ICT Cortex"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Skraćenica</label>
+        <input type="text" class="form-input" [(ngModel)]="noviPartner.kratko" placeholder="Npr. ICT" maxlength="4"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Opis</label>
+      <textarea class="form-textarea" [(ngModel)]="noviPartner.opis" placeholder="Kratki opis partnera..."></textarea>
+    </div>
+    <!-- Logo — upload ili URL -->
+    <div class="form-group">
+      <label class="form-label">Logo partnera <span style="color:#e74c3c;">*</span></label>
+      <div class="logo-input-tabs">
+        <button type="button" class="lit-tab" [class.active]="logoTabMode === 'upload'" (click)="logoTabMode = 'upload'">
+          <i class="ph ph-upload-simple"></i> Uploaduj sliku
+        </button>
+        <button type="button" class="lit-tab" [class.active]="logoTabMode === 'url'" (click)="logoTabMode = 'url'">
+          <i class="ph ph-link"></i> Upiši URL
+        </button>
+      </div>
+      <div *ngIf="logoTabMode === 'upload'" class="logo-upload-area"
+           (dragover)="$event.preventDefault()" (drop)="onLogoDrop($event)">
+        <input type="file" #logoFileInput accept="image/*" style="display:none"
+               (change)="onLogoFileSelected($event)"/>
+        <div class="lua-content" (click)="logoFileInput.click()">
+          <i class="ph ph-image" style="font-size:2rem;color:#94a3b8;"></i>
+          <span class="lua-text">
+            Kliknite ili prevucite fajl ovdje<br>
+            <small>PNG, JPG, SVG, WebP — max 5 MB</small>
+          </span>
+          <span *ngIf="logoUploadStatus === 'uploading'" class="lua-status">Učitavanje...</span>
+          <span *ngIf="logoUploadStatus === 'done'" class="lua-status lua-ok">
+            <i class="ph-fill ph-check-circle"></i> Uspješno uploadovano
+          </span>
+          <span *ngIf="logoUploadStatus === 'error'" class="lua-status lua-err">
+            <i class="ph-fill ph-x-circle"></i> Greška pri uploadu
+          </span>
+        </div>
+      </div>
+      <input *ngIf="logoTabMode === 'url'" type="text" class="form-input" style="margin-top:8px;"
+             [(ngModel)]="noviPartner.logoUrl" placeholder="https://primjer.com/logo.png"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Web stranica</label>
+      <input type="text" class="form-input" [(ngModel)]="noviPartner.website" placeholder="https://example.com"/>
+    </div>
+    <div class="form-row-2">
+      <div class="form-group">
+        <label class="form-label">Kategorija</label>
+        <input type="text" class="form-input" [(ngModel)]="noviPartner.kategorija" placeholder="Npr. Fondacija"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Redoslijed</label>
+        <input type="number" class="form-input" [(ngModel)]="noviPartner.redoslijed"/>
+      </div>
+    </div>
+
+    <!-- Preview okruglog loga -->
+    <div class="partner-logo-preview" *ngIf="noviPartner.logoUrl">
+      <div class="plp-circle">
+        <img [src]="noviPartner.logoUrl" alt="Preview" (error)="onPreviewError($event)"/>
+      </div>
+      <span style="font-size:0.82rem;color:var(--text-light);">Pregled loga</span>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-modal-confirm" (click)="sacuvajPartnera()">
+        <i class="ph-fill" [class]="uredivanjePartnera ? 'ph-floppy-disk' : 'ph-plus-circle'"></i>
+        {{ uredivanjePartnera ? 'Sačuvaj izmjene' : 'Dodaj partnera' }}
+      </button>
+      <button class="btn-modal-cancel" (click)="zatvoriPartnerModal()">Otkaži</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ POMOGLI MODAL ══════════════════════════════════════════ -->
+<div class="modal-backdrop" *ngIf="pomogliModalOpen" (click)="zatvoriPomogliModal()">
+  <div class="modal-card" style="max-width:520px;" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <i class="ph-fill ph-heart" style="color:#ec4899;"></i>
+        {{ uredivanjeKartice ? 'Uredi karticu' : 'Dodaj karticu' }}
+      </h3>
+      <button class="modal-close" (click)="zatvoriPomogliModal()"><i class="ph ph-x"></i></button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Naslov <span style="color:#e74c3c;">*</span></label>
+      <input type="text" class="form-input" [(ngModel)]="novaPomogliKartica.naslov" placeholder="Npr. Marija Petrović"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tekst priče <span style="color:#e74c3c;">*</span></label>
+      <textarea class="form-textarea" style="min-height:120px;" [(ngModel)]="novaPomogliKartica.tekst" placeholder="Opišite priču..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Boja srca</label>
+      <select class="form-select" [(ngModel)]="novaPomogliKartica.boja">
+        <option value="roza1">Roze 1 (roze-ljubičasta)</option>
+        <option value="roza2">Roze 2 (crveno-roze)</option>
+        <option value="plava">Plava</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Redoslijed prikaza</label>
+      <input type="number" class="form-input" [(ngModel)]="novaPomogliKartica.redoslijed" placeholder="1, 2, 3..."/>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-modal-confirm" (click)="sacuvajPomogliKarticu()">
+        <i class="ph-fill" [class]="uredivanjeKartice ? 'ph-floppy-disk' : 'ph-plus-circle'"></i>
+        {{ uredivanjeKartice ? 'Sačuvaj izmjene' : 'Dodaj karticu' }}
+      </button>
+      <button class="btn-modal-cancel" (click)="zatvoriPomogliModal()">Otkaži</button>
     </div>
   </div>
 </div>

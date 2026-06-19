@@ -15,6 +15,8 @@ import java.util.List;
 
         List<UslugaProizvod> findByVolonter(Korisnik volonter);
 
+        List<UslugaProizvod> findByVolonter_KorisnikId(int korisnikId);
+
         List<UslugaProizvod> findByKategorija(Kategorija kategorija);
 
         List<UslugaProizvod> findByTip(String tip);

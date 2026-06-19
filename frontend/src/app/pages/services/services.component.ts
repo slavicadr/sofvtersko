@@ -63,14 +63,22 @@ export class ServicesComponent implements OnInit {
     });
   }
 
+  private normalize(s: string): string {
+    return s.toLowerCase()
+      .replace(/[šŠ]/g, 's').replace(/[čČ]/g, 'c').replace(/[ćĆ]/g, 'c')
+      .replace(/[žŽ]/g, 'z').replace(/[đĐ]/g, 'd').replace(/[áàä]/g, 'a')
+      .replace(/[éèë]/g, 'e').replace(/[íìï]/g, 'i').replace(/[óòö]/g, 'o')
+      .replace(/[úùü]/g, 'u');
+  }
+
   filterServices() {
     let list = [...this.allServices];
     if (this.searchQuery) {
-      const q = this.searchQuery.toLowerCase();
+      const q = this.normalize(this.searchQuery);
       list = list.filter(s =>
-        s.title.toLowerCase().includes(q) ||
-        s.description.toLowerCase().includes(q) ||
-        s.category.toLowerCase().includes(q)
+        this.normalize(s.title).includes(q) ||
+        this.normalize(s.description).includes(q) ||
+        this.normalize(s.category).includes(q)
       );
     }
     if (this.selectedCategory) list = list.filter(s => s.category === this.selectedCategory);
@@ -147,6 +155,11 @@ export class ServicesComponent implements OnInit {
         beneficiary: service.beneficiary
       }
     });
+  }
+
+  goToVolonterProfil(volunteerId: number) {
+    this.closeServiceModal();
+    this.router.navigate(['/profil-volontera', volunteerId]);
   }
 
   uploadServiceImage(service: any) {

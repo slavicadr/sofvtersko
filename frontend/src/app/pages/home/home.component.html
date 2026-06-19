@@ -199,29 +199,6 @@
   </div>
 </div>
 
-<!-- ══ PARTNERI ═══════════════════════════════════════════════ -->
-<section class="donatori-strip">
-  <div class="donatori-strip-inner">
-    <div class="section-tag" style="margin-bottom:10px;">Naši partneri</div>
-    <h2 class="section-title" style="margin-bottom:8px;">Podržavaju nas</h2>
-    <p style="color:var(--text-light);font-size:0.9rem;margin-bottom:36px;">Organizacije i kompanije koje vjeruju u našu misiju</p>
-    <div class="donatori-logos">
-      <div class="donor-logo-card" *ngFor="let d of donatori">
-        <div class="dlc-img-wrap" [attr.data-boja]="d.boja" [attr.data-kratko]="d.kratko">
-          <img
-            [src]="d.logoUrl"
-            [alt]="d.naziv"
-            class="dlc-logo"
-            (error)="onHomeDonatorError($event, d.boja, d.kratko)"
-          />
-        </div>
-        <div class="dlc-naziv">{{ d.naziv }}</div>
-      </div>
-    </div>
-    <button class="btn-outline" style="margin-top:32px;" routerLink="/partneri">Saznajte više o partnerima →</button>
-  </div>
-</section>
-
 <!-- ══ ABOUT US ═══════════════════════════════════════════════ -->
 <section class="section about-section" id="o-nama">
   <div class="section-tag">O nama</div>
@@ -270,6 +247,54 @@
         <div class="team-name">{{ m.name }}</div>
         <div class="team-role">{{ m.role }}</div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ KONTAKT ═══════════════════════════════════════════════ -->
+<section class="section kontakt-section" id="kontakt">
+  <div class="kontakt-inner">
+    <div class="kontakt-left">
+      <div class="section-tag">Kontakt</div>
+      <h2 class="section-title">Imate pitanje ili sugestiju?</h2>
+      <p class="kontakt-opis">Pošaljite nam poruku i naš tim će vam odgovoriti u najkraćem roku.</p>
+      <div class="kontakt-info-item">
+        <div class="ki-icon"><i class="ph-fill ph-envelope-simple"></i></div>
+        <span>dobrobit2026&#64;outlook.com</span>
+      </div>
+    </div>
+
+    <div class="kontakt-form-wrap">
+      <div *ngIf="kontaktUspjeh" class="kontakt-success">
+        <i class="ph-fill ph-check-circle"></i>
+        <span>Vaša poruka je uspješno poslana! Hvala vam.</span>
+      </div>
+
+      <form *ngIf="!kontaktUspjeh" (ngSubmit)="posaljiKontakt()" #kontaktForm="ngForm" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Ime <span class="required">*</span></label>
+            <input class="form-input" type="text" [(ngModel)]="kontakt.ime" name="ime" required placeholder="Vaše ime"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prezime <span class="required">*</span></label>
+            <input class="form-input" type="text" [(ngModel)]="kontakt.prezime" name="prezime" required placeholder="Vaše prezime"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">E-mail adresa <span class="required">*</span></label>
+          <input class="form-input" type="email" [(ngModel)]="kontakt.email" name="email" required placeholder="vas@email.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pitanje ili sugestija <span class="required">*</span></label>
+          <textarea class="form-input kontakt-textarea" [(ngModel)]="kontakt.poruka" name="poruka" required placeholder="Napišite vašu poruku..."></textarea>
+        </div>
+        <div *ngIf="kontaktGreska" class="kontakt-error">{{ kontaktGreska }}</div>
+        <button type="submit" class="btn-primary kontakt-submit" [disabled]="kontaktSaljem">
+          <span *ngIf="!kontaktSaljem">Pošalji poruku <i class="ph ph-paper-plane-tilt"></i></span>
+          <span *ngIf="kontaktSaljem">Slanje...</span>
+        </button>
+      </form>
     </div>
   </div>
 </section>
