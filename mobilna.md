@@ -2,6 +2,7 @@
 
 ## Sadržaj
 
+0. [Pokretanje mobilne aplikacije](#0-pokretanje-mobilne-aplikacije)
 1. [Pregled projekta](#1-pregled-projekta)
 2. [Tehnološki stack](#2-tehnološki-stack)
 3. [Struktura foldera](#3-struktura-foldera)
@@ -13,6 +14,87 @@
 9. [Modeli podataka (TypeScript)](#9-modeli-podataka-typescript)
 10. [Stranice – detalji implementacije](#10-stranice--detalji-implementacije)
 11. [Šta je preuzeto s frontenda](#11-šta-je-preuzeto-s-frontenda)
+
+---
+
+## 0. Pokretanje mobilne aplikacije
+
+> Prije pokretanja mobilne aplikacije mora biti pokrenut **backend** (Spring Boot na portu 8080). Detaljna uputstva za backend i bazu podataka nalaze se u `DOKUMENTACIJA.md` — sekcija **15. Postavljanje na novom računaru**.
+
+### Preduslovi
+
+| Alat | Minimalna verzija | Provjera |
+|------|-------------------|---------|
+| Node.js | 18.x | `node --version` |
+| npm | 9.x | `npm --version` |
+| Angular CLI | 17+ | `ng version` |
+
+Ako Angular CLI nije instaliran globalno:
+```bash
+npm install -g @angular/cli
+```
+
+### Korak 1 — Klonirati repozitorijum
+
+```bash
+git clone git@gitlab.com:anciNPT/sofvtersko.git
+cd sofvtersko
+```
+
+### Korak 2 — Instalirati zavisnosti
+
+```bash
+cd mobile
+npm install
+```
+
+Ovo čita `package.json` i preuzima sve Angular/Ionic/Capacitor pakete u `node_modules/`. Može trajati 1–3 minute.
+
+### Korak 3 — Pokrenuti mobilnu aplikaciju
+
+```bash
+npm start -- --port 4300
+```
+
+ili ekvivalentno:
+
+```bash
+npx ng serve --port 4300
+```
+
+Aplikacija se pokreće na **`http://localhost:4300`** i automatski se osvježava pri svakoj izmjeni koda (live reload).
+
+> **Zašto port 4300?** Backend ima CORS konfiguraciju koja dozvoljava origin `localhost:4300` za mobilnu aplikaciju. Ako se pokrene na nekom drugom portu, pretraživač će blokirati sve API pozive.
+
+### Redosljed pokretanja (sve tri komponente)
+
+```
+1. MySQL baza         → mora biti pokrenuta (port 3306)
+2. Spring Boot backend → cd sofvtersko && mvnw.cmd spring-boot:run  (port 8080)
+3. Web frontend        → cd frontend && npm start                    (port 4200)
+4. Mobilna aplikacija  → cd mobile && npm start -- --port 4300      (port 4300)
+```
+
+Koraci 3 i 4 su nezavisni — mogu se pokrenuti u bilo kom redoslijedu, ali oba zahtijevaju da backend (korak 2) bude aktivan.
+
+### Provjera da li sve radi
+
+1. Otvori `http://localhost:4300` u pretraživaču
+2. Trebalo bi da se prikaže login stranica s Dobrobit dizajnom (teal header, srce logo)
+3. Pokušaj prijave s validnim nalogom iz baze
+4. Nakon uspješne prijave prikazuje se Tab1 (Početna) s humanitarnim slučajevima
+
+### Česti problemi
+
+| Problem | Uzrok | Rješenje |
+|---------|-------|----------|
+| Bijeli ekran / greška u konzoli | Backend nije pokrenut | Pokreni `mvnw.cmd spring-boot:run` u `sofvtersko/` |
+| "CORS error" u konzoli | Pogrešan port ili backend bez CORS konfiguracije | Pokreni na portu 4300, provjeri `SecurityConfig.java` |
+| `npm install` greška | Stara verzija Node.js | Ažuriraj Node.js na verziju 18+ |
+| `ng: command not found` | Angular CLI nije instaliran | `npm install -g @angular/cli` |
+| Login ne radi | Session cookie problem | Provjeri da se backend i mobilna vrtiju u istom pretraživaču |
+
+---
 12. [Šta je novo / dodano](#12-šta-je-novo--dodano)
 13. [Komunikacija s backendom](#13-komunikacija-s-backendom)
 14. [Poznata ograničenja](#14-poznata-ograničenja)

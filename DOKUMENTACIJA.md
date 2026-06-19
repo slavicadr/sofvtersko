@@ -19,8 +19,9 @@
 10. [Frontend — Angular aplikacija](#10-frontend--angular-aplikacija)
 11. [Korisničke uloge i tokovi](#11-korisničke-uloge-i-tokovi)
 12. [Poslovne logike i pravila](#12-poslovne-logike-i-pravila)
-13. [Pokretanje projekta](#13-pokretanje-projekta)
+13. [Pokretanje projekta (kratki vodič)](#13-pokretanje-projekta)
 14. [Konfiguracija](#14-konfiguracija)
+15. [Postavljanje na novom računaru (detaljna uputstva)](#15-postavljanje-na-novom-računaru)
 
 ---
 
@@ -1161,7 +1162,7 @@ Volonteri su rangirani opadajuće po ovom score-u. Top 5 se prikazuje na početn
 
 ---
 
-## 13. POKRETANJE PROJEKTA
+## 13. POKRETANJE PROJEKTA (kratki vodič)
 
 ### Preduslovi
 
@@ -1257,6 +1258,356 @@ Linux/Mac: /home/<korisnik>/dobrobit-uploads/cv/
 - Profilna slika volontera se ne uploaduje na server (putanja se unosi ručno)
 - Odgovori volontera na recenzije se čuvaju samo lokalno u memoriji (ne persistuju se u bazu)
 - Admin notifikacioni sistem (upozorenja) je vizuelno implementiran ali bez backend logike
+
+---
+
+---
+
+## 15. POSTAVLJANJE NA NOVOM RAČUNARU
+
+> Ova sekcija je namijenjena koleginicama koje kloniraju repozitorijum i žele pokrenuti cijeli projekat lokalno od nule.
+
+### 15.1 Preduslovi — šta treba instalirati
+
+#### Java JDK 17+
+
+Provjeri da li je instaliran:
+```bash
+java -version
+```
+Ako nije, preuzmi sa: https://adoptium.net (odaberi **Temurin JDK 17** ili noviji)
+
+#### MySQL 8.x
+
+Provjeri da li je instaliran i aktivan:
+```bash
+mysql --version
+```
+Ako nije, preuzmi **MySQL Community Server 8.x** sa: https://dev.mysql.com/downloads/mysql/
+
+#### Node.js 18+ i npm
+
+```bash
+node --version   # mora biti 18.x ili noviji
+npm --version    # dolazi uz Node.js
+```
+Ako nije instaliran: https://nodejs.org (odaberi **LTS** verziju)
+
+#### Angular CLI (globalno)
+
+```bash
+npm install -g @angular/cli
+ng version   # provjera
+```
+
+---
+
+### 15.2 Kloniranje repozitorijuma
+
+```bash
+git clone git@gitlab.com:anciNPT/sofvtersko.git
+cd sofvtersko
+```
+
+Repozitorijum sadrži tri komponente:
+```
+sofvtersko/    ← Spring Boot backend
+frontend/      ← Angular web aplikacija
+mobile/        ← Ionic Angular mobilna aplikacija
+```
+
+---
+
+### 15.3 Postavljanje MySQL baze podataka
+
+#### Korak 1 — Pokrenuti MySQL server
+
+**Windows:** Otvori "Services" (Win+R → `services.msc`) i pokreni **MySQL80** servis, ili iz MySQL Workbencha.
+
+**Alternativno putem komandne linije:**
+```bash
+# Windows (ako je MySQL u PATH-u)
+net start mysql80
+```
+
+#### Korak 2 — Kreirati bazu podataka
+
+Povežite se na MySQL (putem MySQL Workbencha ili komandne linije):
+
+```sql
+-- Kreirati bazu
+CREATE DATABASE dobrobit1
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+-- Provjera
+SHOW DATABASES;
+-- trebalo bi da se vidi "dobrobit1" na listi
+```
+
+> **Važno:** Ime baze mora biti tačno `dobrobit1` jer je to upisano u konfiguracionom fajlu backenda.
+
+#### Korak 3 — Kreirati MySQL korisnika (opciono, preporučeno)
+
+Možete koristiti `root` korisnika (jednostavnije za razvoj) ili kreirati posebnog korisnika:
+
+```sql
+-- Kreiranje korisnika (opciono)
+CREATE USER 'dobrobit_user'@'localhost' IDENTIFIED BY 'odaberi_jaku_lozinku';
+GRANT ALL PRIVILEGES ON dobrobit1.* TO 'dobrobit_user'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+> Tabele **ne treba ručno kreirati** — Hibernate (`ddl-auto=update`) ih automatski kreira pri prvom pokretanju backenda.
+
+---
+
+### 15.4 Konfiguracija backenda (application.properties)
+
+**Lokacija fajla:**
+```
+sofvtersko/src/main/resources/application.properties
+```
+
+Otvorite ovaj fajl u editoru i prilagodite vrijednosti svom računaru:
+
+```properties
+# ─── Baza podataka ──────────────────────────────────────────────
+spring.datasource.url=jdbc:mysql://localhost:3306/dobrobit1?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.username=root
+spring.datasource.password=VASA_MYSQL_LOZINKA
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# ─── Hibernate / JPA ────────────────────────────────────────────
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+
+# ─── Server ─────────────────────────────────────────────────────
+server.port=8080
+
+# ─── Multipart upload (za CV fajlove volontera) ─────────────────
+spring.servlet.multipart.max-file-size=15MB
+spring.servlet.multipart.max-request-size=16MB
+
+# ─── Email (Outlook SMTP) ───────────────────────────────────────
+spring.mail.host=smtp-mail.outlook.com
+spring.mail.port=587
+spring.mail.username=VASA_EMAIL_ADRESA@outlook.com
+spring.mail.password=VASA_EMAIL_LOZINKA
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.test-connection=false
+```
+
+**Šta treba promijeniti:**
+
+| Polje | Šta upisati |
+|-------|-------------|
+| `spring.datasource.password` | Lozinka vašeg MySQL `root` korisnika (ili korisnika kojeg ste kreirali) |
+| `spring.mail.username` | Email adresa s koje će ići notifikacije (Outlook nalog) |
+| `spring.mail.password` | Lozinka tog email naloga |
+
+> **Napomena o emailu:** Email notifikacije nisu obavezne za testiranje. Ako ne želite podešavati email, možete privremeno dodati `spring.mail.test-connection=false` i ignorisati email greške — aplikacija će funkcionisati normalno, samo notifikacije neće stizati.
+
+---
+
+### 15.5 Pokretanje backenda
+
+```bash
+cd sofvtersko
+
+# Windows
+mvnw.cmd spring-boot:run
+
+# Linux / Mac
+./mvnw spring-boot:run
+```
+
+**Šta se dešava pri prvom pokretanju:**
+1. Maven preuzima sve Java zavisnosti (~2–5 minuta pri prvom pokretanju)
+2. Spring Boot se konektuje na MySQL
+3. Hibernate skenira sve `@Entity` klase i **automatski kreira tabele** u `dobrobit1` bazi
+4. Aplikacija je dostupna na `http://localhost:8080`
+
+**Provjera da li radi:**
+```bash
+curl http://localhost:8080/api/kategorije
+# Treba vratiti prazan niz [] ili listu kategorija ako postoje
+```
+
+Ili u pretraživaču otvorite: `http://localhost:8080/api/kategorije`
+
+**Tipične greške pri pokretanju:**
+
+| Greška | Uzrok | Rješenje |
+|--------|-------|----------|
+| `Communications link failure` | MySQL nije pokrenut | Pokrenite MySQL servis |
+| `Access denied for user 'root'@'localhost'` | Pogrešna lozinka u `application.properties` | Ispravite `spring.datasource.password` |
+| `Unknown database 'dobrobit1'` | Baza nije kreirana | Pokrenite `CREATE DATABASE dobrobit1` |
+| `Port 8080 already in use` | Nešto već sluša na 8080 | Ugasite tu aplikaciju ili promijenite `server.port` |
+| `java: command not found` | JDK nije instaliran | Instalirajte JDK 17+ |
+
+---
+
+### 15.6 Inicijalni podaci u bazi
+
+Hibernate kreira prazne tabele. Za testiranje su potrebni minimalni podaci.
+
+#### Kreiranje prvog administratora
+
+Endpoint za prvog admina radi **samo jednom** (ako već postoji administrator, vraća grešku):
+
+```bash
+curl -X POST http://localhost:8080/api/korisnici/registracija/prviAdmin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ime": "Admin",
+    "prezime": "Dobrobit",
+    "email": "admin@dobrobit.com",
+    "lozinkaHash": "admin123",
+    "tipKorisnika": "administrator"
+  }'
+```
+
+Ili putem MySQL Workbencha (ako ne koristite curl) direktno insertujte admina:
+
+```sql
+-- Lozinka "admin123" enkodovana BCryptom
+-- NAPOMENA: svaki put kada pravite admina, promijenite lozinku i koristite novi BCrypt hash
+-- BCrypt hash za "admin123" (10 rundi):
+INSERT INTO korisnik (ime, prezime, email, lozinka_hash, tip_korisnika, status_naloga, verifikovan, prikaz_anonimno, datum_registracije)
+VALUES ('Admin', 'Dobrobit', 'admin@dobrobit.com',
+        '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhmW',
+        'administrator', 'aktivan', true, false, NOW());
+```
+
+#### Dodavanje kategorija
+
+Kategorije su potrebne za usluge. Dodajte ih putem endpointa ili SQL:
+
+```sql
+INSERT INTO kategorija (naziv, opis) VALUES
+  ('IT i Tehnologija', 'Softverska podrška, web razvoj, IT savjetovanje'),
+  ('Obrazovanje', 'Privatne lekcije, tutorstvo, radionice'),
+  ('Pravne usluge', 'Pravno savjetovanje, ugovori, zastupanje'),
+  ('Finansije', 'Računovodstvo, poresko savjetovanje'),
+  ('Ljepota i njega', 'Frizerstvo, kozmetika, masaža'),
+  ('Muzika i umjetnost', 'Muzičke lekcije, fotografija, dizajn'),
+  ('Sport i fitness', 'Personalni trening, joga, plivanje'),
+  ('Psihološka podrška', 'Savjetovanje, terapija, mentalno zdravlje'),
+  ('Ostalo', 'Ostale usluge koje ne spadaju u gornje kategorije');
+```
+
+#### Dodavanje korisnika pomoći (za testiranje donacija)
+
+```sql
+INSERT INTO korisnik_pomoci (naziv, opis_potrebe, broj_racuna) VALUES
+  ('Porodica Jovanović', 'Troče porodice, potrebna finansijska podrška', '123-456-789'),
+  ('Udruženje slijepih', 'Podrška osobama s oštećenjem vida', '987-654-321');
+```
+
+---
+
+### 15.7 Pokretanje web frontenda
+
+```bash
+cd frontend
+npm install    # samo prvi put — preuzima Angular pakete
+npm start      # pokreće ng serve na portu 4200
+```
+
+Aplikacija je dostupna na `http://localhost:4200`
+
+---
+
+### 15.8 Pokretanje mobilne aplikacije
+
+```bash
+cd mobile
+npm install           # samo prvi put
+npm start -- --port 4300
+```
+
+Aplikacija je dostupna na `http://localhost:4300`
+
+> **Zašto port 4300?** CORS konfiguracija u `SecurityConfig.java` dozvoljava origin `localhost:4300`. Ako pokrenete na drugom portu, pretraživač će blokirati sve API pozive prema backendu.
+
+---
+
+### 15.9 Kompletna tabela portova
+
+| Komponenta | Port | URL | Komanda za pokretanje |
+|------------|------|-----|-----------------------|
+| MySQL | 3306 | — | (servis u pozadini) |
+| Spring Boot backend | 8080 | `http://localhost:8080` | `mvnw.cmd spring-boot:run` |
+| Web frontend (Angular) | 4200 | `http://localhost:4200` | `npm start` |
+| Mobilna aplikacija (Ionic) | 4300 | `http://localhost:4300` | `npm start -- --port 4300` |
+
+---
+
+### 15.10 Folder za upload fajlova (CV volontera)
+
+Backend čuva uploadovane CV PDF fajlove na lokalnom disku. Folder se **automatski kreira** pri prvom uploadu, ali možete ga kreirati ručno:
+
+**Windows:**
+```
+C:\Users\<vaše_korisničko_ime>\dobrobit-uploads\cv\
+```
+
+**Linux/Mac:**
+```
+/home/<vaše_korisničko_ime>/dobrobit-uploads/cv/
+```
+
+Putanja je hardkodirana u `FileUploadController.java`. Ako je potrebno promijeniti lokaciju, uredite:
+```java
+private static final String UPLOAD_DIR = 
+    System.getProperty("user.home") + "/dobrobit-uploads/cv/";
+```
+
+---
+
+### 15.11 Preporučeni redosljed za prvu sesiju testiranja
+
+```
+1.  Pokrenite MySQL servis
+2.  Kreirajte bazu: CREATE DATABASE dobrobit1
+3.  Podesite application.properties (MySQL lozinka)
+4.  Pokrenite backend: cd sofvtersko && mvnw.cmd spring-boot:run
+5.  Sačekajte dok se ne pojavi "Started DobrobitApplication" u konzoli
+6.  Kreirajte admina: POST /api/korisnici/registracija/prviAdmin
+7.  Dodajte kategorije u bazu (SQL ili putem API-ja s admin nalogom)
+8.  Registrujte test volontera (putem web frontenda ili mobilne aplikacije)
+9.  Prijavite se kao admin → odobrite volontera
+10. Registrujte test kupca
+11. Kupac kupuje uslugu → volonter označava kao realizovano → kupac ostavlja recenziju
+```
+
+---
+
+### 15.12 Testiranje API-ja bez frontenda (Postman / curl)
+
+Možete direktno testirati backend bez pokretanja Angular aplikacija:
+
+**Primjer: Prijava kao admin**
+```bash
+curl -X POST http://localhost:8080/api/korisnici/login \
+  -H "Content-Type: application/json" \
+  -c cookies.txt \
+  -d '{"email": "admin@dobrobit.com", "lozinka": "admin123"}'
+```
+
+Fajl `cookies.txt` čuva session cookie za naredne zahtjeve:
+
+```bash
+# Dohvati sve korisnike (zahtijeva admin sesiju)
+curl http://localhost:8080/api/korisnici/ \
+  -b cookies.txt
+
+# Dohvati sve kategorije (javno)
+curl http://localhost:8080/api/kategorije
+```
 
 ---
 
