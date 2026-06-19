@@ -26,7 +26,7 @@ export class PaymentComponent {
   orderImageUrl: string = '';
 
   beneficiaryName: string = 'Slaven M.';
-  primalacEmail: string = 'sb-u6i2o33583277@business.example.com';
+  primalacEmail: string = 'sb-u6i2o48293292@business.example.com';
 
   promoCode: string = '';
   promoApplied: boolean = false;
@@ -54,6 +54,7 @@ export class PaymentComponent {
 
   isDonation: boolean = false;
   logoPath: string = '';
+  private paypalButtonRendered: boolean = false;
 
   private backendUrl = 'http://localhost:8080/api/payment';
 
@@ -85,13 +86,15 @@ export class PaymentComponent {
   }
 
   set paymentMethod(value: string) {
+    if (this._paymentMethod === value) return;
     this._paymentMethod = value;
     this.validationErrors = [];
+    this.paypalButtonRendered = false;
 
     if (value === 'paypal') {
       setTimeout(() => {
         this.renderPaypalButton();
-      }, 100);
+      }, 500);
     }
   }
 
@@ -156,45 +159,72 @@ export class PaymentComponent {
   }
 
   renderPaypalButton() {
+    if (this.paypalButtonRendered) {
+      console.log('[PayPal] Dugme već renderovano, preskačem');
+      return;
+    }
+
+    if (typeof paypal === 'undefined') {
+      console.error('[PayPal] SDK nije učitan');
+      this.showFailureState('PayPal SDK nije dostupan. Osvježite stranicu (Ctrl+Shift+R).');
+      return;
+    }
+
     const container = document.getElementById('paypal-button-container');
-    if (container) container.innerHTML = '';
+    if (!container) {
+      console.error('[PayPal] Container element nije pronađen');
+      return;
+    }
+    container.innerHTML = '';
+    this.paypalButtonRendered = true;
 
     paypal.Buttons({
       createOrder: (data: any, actions: any) => {
-        const url = `${this.backendUrl}/create?iznos=${this.finalAmount}&ponudaId=1&primalacEmail=${this.primalacEmail}`;
-        return fetch(url, { method: 'POST' })
-            .then(res => {
-              if (!res.ok) throw new Error();
-              return res.json();
-            })
-            .then(order => order.id);
+        console.log('[PayPal] createOrder pozvan, iznos:', this.finalAmount);
+        return actions.order.create({
+          purchase_units: [{
+            amount: {
+              currency_code: 'USD',
+              value: this.finalAmount.toFixed(2)
+            }
+          }]
+        });
       },
 
       onApprove: (data: any, actions: any) => {
         this.isProcessing = true;
         const orderId = data.orderID;
+        console.log('[PayPal] onApprove, orderID:', orderId);
         const url = `${this.backendUrl}/capture/${orderId}?iznos=${this.finalAmount}&ponudaId=1&primalacEmail=${this.primalacEmail}`;
 
         return fetch(url, { method: 'POST' })
             .then(res => {
               this.isProcessing = false;
               if (res.ok) {
+                console.log('[PayPal] Capture uspješan');
                 alert('Uplata preko PayPal-a uspješno evidentirana!');
                 this.router.navigate([this.isDonation ? '/humanitarni-slucajevi' : '/dashboard/moje-kupovine']);
               } else {
                 this.showFailureState('Uplata nije zavedena u bazi podataka.');
               }
             })
-            .catch(() => {
+            .catch(err => {
               this.isProcessing = false;
+              console.error('[PayPal] capture greška:', err);
               this.showFailureState('Mrežna greška pri komunikaciji sa serverom.');
             });
       },
 
       onError: (err: any) => {
-        this.showFailureState('PayPal je odbio transakciju. Provjerite stanje na računu Sandbox naloga.');
+        console.error('[PayPal] onError:', err);
+        this.showFailureState('PayPal greška: ' + (err?.message || 'Nepoznata greška'));
       }
-    }).render('#paypal-button-container');
+    }).render('#paypal-button-container')
+      .catch((err: any) => {
+        console.error('[PayPal] render greška:', err);
+        this.paypalButtonRendered = false;
+        this.showFailureState('Nije moguće učitati PayPal dugme. Pokušajte ponovo.');
+      });
   }
 
   showFailureState(reason: string) {

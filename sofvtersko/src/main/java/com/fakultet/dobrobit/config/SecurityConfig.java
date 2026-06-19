@@ -62,6 +62,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/donacije").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/donacije/").permitAll()
 
+                        // PayPal plaćanje — javno dostupno
+                        .requestMatchers("/api/payment/**").permitAll()
+
                         // CV upload — javno dostupno jer se dešava prije registracije
                         .requestMatchers("/api/upload/**").permitAll()
 
