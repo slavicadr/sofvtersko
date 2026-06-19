@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, roleGuard } from './core/guards/auth.guard';
+import { PaymentComponent } from './pages/payment/payment.component';
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent) },
@@ -21,5 +22,6 @@ export const routes: Routes = [
   { path: 'privatnost', loadComponent: () => import('./pages/politika-privatnosti/politika-privatnosti.component').then(m => m.PolitikaPrivatnostiComponent) },
   { path: 'politika-privatnosti', loadComponent: () => import('./pages/politika-privatnosti/politika-privatnosti.component').then(m => m.PolitikaPrivatnostiComponent) },
   { path: 'pravni-ugovor', loadComponent: () => import('./pages/pravni-ugovor/pravni-ugovor.component').then(m => m.PravniUgovorComponent) },
+  { path: 'payment', component: PaymentComponent },
   { path: '**', redirectTo: '' }
 ];
