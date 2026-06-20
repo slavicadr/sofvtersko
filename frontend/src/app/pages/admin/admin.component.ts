@@ -46,6 +46,15 @@ export class AdminComponent implements OnInit {
   suspiciousActivities: any[] = [];
   beneficiaries: any[] = [];
 
+  toasts: { id: number; message: string; type: 'success' | 'error' | 'info' }[] = [];
+  private toastCounter = 0;
+  toast(message: string, type: 'success' | 'error' | 'info' = 'info') {
+    const id = ++this.toastCounter;
+    this.toasts.push({ id, message, type });
+    setTimeout(() => { this.removeToast(id); }, 3500);
+  }
+  removeToast(id: number) { this.toasts = this.toasts.filter(t => t.id !== id); }
+
   volunteerFilter = 'Svi';
   volunteerSearch = '';
   volunteerFilters = [
@@ -59,7 +68,7 @@ export class AdminComponent implements OnInit {
   allVolunteers: any[] = [];
 
   get filteredVolunteers() {
-    let list = this.allVolunteers;
+    let list = this.allVolunteers.filter(v => v.status !== 'REMOVED');
     const map: any = { 'Verifikovani': 'VERIFIED', 'Na Čekanju': 'PENDING', 'Neaktivni': 'INACTIVE', 'Suspendovani': 'SUSPENDED' };
     if (this.volunteerFilter !== 'Svi') list = list.filter(v => v.status === map[this.volunteerFilter]);
     if (this.volunteerSearch) {
@@ -139,6 +148,38 @@ export class AdminComponent implements OnInit {
   beneficiaryModalOpen = false;
   editingBeneficiary: any = null;
   newBeneficiary: any = { name: '', description: '', status: 'ACTIVE', photoUrl: '' };
+
+  confirmDeleteOpen = false;
+  confirmDeleteName = '';
+  confirmDeleteTitle = 'Obrisati zapis?';
+  private confirmDeleteCallback: (() => void) | null = null;
+
+  inlinePromptOpen = false;
+  inlinePromptTitle = '';
+  inlinePromptLabel = '';
+  inlinePromptValue = '';
+  private inlinePromptCallback: ((val: string) => void) | null = null;
+
+  private openConfirmAction(name: string, callback: () => void, title = 'Obrisati zapis?') {
+    this.confirmDeleteName = name;
+    this.confirmDeleteTitle = title;
+    this.confirmDeleteCallback = callback;
+    this.confirmDeleteOpen = true;
+  }
+
+  private openInlinePrompt(title: string, label: string, callback: (val: string) => void) {
+    this.inlinePromptTitle = title;
+    this.inlinePromptLabel = label;
+    this.inlinePromptValue = '';
+    this.inlinePromptCallback = callback;
+    this.inlinePromptOpen = true;
+  }
+
+  submitInlinePrompt() {
+    if (!this.inlinePromptValue.trim()) { this.toast('Polje je obavezno.', 'error'); return; }
+    this.inlinePromptOpen = false;
+    if (this.inlinePromptCallback) { this.inlinePromptCallback(this.inlinePromptValue); this.inlinePromptCallback = null; }
+  }
 
   constructor(
     private auth: AuthService,
@@ -230,19 +271,7 @@ export class AdminComponent implements OnInit {
       }
     });
 
-    this.pomocService.getAll().subscribe({
-      next: (data) => {
-        this.beneficiaries = data.map(p => ({
-          id: p.pomocId,
-          name: p.naziv,
-          description: p.opisPotrebe,
-          goal: 5000, raised: 0, status: 'ACTIVE',
-          photoUrl: '', imageUrl: '',
-          initials: (p.naziv.split(' ').map((w: string) => w[0] ?? '').join('').toUpperCase()).slice(0, 2),
-          totalReceived: 0, volunteers: [], volunteersCount: 0
-        }));
-      }
-    });
+    this.loadBeneficiaries();
 
     this.adminService.getLogs().subscribe({
       next: (logs) => {
@@ -269,33 +298,33 @@ export class AdminComponent implements OnInit {
   }
 
   approveOffer(o: any) {
-    this.adminService.getAllVerifikacije(); // trigger — for now update status directly
     this.uslugaService.updateStatus(o.id, 'aktivna').subscribe({
-      next: () => { o.status = 'ACTIVE'; alert(`Ponuda "${o.name}" odobrena.`); },
-      error: () => alert('Greška pri odobravanju.')
+      next: () => { o.status = 'ACTIVE'; this.toast(`Ponuda "${o.name}" odobrena.`, 'success'); },
+      error: () => this.toast('Greška pri odobravanju.', 'error')
     });
   }
 
   rejectOffer(o: any) {
-    const reason = prompt('Razlog odbijanja:');
-    if (!reason) return;
-    this.uslugaService.updateStatus(o.id, 'odbijena').subscribe({
-      next: () => { o.status = 'REJECTED'; },
-      error: () => alert('Greška.')
+    this.openInlinePrompt('Odbijanje ponude', 'Razlog odbijanja:', (reason) => {
+      this.uslugaService.updateStatus(o.id, 'odbijena').subscribe({
+        next: () => { o.status = 'REJECTED'; this.toast('Ponuda odbijena.', 'info'); },
+        error: () => this.toast('Greška.', 'error')
+      });
     });
   }
 
   removeOffer(o: any) {
-    if (confirm(`Ukloniti "${o.name}"?`)) {
+    this.openConfirmAction(`"${o.name}"`, () => {
       this.uslugaService.updateStatus(o.id, 'uklonjena').subscribe({
-        next: () => o.status = 'REMOVED'
+        next: () => { o.status = 'REMOVED'; this.toast('Ponuda uklonjena.', 'info'); }
       });
-    }
+    });
   }
 
   openStatusChange(target: any) {
     this.statusChangeTarget = target;
-    this.newStatus = 'aktivan';
+    const statusMap: any = { VERIFIED: 'aktivan', PENDING: 'na_cekanju', INACTIVE: 'neaktivan', SUSPENDED: 'suspendovan' };
+    this.newStatus = statusMap[target.status] ?? 'aktivan';
     this.statusChangeReason = '';
     this.statusModalOpen = true;
   }
@@ -303,20 +332,19 @@ export class AdminComponent implements OnInit {
   closeStatusModal() { this.statusModalOpen = false; }
 
   confirmStatusChange() {
-    if (!this.statusChangeReason.trim()) { alert('Molimo unesite razlog.'); return; }
+    if (!this.statusChangeReason.trim()) { this.toast('Molimo unesite razlog.', 'error'); return; }
     const id = this.statusChangeTarget?.id;
     if (!id) return;
     this.adminService.promijeniStatus(id, this.newStatus, this.statusChangeReason).subscribe({
       next: (k) => {
-        if (this.statusChangeTarget) {
-          this.statusChangeTarget.status = this.mapStatus(k.statusNaloga, k.verifikovan);
-        }
-        alert(`Status promijenjen.`);
+        const noviStatus = this.mapStatus(k.statusNaloga, k.verifikovan);
+        this.allVolunteers = this.allVolunteers.map(v => v.id === id ? { ...v, status: noviStatus } : v);
+        this.toast('Status uspješno promijenjen.', 'success');
         this.statusModalOpen = false;
         this.pendingVolunteersList = this.allVolunteers.filter(v => v.status === 'PENDING');
         this.updateVolunteerFilterCounts();
       },
-      error: () => alert('Greška pri promjeni statusa.')
+      error: (err) => this.toast('Greška: ' + (err?.error ?? err?.message ?? err?.status ?? 'Nepoznato'), 'error')
     });
   }
 
@@ -376,40 +404,42 @@ export class AdminComponent implements OnInit {
   }
 
   adminOznaciRealizovano(k: any) {
-    if (!confirm(`Označiti "${k.serviceName}" kao realizovanu?`)) return;
-    this.kupovinaService.oznaciRealizovano(k.id).subscribe({
-      next: (updated) => {
-        k.statusIsporuke = updated.statusIsporuke;
-        k.datumRealizacije = updated.datumRealizacije
-          ? new Date(updated.datumRealizacije).toLocaleDateString('bs-BA') : '';
-      },
-      error: (err) => alert(err?.error ?? 'Greška pri označavanju.')
-    });
+    this.openConfirmAction(`"${k.serviceName}"`, () => {
+      this.kupovinaService.oznaciRealizovano(k.id).subscribe({
+        next: (updated) => {
+          k.statusIsporuke = updated.statusIsporuke;
+          k.datumRealizacije = updated.datumRealizacije
+            ? new Date(updated.datumRealizacije).toLocaleDateString('bs-BA') : '';
+          this.toast('Usluga označena kao realizovana.', 'success');
+        },
+        error: (err) => this.toast(err?.error ?? 'Greška pri označavanju.', 'error')
+      });
+    }, 'Označiti kao realizovano?');
   }
 
   approveVolunteer(v: any) {
-    const reason = 'Profil odobren.';
-    this.adminService.promijeniStatus(v.id, 'aktivan', reason).subscribe({
+    this.adminService.promijeniStatus(v.id, 'aktivan', 'Profil odobren.').subscribe({
       next: () => {
-        v.status = 'VERIFIED';
-        this.pendingVolunteersList = this.pendingVolunteersList.filter(p => p.id !== v.id);
+        this.allVolunteers = this.allVolunteers.map(x => x.id === v.id ? { ...x, status: 'VERIFIED' } : x);
+        this.pendingVolunteersList = this.allVolunteers.filter(p => p.status === 'PENDING');
         this.updateVolunteerFilterCounts();
-        alert(`Volonter ${v.name} verifikovan.`);
+        this.toast(`Volonter ${v.name} verifikovan.`, 'success');
       },
-      error: () => alert('Greška.')
+      error: () => this.toast('Greška.', 'error')
     });
   }
 
   rejectVolunteer(v: any) {
-    const reason = prompt('Razlog odbijanja:');
-    if (!reason) return;
-    this.adminService.promijeniStatus(v.id, 'suspendovan', reason).subscribe({
-      next: () => {
-        v.status = 'REJECTED';
-        this.pendingVolunteersList = this.pendingVolunteersList.filter(p => p.id !== v.id);
-        this.updateVolunteerFilterCounts();
-        alert(`Verifikacija odbijena.`);
-      }
+    this.openInlinePrompt('Odbijanje volontera', 'Razlog odbijanja:', (reason) => {
+      this.adminService.promijeniStatus(v.id, 'suspendovan', reason).subscribe({
+        next: () => {
+          this.allVolunteers = this.allVolunteers.map(x => x.id === v.id ? { ...x, status: 'REJECTED' } : x);
+          this.pendingVolunteersList = this.allVolunteers.filter(p => p.status === 'PENDING');
+          this.updateVolunteerFilterCounts();
+          this.toast('Verifikacija odbijena.', 'info');
+        },
+        error: () => this.toast('Greška.', 'error')
+      });
     });
   }
 
@@ -432,10 +462,11 @@ export class AdminComponent implements OnInit {
   }
 
   deleteReview(r: any) {
-    if (!confirm('Obrisati recenziju?')) return;
-    this.http.delete(`/api/recenzije/${r.id}`, { responseType: 'text' }).subscribe({
-      next: () => { this.allReviews = this.allReviews.filter(x => x !== r); },
-      error: (err) => alert(err?.error ?? 'Greška pri brisanju recenzije.')
+    this.openConfirmAction('ovu recenziju', () => {
+      this.http.delete(`/api/recenzije/${r.id}`, { responseType: 'text' }).subscribe({
+        next: () => { this.allReviews = this.allReviews.filter(x => x !== r); this.toast('Recenzija obrisana.', 'success'); },
+        error: (err) => this.toast(err?.error ?? 'Greška pri brisanju recenzije.', 'error')
+      });
     });
   }
 
@@ -490,26 +521,27 @@ export class AdminComponent implements OnInit {
 
   sacuvajPartnera() {
     if (!this.noviPartner.naziv?.trim() || !this.noviPartner.logoUrl?.trim()) {
-      alert('Naziv i logo su obavezni.'); return;
+      this.toast('Naziv i logo su obavezni.', 'error'); return;
     }
     if (this.uredivanjePartnera) {
       this.http.put<any>(`/api/partneri/${this.uredivanjePartnera.id}`, this.noviPartner).subscribe({
-        next: (updated) => { Object.assign(this.uredivanjePartnera, updated); this.partnerModalOpen = false; },
-        error: () => alert('Greška pri čuvanju.')
+        next: (updated) => { Object.assign(this.uredivanjePartnera, updated); this.partnerModalOpen = false; this.toast('Partner sačuvan.', 'success'); },
+        error: () => this.toast('Greška pri čuvanju.', 'error')
       });
     } else {
       this.http.post<any>('/api/partneri', this.noviPartner).subscribe({
-        next: (novi) => { this.adminPartneri.push(novi); this.partnerModalOpen = false; },
-        error: () => alert('Greška pri dodavanju.')
+        next: (novi) => { this.adminPartneri.push(novi); this.partnerModalOpen = false; this.toast('Partner dodan.', 'success'); },
+        error: () => this.toast('Greška pri dodavanju.', 'error')
       });
     }
   }
 
   obrisiPartnera(p: any) {
-    if (!confirm(`Obrisati partnera "${p.naziv}"?`)) return;
-    this.http.delete(`/api/partneri/${p.id}`).subscribe({
-      next: () => { this.adminPartneri = this.adminPartneri.filter(x => x.id !== p.id); },
-      error: () => alert('Greška pri brisanju.')
+    this.openConfirmAction(`"${p.naziv}"`, () => {
+      this.http.delete(`/api/partneri/${p.id}`).subscribe({
+        next: () => { this.adminPartneri = this.adminPartneri.filter(x => x.id !== p.id); this.toast('Partner obrisan.', 'success'); },
+        error: () => this.toast('Greška pri brisanju.', 'error')
+      });
     });
   }
 
@@ -549,36 +581,86 @@ export class AdminComponent implements OnInit {
 
   sacuvajPomogliKarticu() {
     if (!this.novaPomogliKartica.naslov?.trim() || !this.novaPomogliKartica.tekst?.trim()) {
-      alert('Naslov i tekst su obavezni.'); return;
+      this.toast('Naslov i tekst su obavezni.', 'error'); return;
     }
     if (this.uredivanjeKartice) {
       this.http.put<any>(`/api/pomogli-slucajevi/${this.uredivanjeKartice.id}`, this.novaPomogliKartica).subscribe({
         next: (updated) => {
           Object.assign(this.uredivanjeKartice, updated);
           this.pomogliModalOpen = false;
+          this.toast('Kartica sačuvana.', 'success');
         },
-        error: () => alert('Greška pri čuvanju.')
+        error: () => this.toast('Greška pri čuvanju.', 'error')
       });
     } else {
       this.http.post<any>('/api/pomogli-slucajevi', this.novaPomogliKartica).subscribe({
-        next: (nova) => { this.pomogliSlucajevi.push(nova); this.pomogliModalOpen = false; },
-        error: () => alert('Greška pri dodavanju.')
+        next: (nova) => { this.pomogliSlucajevi.push(nova); this.pomogliModalOpen = false; this.toast('Kartica dodana.', 'success'); },
+        error: () => this.toast('Greška pri dodavanju.', 'error')
       });
     }
   }
 
   obrisiPomogliSlucaj(s: any) {
-    if (!confirm(`Obrisati karticu "${s.naslov}"?`)) return;
-    this.http.delete(`/api/pomogli-slucajevi/${s.id}`).subscribe({
-      next: () => { this.pomogliSlucajevi = this.pomogliSlucajevi.filter(x => x.id !== s.id); },
-      error: () => alert('Greška pri brisanju.')
+    this.openConfirmAction(`"${s.naslov}"`, () => {
+      this.http.delete(`/api/pomogli-slucajevi/${s.id}`).subscribe({
+        next: () => { this.pomogliSlucajevi = this.pomogliSlucajevi.filter(x => x.id !== s.id); this.toast('Kartica obrisana.', 'success'); },
+        error: () => this.toast('Greška pri brisanju.', 'error')
+      });
     });
+  }
+
+  loadBeneficiaries() {
+    this.pomocService.getAllAdmin().subscribe({
+      next: (data) => {
+        this.beneficiaries = data.map(p => ({
+          id: p.pomocId,
+          name: p.naziv ?? '',
+          description: p.opisPotrebe ?? '',
+          goal: 5000, raised: 0, status: (p as any).statusSlucaja ?? 'aktivan',
+          photoUrl: '', imageUrl: '',
+          initials: ((p.naziv ?? '').split(' ').map((w: string) => w[0] ?? '').join('').toUpperCase()).slice(0, 2),
+          totalReceived: 0, volunteers: [], volunteersCount: 0
+        }));
+      }
+    });
+  }
+
+  obrisiKorisnikaPomoci(b: any) {
+    this.openConfirmAction(b.name, () => {
+      this.http.delete(`/api/korisnici-pomoci/admin/${b.id}`, { responseType: 'text' }).subscribe({
+        next: () => { this.loadBeneficiaries(); this.toast('Slučaj obrisan.', 'success'); },
+        error: (err) => this.toast('Greška pri brisanju: ' + (err?.error ?? err?.status), 'error')
+      });
+    });
+  }
+
+  obrisiVolontera(v: any) {
+    this.openConfirmAction(v.name, () => {
+      this.adminService.promijeniStatus(v.id, 'uklonjen', 'Uklonjen od strane administratora').subscribe({
+        next: () => {
+          this.allVolunteers = this.allVolunteers.filter(x => x !== v);
+          this.pendingVolunteersList = this.allVolunteers.filter(x => x.status === 'PENDING');
+          this.updateVolunteerFilterCounts();
+          this.toast('Volonter uklonjen.', 'success');
+        },
+        error: (err) => this.toast('Greška pri brisanju: ' + (err?.error ?? err?.status), 'error')
+      });
+    });
+  }
+
+  executeDelete() {
+    this.confirmDeleteOpen = false;
+    if (this.confirmDeleteCallback) { this.confirmDeleteCallback(); this.confirmDeleteCallback = null; }
   }
 
   zatvoriPomogliModal() { this.pomogliModalOpen = false; }
 
   viewAlerts() { this.setSection('alerts'); }
-  setSection(s: string) { this.activeSection = s; }
+  setSection(s: string) {
+    this.activeSection = s;
+    if (s === 'pomogli' && this.pomogliSlucajevi.length === 0) this.loadPomogliSlucajevi();
+    if (s === 'partneri' && this.adminPartneri.length === 0) this.loadPartnere();
+  }
 
   getSectionTitle(): string {
     const map: any = {
@@ -623,7 +705,7 @@ export class AdminComponent implements OnInit {
 
   openAddBeneficiary() {
     this.editingBeneficiary = null;
-    this.newBeneficiary = { name: '', description: '', status: 'ACTIVE', photoUrl: '' };
+    this.newBeneficiary = { name: '', description: '', status: 'aktivan', photoUrl: '' };
     this.beneficiaryModalOpen = true;
   }
 
@@ -636,29 +718,40 @@ export class AdminComponent implements OnInit {
   closeBeneficiaryModal() { this.beneficiaryModalOpen = false; }
 
   saveBeneficiary() {
-    if (!this.newBeneficiary.name.trim()) { alert('Ime je obavezno.'); return; }
+    if (!this.newBeneficiary.name.trim()) { this.toast('Ime je obavezno.', 'error'); return; }
     if (this.editingBeneficiary) {
-      Object.assign(this.editingBeneficiary, this.newBeneficiary);
+      this.http.put<any>(`/api/korisnici-pomoci/${this.editingBeneficiary.id}`, {
+        naziv: this.newBeneficiary.name,
+        opisPotrebe: this.newBeneficiary.description,
+        statusSlucaja: this.newBeneficiary.status
+      }).subscribe({
+        next: (updated) => {
+          this.editingBeneficiary.name = updated.naziv;
+          this.editingBeneficiary.description = updated.opisPotrebe;
+          this.editingBeneficiary.status = updated.statusSlucaja ?? 'aktivan';
+          this.beneficiaryModalOpen = false;
+          this.toast('Slučaj sačuvan.', 'success');
+        },
+        error: () => this.toast('Greška pri čuvanju.', 'error')
+      });
     } else {
-      this.beneficiaries.push({
-        id: Date.now(), ...this.newBeneficiary,
-        goal: 0, raised: 0, imageUrl: this.newBeneficiary.photoUrl,
-        initials: this.newBeneficiary.name.split(' ').map((n: string) => n[0]).join('').toUpperCase(),
-        totalReceived: 0, volunteers: [], volunteersCount: 0
+      this.http.post<any>('/api/korisnici-pomoci/admin', {
+        naziv: this.newBeneficiary.name,
+        opisPotrebe: this.newBeneficiary.description
+      }).subscribe({
+        next: () => {
+          this.loadBeneficiaries();
+          this.beneficiaryModalOpen = false;
+          this.toast('Slučaj dodan.', 'success');
+        },
+        error: () => this.toast('Greška pri dodavanju slučaja.', 'error')
       });
     }
-    this.beneficiaryModalOpen = false;
   }
 
-  uploadBeneficiaryModalPhoto() {
-    const path = prompt('Putanja do fotografije:');
-    if (path) this.newBeneficiary.photoUrl = path;
-  }
+  uploadBeneficiaryModalPhoto() { /* foto upload nije implementiran */ }
 
-  uploadBeneficiaryPhoto(b: any) {
-    const path = prompt(`Fotografija za "${b.name}":`);
-    if (path) { b.photoUrl = path; b.imageUrl = path; }
-  }
+  uploadBeneficiaryPhoto(b: any) { /* foto upload nije implementiran */ }
 
   private mapStatus(statusNaloga: string, verifikovan: boolean): string {
     if (statusNaloga === 'aktivan' && verifikovan) return 'VERIFIED';

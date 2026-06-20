@@ -794,6 +794,50 @@ $muted:   #7a8a8e;
   &:hover { border-color: $muted; color: $text; }
 }
 
+.btn-danger {
+  background: #e74c3c !important;
+  &:hover { background: darken(#e74c3c, 8%) !important; }
+}
+.confirm-card {
+  max-width: 400px; text-align: center; padding: 36px 28px;
+}
+.confirm-icon { margin-bottom: 12px; }
+.confirm-title {
+  font-family: 'Playfair Display', serif; font-size: 1.25rem;
+  color: $text; margin: 0 0 10px;
+}
+.confirm-msg {
+  font-size: 0.9rem; color: $muted; line-height: 1.55; margin-bottom: 4px;
+  strong { color: $text; }
+}
+
+/* ── Toast notifikacije ─────────────────────────────────────── */
+.toast-container {
+  position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+}
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px; border-radius: 10px;
+  font-size: 0.9rem; font-weight: 500; min-width: 260px; max-width: 380px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  pointer-events: all; animation: toastIn 0.25s ease;
+  i { font-size: 1.1rem; flex-shrink: 0; }
+  span { flex: 1; }
+  &-success { background: #d4edda; color: #1a6b34; border-left: 4px solid #28a745; }
+  &-error   { background: #fde8e8; color: #a32020; border-left: 4px solid #e74c3c; }
+  &-info    { background: #e8f4fd; color: #1a5a8c; border-left: 4px solid #3498db; }
+}
+.toast-close {
+  background: none; border: none; cursor: pointer; font-size: 1.1rem;
+  line-height: 1; opacity: 0.6; padding: 0 2px; flex-shrink: 0;
+  &:hover { opacity: 1; }
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 /* ── Responsive ─────────────────────────────────────────────── */
 @media(max-width: 900px) {
   .admin-sidebar { width: 64px; }

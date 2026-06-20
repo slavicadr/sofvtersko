@@ -14,6 +14,7 @@ import java.util.List;
 
         Optional<KorisnikPomoci> findByKorisnik(Korisnik korisnik);
         List<KorisnikPomoci> findByNazivContainingIgnoreCase(String naziv);
+        List<KorisnikPomoci> findByStatusSlucaja(String statusSlucaja);
 
     }
 

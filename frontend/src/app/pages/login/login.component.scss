@@ -289,3 +289,21 @@
   .auth-brand { max-width: 100%; }
   .auth-card { flex: none; width: 100%; padding: 28px; }
 }
+
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.reg-success-card {
+  background: #fff; border-radius: 16px; padding: 40px 32px;
+  max-width: 420px; width: 90%; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.reg-success-icon { margin-bottom: 16px; }
+.reg-success-title {
+  font-family: 'Playfair Display', serif; font-size: 1.5rem;
+  color: #1a3a2a; margin: 0 0 12px;
+}
+.reg-success-msg {
+  font-size: 0.95rem; color: #555; line-height: 1.6; margin-bottom: 8px;
+}

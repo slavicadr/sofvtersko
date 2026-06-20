@@ -28,7 +28,7 @@ export class VolonterProfilComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private http: HttpClient,
     private uslugaService: UslugaService
   ) {}

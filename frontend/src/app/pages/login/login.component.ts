@@ -21,6 +21,7 @@ export class LoginComponent {
   showRegPassword = false;
   loginLoading = false;
   regLoading = false;
+  regSuccess = false;
   loginError = '';
   regError = '';
   sessionExpiredNotice = false;
@@ -51,8 +52,7 @@ export class LoginComponent {
   cvFileName = '';
 
   categories = [
-    'Edukacija', 'Zdravlje', 'IT pomoć', 'Prevoz', 'Kućni popravci',
-    'Njega starijih', 'Hrana', 'Pravna pomoć', 'Psihološka podrška', 'Ostalo'
+    'Edukacija', 'Zdravlje', 'IT pomoć', 'Hrana', 'Pravna pomoć', 'Psihološka podrška', 'Ostalo'
   ];
 
   trustBadges = [
@@ -141,12 +141,12 @@ export class LoginComponent {
     if (input.files && input.files[0]) {
       const f = input.files[0];
       if (f.type !== 'application/pdf') {
-        alert('Dozvoljeni su samo PDF fajlovi.');
+        this.regError = 'Dozvoljeni su samo PDF fajlovi.';
         input.value = '';
         return;
       }
       if (f.size > 15 * 1024 * 1024) {
-        alert('CV ne smije biti veći od 15 MB.');
+        this.regError = 'CV ne smije biti veći od 15 MB.';
         input.value = '';
         return;
       }
@@ -186,8 +186,7 @@ export class LoginComponent {
         this.auth.registerVolonter(payload).subscribe({
           next: () => {
             this.regLoading = false;
-            this.activeTab = 'login';
-            alert('Vaš profil je poslan na verifikaciju administratoru. Bićete obaviješteni putem emaila.');
+            this.regSuccess = true;
           },
           error: (err) => {
             this.regLoading = false;

@@ -12,7 +12,7 @@ public class KorisnikPomoci {
     private int pomocId;
 
     @OneToOne
-    @JoinColumn(name = "korisnik_id", nullable = false, unique = true)
+    @JoinColumn(name = "korisnik_id", nullable = true, unique = true)
     private Korisnik korisnik;
 
     @Column(name = "naziv_organizacije_ili_lica", nullable = false)
@@ -21,11 +21,14 @@ public class KorisnikPomoci {
     @Column(name = "opis_potrebe", columnDefinition = "TEXT")
     private String opisPotrebe;
 
-    @Column(name = "broj_racuna", nullable = false)
+    @Column(name = "broj_racuna", nullable = true)
     private String brojRacuna;
 
     @Column(name = "dokaz_verifikacije")
     private String dokazVerifikacije;
+
+    @Column(name = "status_slucaja", nullable = false)
+    private String statusSlucaja = "aktivan";
 
     public KorisnikPomoci() {}
 
@@ -47,4 +50,7 @@ public class KorisnikPomoci {
 
     public String getDokazVerifikacije() { return dokazVerifikacije; }
     public void setDokazVerifikacije(String dokazVerifikacije) { this.dokazVerifikacije = dokazVerifikacije; }
+
+    public String getStatusSlucaja() { return statusSlucaja; }
+    public void setStatusSlucaja(String statusSlucaja) { this.statusSlucaja = statusSlucaja; }
 }

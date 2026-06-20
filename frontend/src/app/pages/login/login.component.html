@@ -224,3 +224,20 @@
 </div>
 
 <app-footer></app-footer>
+
+<!-- ── Uspješna registracija volontera ────────────────────── -->
+<div class="modal-backdrop" *ngIf="regSuccess" (click)="regSuccess = false">
+  <div class="reg-success-card" (click)="$event.stopPropagation()">
+    <div class="reg-success-icon">
+      <i class="ph-fill ph-check-circle" style="color:#2d6b55;font-size:3rem;"></i>
+    </div>
+    <h2 class="reg-success-title">Zahtjev poslan!</h2>
+    <p class="reg-success-msg">
+      Vaš profil je poslan na verifikaciju administratoru.<br>
+      Bićete obaviješteni putem e-maila čim bude odobren.
+    </p>
+    <button class="btn-primary" style="width:100%;margin-top:8px;" (click)="regSuccess = false; setTab('login')">
+      Idite na prijavu
+    </button>
+  </div>
+</div>

@@ -367,10 +367,60 @@ Korisnici pomoći — lica ili organizacije koje primaju donacije i benefite od 
 | `opis_potrebe` | TEXT | Opis situacije i potreba |
 | `broj_racuna` | VARCHAR | Broj bankovnog računa |
 | `dokaz_verifikacije` | TEXT | Dokument koji dokazuje potrebu |
+| `status_slucaja` | VARCHAR | `aktivan`, `neaktivan`, `zavrsen` — vidljivost na javnoj stranici |
+
+**Status `status_slucaja`:**
+- `aktivan` — slučaj je vidljiv na javnoj stranici (`GET /api/korisnici-pomoci`)
+- `neaktivan` / `zavrsen` — slučaj je skriven od javnosti; vidljiv samo adminu (`GET /api/korisnici-pomoci/admin/svi`)
+
+**Brisanje:**
+- Brisanje je **fizičko** (hard delete) — zapis se trajno briše iz baze
+- Prije brisanja, kaskadno se brišu sve vezane `donacija` i `kupljena_usluga` zapisi (`ON DELETE CASCADE` na FK constraintima)
+- Brisanje je moguće samo putem admin endpointa (`DELETE /api/korisnici-pomoci/admin/{id}`)
 
 ---
 
-### 4.8 Tabela: `ocjena_recenzija`
+### 4.8 Tabela: `partner`
+
+Partneri i sponzori platforme — prikazuju se na javnoj stranici.
+
+| Kolona | Tip | Opis |
+|---|---|---|
+| `id` | INT (PK, AUTO) | Primarni ključ |
+| `naziv` | VARCHAR | Puno ime partnera (npr. "Evropska Unija") |
+| `kratko` | VARCHAR | Kratice za fallback logo (npr. "EU") |
+| `opis` | TEXT | Kratak opis partnera |
+| `logo_url` | VARCHAR | URL do loga (vanjski link ili `/uploads/logovi/...`) |
+| `website` | VARCHAR | URL zvanične stranice partnera |
+| `kategorija` | VARCHAR | Kategorija (npr. "Međunarodna organizacija") |
+| `redoslijed` | INT | Redosljed prikazivanja (manji broj = prvi) |
+
+**Napomene:**
+- Logo se može uploadovati direktno na server (`POST /api/upload/logo`) ili se može unijeti vanjski URL
+- Uploadovani logoi se čuvaju u: `C:\Users\<korisnik>\dobrobit-uploads\logovi\`
+- Upravljanje partnerima je dostupno samo administratoru
+
+---
+
+### 4.9 Tabela: `pomogli_slucaj`
+
+Kratke priče / kartice o korisnicima kojima je platforma pomogla — prikazuju se na javnoj stranici.
+
+| Kolona | Tip | Opis |
+|---|---|---|
+| `id` | INT (PK, AUTO) | Primarni ključ |
+| `naslov` | VARCHAR | Ime osobe / naziv slučaja |
+| `tekst` | TEXT | Kratka priča o tome kako je platforma pomogla |
+| `boja` | VARCHAR | Boja kartice (`roza1`, `plava1`, `zelena1`, itd.) |
+| `redoslijed` | INT | Redosljed prikazivanja |
+
+**Napomene:**
+- Kartice su vidljive na javnoj stranici na ruti `/slucajevi-kojima-smo-pomogli`
+- Admin može dodavati, uređivati i brisati kartice iz CMS-a
+
+---
+
+### 4.10 Tabela: `ocjena_recenzija`
 
 Recenzije koje kupci ostavljaju nakon kupovine usluge.
 
@@ -390,7 +440,7 @@ Recenzije koje kupci ostavljaju nakon kupovine usluge.
 
 ---
 
-### 4.9 Tabela: `verifikacija`
+### 4.11 Tabela: `verifikacija`
 
 Log verifikacionih akcija administratora.
 
@@ -407,7 +457,7 @@ Log verifikacionih akcija administratora.
 
 ---
 
-### 4.10 Tabela: `log_aktivnosti`
+### 4.12 Tabela: `log_aktivnosti`
 
 Sistemski log svih važnih akcija (prijave, odjave, promjene).
 
@@ -422,31 +472,91 @@ Sistemski log svih važnih akcija (prijave, odjave, promjene).
 
 ---
 
-### 4.11 Tabela: `profil`
+### 4.13 Pravila brisanja podataka
 
-Prošireni profil podaci za korisnike.
+Brisanje u sistemu dijeli se na dva tipa, zavisno od entiteta:
+
+#### A) Meko brisanje (soft delete) — volonteri i korisnici
+
+Volonter se **nikad ne briše fizički** iz baze. Umjesto toga, admin u CMS-u može promijeniti status na `uklonjen`:
+
+```
+Admin klikne "Ukloni" volontera
+        ↓
+PUT /api/korisnici/{id}/status { noviStatus: "uklonjen" }
+        ↓
+Backend:
+  - status_naloga = 'uklonjen'
+  - verifikovan = false  (onemogućava prijavu)
+  - email → anonymizovan: "uklonjen_<id>_<timestamp>@deleted.local"
+        ↓
+Zapis ostaje u bazi — historija kupovina i recenzija ostaje netaknuta
+Email adresa je oslobođena — isti email se može ponovo registrovati
+```
+
+**Zašto anonymizacija emaila?**
+Kolona `email` ima `UNIQUE` constraint u bazi. Bez anonymizacije, bivši volonter ne bi mogao kreirati novi nalog istim emailom jer bi baza prijavila duplikat. Postavljanjem emaila na jedinstveni `deleted.local` format, originalni email se oslobađa za ponovnu upotrebu.
+
+**Status `uklonjen` je finalan** — jednom uklonjen korisnik ne može biti reaktiviran.
+
+#### B) Fizičko brisanje s kaskadnom propagacijom — korisnici pomoći
+
+Slučajevi korisnika pomoći brišu se fizički. Zahvaljujući `ON DELETE CASCADE` na stranim ključevima:
+
+```
+DELETE FROM korisnik_pomoci WHERE pomoc_id = X
+        ↓ automatski kaskadno briše:
+  - donacija WHERE korisnik_pomoci_id = X
+  - kupljena_usluga WHERE pomoc_id = X
+```
+
+Ovo osigurava referentni integritet — ne mogu ostati "siročad" zapisi koji bi upućivali na nepostojeći slučaj.
+
+#### C) Fizičko brisanje bez kaskade — partneri i kartice "Pomogli smo"
+
+Tabele `partner` i `pomogli_slucaj` nemaju FK veze prema drugim tabelama. Brisanje je jednostavno `DELETE FROM ...` bez kaskadnih efekata.
+
+#### D) Brisanje usluge/proizvoda
+
+Usluga se može fizički obrisati **samo** ako nema nijedne kupovine:
+
+```
+DELETE /api/usluge-proizvodi/{id}
+        ↓
+Backend provjera:
+  - Postoje aktivne (nerealizovane) kupovine? → GREŠKA, blokada
+  - Postoje realizovane kupovine (istorija)? → GREŠKA (FK constraint)
+  - Nema nijedne kupovine → fizičko brisanje OK
+```
+
+Preporučena alternativa brisanju je postavljanje statusa na `uklonjena` — usluga ostaje u bazi kao historijski zapis ali nije vidljiva kupcima.
 
 ---
 
 ### Dijagram relacija (ER)
 
 ```
-korisnik (1) ──────────────── (1) volonter_info
+korisnik (1) ─────────── (1) volonter_info
     │
-    │ (1) ──────────────── (N) usluga_proizvod
-    │                              │
-    │                              │ (N) ── (1) kategorija
-    │                              │
-    │ (1) ──────────────── (N) kupljena_usluga ──── (1) korisnik_pomoci
-    │                              │
-    │ (1) ──────────────── (N) donacija ──────────── (1) korisnik_pomoci
-    │                              │
-    │                              │ (1) ── (1) ocjena_recenzija
+    ├─ (1) ─── (N) usluga_proizvod ─── (N:1) kategorija
+    │                  │
+    │                  └─ (1) ─── (N) kupljena_usluga ─── (N:1) korisnik_pomoci
+    │                                       │
+    │                                       └─ (1:1) ocjena_recenzija
     │
-    │ (1) ──────────────── (N) log_aktivnosti
+    ├─ (1) ─── (N) donacija ──────────────────── (N:1) korisnik_pomoci
     │
-    │ (1) ──────────────── (N) verifikacija
+    ├─ (1) ─── (N) log_aktivnosti
+    │
+    └─ (1) ─── (N) verifikacija
+
+partner          (nezavisna tabela)
+pomogli_slucaj   (nezavisna tabela)
 ```
+
+**Kaskadna brisanja (ON DELETE CASCADE):**
+- `kupljena_usluga.pomoc_id` → brisanje `korisnik_pomoci` briše i kupovine
+- `donacija.korisnik_pomoci_id` → brisanje `korisnik_pomoci` briše i donacije
 
 ---
 
@@ -1273,14 +1383,17 @@ Frontend se pokreće na `http://localhost:4200`
 
 ```properties
 # Baza podataka
-spring.datasource.url=jdbc:mysql://localhost:3306/dobrobit1?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+# VAŽNO: koristimo 127.0.0.1 umjesto "localhost"
+# Na Windows-u "localhost" se razrješava na IPv6 adresu (::1) dok MySQL sluša na IPv4 (127.0.0.1)
+# Korišćenje "localhost" uzrokuje 1–3 sekunde kašnjenja na svakom zahtjevu
+spring.datasource.url=jdbc:mysql://127.0.0.1:3306/dobrobit1?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
 spring.datasource.username=root
 spring.datasource.password=<lozinka>
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
 # Hibernate / JPA
 spring.jpa.hibernate.ddl-auto=update   # Automatsko kreiranje/ažuriranje tabela
-spring.jpa.show-sql=true               # Prikazuje SQL upite u konzoli
+spring.jpa.show-sql=false              # NE ispisuj SQL u konzolu (povećava performanse)
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 
 # Server
@@ -1297,12 +1410,28 @@ spring.mail.username=dobrobit2026@outlook.com
 spring.mail.password=<lozinka>
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
+# Kratki timeoutti — email se šalje async pa ne blokira HTTP odgovor
+spring.mail.properties.mail.smtp.connectiontimeout=3000
+spring.mail.properties.mail.smtp.timeout=3000
+spring.mail.properties.mail.smtp.writetimeout=3000
 spring.mail.test-connection=false
 ```
 
-### Angular proxy (ako je konfigurisan)
+### Angular proxy konfiguracija (proxy.conf.json)
 
-Angular dev server proksira `/api/*` zahtjeve na `http://localhost:8080`, ili se koristi direktna URL adresa u servisima.
+Angular dev server proksira `/api/*` zahtjeve direktno na backend:
+
+```json
+{
+  "/api": {
+    "target": "http://127.0.0.1:8080",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
+```
+
+> **Napomena:** Proxy koristi `127.0.0.1` iz istog razloga kao i backend — da izbjegne IPv6/IPv4 mismatch na Windows-u.
 
 ### Folder za uploadove
 
@@ -1671,6 +1800,138 @@ curl http://localhost:8080/api/korisnici/ \
 
 # Dohvati sve kategorije (javno)
 curl http://localhost:8080/api/kategorije
+```
+
+---
+
+---
+
+## 16. DUGME PRISTUPAČNOSTI — DETALJNA DOKUMENTACIJA
+
+Na svakoj stranici platforme, u gornjem lijevom uglu, nalazi se dugme sa ikonom oka (`👁`). Ovo je **panel pristupačnosti** koji omogućava korisnicima da prilagode izgled i ponašanje stranice prema sopstvenim potrebama — bez ikakvih posebnih podešavanja browsera ili operativnog sistema.
+
+### 16.1 Gdje se čuva stanje
+
+Sva korisnička podešavanja pristupačnosti čuvaju se u `localStorage` browsera pod ključem:
+
+```
+dobrobit_a11y_v2
+```
+
+Ovo znači:
+- Podešavanja **ostaju nakon zatvaranja taba** i ponovnog otvaranja stranice
+- Podešavanja se primjenjuju **odmah pri učitavanju** svake stranice (bez treptaja)
+- Podešavanja su **lokalna po uređaju i browseru** — ne sinhronizuju se između uređaja
+- Klik na "Resetuj sve" briše ovaj ključ iz `localStorage` i uklanja sve promjene
+
+### 16.2 Kako se podešavanja primjenjuju
+
+`AccessibilityService` (fajl: `frontend/src/app/core/services/accessibility.service.ts`) inicializuje se pri pokretanju Angular aplikacije. U konstruktoru poziva `load()` koji:
+
+1. Čita JSON objekat iz `localStorage`
+2. Za svaku sačuvanu opciju — dodaje odgovarajući CSS class na `document.body` ili postavljanjem inline stila na `document.documentElement` (`:root`)
+
+Sve vizuelne promjene su implementirane isključivo kroz CSS — Angular ne mijenja nikakav sadržaj stranice, samo dodaje/uklanja klase na `<body>` tagu.
+
+### 16.3 Dostupne opcije — detaljan opis
+
+#### 1. Veličina teksta
+**CSS klase:** `a11y-font-small` / `a11y-font-large` / `a11y-font-xlarge`
+
+Primjenjuje se na `document.body`. Četiri nivoa:
+- Podrazumijevan (bez klase) — standardna veličina fonta
+- Mali — nešto manji tekst
+- Veliki — tekst povećan za ~25%
+- Jako veliki — tekst povećan za ~50%
+
+Sve veličine teksta su definisane u globalnom CSS-u koristeći `font-size` na elementu `body`, čime se automatski skaliraju svi elementi koji koriste relativne jedinice (`rem`, `em`).
+
+#### 2. Font za disleksiju (OpenDyslexic)
+**CSS klasa:** `a11y-dyslexia`
+
+Učitava OpenDyslexic font sa CDN-a i primjenjuje ga na cijelu stranicu. OpenDyslexic je specijalno dizajniran font koji pomaže osobama s disleksijom tako što otežava "okretanje" slova — svako slovo ima drugačiji vizuelni težinski centar.
+
+Font se učitava dinamički (ubacuje se `<link>` tag u `<head>`) samo kad je opcija uključena, čime se izbjegava nepotrebno preuzimanje za korisnike koji ga ne trebaju.
+
+#### 3. Visoki kontrast
+**CSS klasa:** `a11y-high-contrast`
+
+Pojačava kontrast između pozadine i teksta. Tekst postaje crn na bijeloj pozadini (ili bijel na tamnoj), sve dekorativne boje se neutrališu, a ivice elemenata postaju jasnije. Namijenjeno korisnicima sa slabijim vidom.
+
+#### 4. Tamni način rada (Dark Mode)
+**CSS klasa:** `a11y-dark`
+
+Prebacuje cijelu stranicu na tamnu paletu boja. Pozadina postaje tamna (siva ili crna), tekst postaje svijetao. Korisno u tamnim okruženjima ili za osobe kojima tamni ekrani manje naprezaju oči.
+
+#### 5. Način za slabovidnost — boje
+
+Tri posebna filtera za različite tipove poremećaja percepcije boja:
+
+| Opcija | CSS klasa | Opis |
+|---|---|---|
+| Protanopija | `a11y-protanopia` | Teškoća s crvenom bojom (najčešći tip) |
+| Deuteranopija | `a11y-deuteranopia` | Teškoća sa zelenom bojom |
+| Tritanopija | `a11y-tritanopia` | Teškoća s plavom bojom |
+
+Implementirano kroz SVG `<filter>` s matricama transformacije boja (`feColorMatrix`). Filter se ubacuje dinamički u DOM i primjenjuje na cijelu stranicu koristeći CSS `filter: url(#...)`.
+
+#### 6. Smanji animacije (Reduce Motion)
+**CSS klasa:** `a11y-reduce-motion`
+
+Isključuje ili drastično usporava sve CSS animacije i tranzicije na stranici. Namijenjeno osobama s vestibularnim poremećajima ili epilepsijom kojima kretanje na ekranu može izazvati nelagodu ili napad. Implementirano kroz:
+```css
+.a11y-reduce-motion * {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+```
+
+#### 7. Povećan razmak između linija (Line Spacing)
+**CSS klasa:** `a11y-line-spacing`
+
+Povećava `line-height` na cijeloj stranici (npr. sa 1.5 na 2.0). Pomaže osobama s disleksijom i slabijim vidom da lakše prate redove teksta.
+
+#### 8. Povećan razmak između slova (Letter Spacing)
+**CSS klasa:** `a11y-letter-spacing`
+
+Dodaje `letter-spacing` na sve tekstualne elemente. Razmaknutija slova olakšavaju čitanje osobama s disleksijom.
+
+#### 9. Isticanje fokusa (Focus Highlight)
+**CSS klasa:** `a11y-focus-highlight`
+
+Dodaje vidljiv okvir oko svakog elementa koji je trenutno u fokusu tastature (dugmad, linkovi, polja za unos). Neophodan za korisnike koji navigiraju tasterom `Tab` umjesto mišem. CSS:
+```css
+.a11y-focus-highlight *:focus {
+  outline: 3px solid #f59e0b !important;
+  outline-offset: 2px !important;
+}
+```
+
+#### 10. Veliki kursor
+**CSS klasa:** `a11y-large-cursor`
+
+Uvećava kursor miša koristeći SVG kursor definisan u CSS-u. Korisno za osobe s motoričkim teškoćama ili slabijim vidom.
+
+#### 11. Audio podrška (placeholder)
+Dugme je vizuelno prisutno u panelu ali funkcionalnost nije implementirana — čeka integraciju sa screen readerom ili audio opisima slika.
+
+### 16.4 Resetovanje svih podešavanja
+
+Dugme "Resetuj sve" u panelu poziva `resetAll()` metod u `AccessibilityService`:
+
+```typescript
+resetAll() {
+  // Uklanja sve a11y CSS klase sa <body>
+  document.body.classList.remove(
+    'a11y-font-small', 'a11y-font-large', 'a11y-font-xlarge',
+    'a11y-dyslexia', 'a11y-high-contrast', 'a11y-dark',
+    'a11y-protanopia', 'a11y-deuteranopia', 'a11y-tritanopia',
+    'a11y-reduce-motion', 'a11y-line-spacing', 'a11y-letter-spacing',
+    'a11y-focus-highlight', 'a11y-large-cursor'
+  );
+  // Briše podešavanja iz localStorage
+  localStorage.removeItem('dobrobit_a11y_v2');
+}
 ```
 
 ---

@@ -16,8 +16,8 @@
     <li><a routerLink="/usluge" routerLinkActive="active">Usluge &amp; Proizvodi</a></li>
     <li><a routerLink="/donacije" routerLinkActive="active">Donacije</a></li>
     <li><a routerLink="/o-nama" routerLinkActive="active">O nama</a></li>
-    <li><a routerLink="/partneri" routerLinkActive="active">Partneri</a></li>
     <li><a routerLink="/slucajevi-kojima-smo-pomogli" routerLinkActive="active">Pomogli smo</a></li>
+    <li><a routerLink="/partneri" routerLinkActive="active">Partneri</a></li>
   </ul>
 
   <div class="navbar-right">
@@ -71,8 +71,8 @@
   <a routerLink="/usluge"    (click)="closeMobileMenu()"><i class="ph-fill ph-shopping-bag"></i> Usluge &amp; Proizvodi</a>
   <a routerLink="/donacije"  (click)="closeMobileMenu()"><i class="ph-fill ph-hand-heart"></i> Donacije</a>
   <a routerLink="/o-nama"    (click)="closeMobileMenu()"><i class="ph-fill ph-info"></i> O nama</a>
-  <a routerLink="/partneri" (click)="closeMobileMenu()"><i class="ph-fill ph-handshake"></i> Partneri</a>
   <a routerLink="/slucajevi-kojima-smo-pomogli" (click)="closeMobileMenu()"><i class="ph-fill ph-heart"></i> Pomogli smo</a>
+  <a routerLink="/partneri" (click)="closeMobileMenu()"><i class="ph-fill ph-handshake"></i> Partneri</a>
   <div class="mm-divider"></div>
   <a *ngIf="currentUser?.role === 'volonter'" routerLink="/volonter/dashboard" (click)="closeMobileMenu()" class="mm-special vol"><i class="ph-fill ph-handshake"></i> Volonter Zona</a>
   <a *ngIf="currentUser?.role === 'administrator'" routerLink="/admin/dashboard" (click)="closeMobileMenu()" class="mm-special adm"><i class="ph-fill ph-shield-check"></i> Admin Panel</a>

@@ -284,6 +284,9 @@
                     <button class="ca-btn ca-edit" (click)="openStatusChange(v)" title="Promjena statusa">
                       <i class="ph ph-sliders-horizontal"></i>
                     </button>
+                    <button class="ca-btn ca-reject" (click)="obrisiVolontera(v)" title="Obriši volontera" style="background:rgba(231,76,60,0.1);color:#e74c3c;">
+                      <i class="ph ph-trash"></i>
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -332,8 +335,8 @@
               <button class="ca-btn ca-edit" (click)="editBeneficiary(b)" title="Uredi">
                 <i class="ph ph-pencil-simple"></i>
               </button>
-              <button class="ca-btn ca-status" (click)="openStatusChange(b)" title="Status">
-                <i class="ph ph-sliders-horizontal"></i>
+              <button class="ca-btn ca-reject" (click)="obrisiKorisnikaPomoci(b)" title="Obriši" style="background:rgba(231,76,60,0.1);color:#e74c3c;">
+                <i class="ph ph-trash"></i>
               </button>
             </div>
           </div>
@@ -771,17 +774,20 @@
     <p class="modal-user-line">Korisnik: <strong>{{ statusChangeTarget?.name }}</strong></p>
     <div class="form-group">
       <label class="form-label">Novi status</label>
-      <select class="form-select" [(ngModel)]="newStatus">
-        <option value="aktivan">Aktivan / Verifikovan</option>
-        <option value="na_cekanju">Na čekanju</option>
-        <option value="neaktivan">Neaktivan</option>
-        <option value="suspendovan">Suspendovan</option>
-        <option value="uklonjen">Uklonjen</option>
+      <select class="form-select" name="newStatus"
+              (change)="newStatus = $any($event.target).value">
+        <option value="aktivan" [selected]="newStatus === 'aktivan'">Aktivan / Verifikovan</option>
+        <option value="na_cekanju" [selected]="newStatus === 'na_cekanju'">Na čekanju</option>
+        <option value="neaktivan" [selected]="newStatus === 'neaktivan'">Neaktivan</option>
+        <option value="suspendovan" [selected]="newStatus === 'suspendovan'">Suspendovan</option>
       </select>
     </div>
     <div class="form-group">
       <label class="form-label">Razlog promjene <span style="color:#e74c3c;">*</span></label>
-      <textarea class="form-textarea" [(ngModel)]="statusChangeReason" placeholder="Navedite razlog promjene statusa..."></textarea>
+      <textarea class="form-textarea" name="statusChangeReason"
+                [value]="statusChangeReason"
+                (input)="statusChangeReason = $any($event.target).value"
+                placeholder="Navedite razlog promjene statusa..."></textarea>
     </div>
     <div class="modal-actions">
       <button class="btn-modal-confirm" (click)="confirmStatusChange()">
@@ -806,16 +812,16 @@
     <div class="form-row-2">
       <div class="form-group">
         <label class="form-label">Naziv <span style="color:#e74c3c;">*</span></label>
-        <input type="text" class="form-input" [(ngModel)]="noviPartner.naziv" placeholder="Npr. ICT Cortex"/>
+        <input type="text" class="form-input" [value]="noviPartner.naziv" (input)="noviPartner.naziv = $any($event.target).value" placeholder="Npr. ICT Cortex"/>
       </div>
       <div class="form-group">
         <label class="form-label">Skraćenica</label>
-        <input type="text" class="form-input" [(ngModel)]="noviPartner.kratko" placeholder="Npr. ICT" maxlength="4"/>
+        <input type="text" class="form-input" [value]="noviPartner.kratko" (input)="noviPartner.kratko = $any($event.target).value" placeholder="Npr. ICT" maxlength="4"/>
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">Opis</label>
-      <textarea class="form-textarea" [(ngModel)]="noviPartner.opis" placeholder="Kratki opis partnera..."></textarea>
+      <textarea class="form-textarea" [value]="noviPartner.opis" (input)="noviPartner.opis = $any($event.target).value" placeholder="Kratki opis partnera..."></textarea>
     </div>
     <!-- Logo — upload ili URL -->
     <div class="form-group">
@@ -848,20 +854,20 @@
         </div>
       </div>
       <input *ngIf="logoTabMode === 'url'" type="text" class="form-input" style="margin-top:8px;"
-             [(ngModel)]="noviPartner.logoUrl" placeholder="https://primjer.com/logo.png"/>
+             [value]="noviPartner.logoUrl" (input)="noviPartner.logoUrl = $any($event.target).value" placeholder="https://primjer.com/logo.png"/>
     </div>
     <div class="form-group">
       <label class="form-label">Web stranica</label>
-      <input type="text" class="form-input" [(ngModel)]="noviPartner.website" placeholder="https://example.com"/>
+      <input type="text" class="form-input" [value]="noviPartner.website" (input)="noviPartner.website = $any($event.target).value" placeholder="https://example.com"/>
     </div>
     <div class="form-row-2">
       <div class="form-group">
         <label class="form-label">Kategorija</label>
-        <input type="text" class="form-input" [(ngModel)]="noviPartner.kategorija" placeholder="Npr. Fondacija"/>
+        <input type="text" class="form-input" [value]="noviPartner.kategorija" (input)="noviPartner.kategorija = $any($event.target).value" placeholder="Npr. Fondacija"/>
       </div>
       <div class="form-group">
         <label class="form-label">Redoslijed</label>
-        <input type="number" class="form-input" [(ngModel)]="noviPartner.redoslijed"/>
+        <input type="number" class="form-input" [value]="noviPartner.redoslijed" (input)="noviPartner.redoslijed = +$any($event.target).value"/>
       </div>
     </div>
 
@@ -896,15 +902,15 @@
 
     <div class="form-group">
       <label class="form-label">Naslov <span style="color:#e74c3c;">*</span></label>
-      <input type="text" class="form-input" [(ngModel)]="novaPomogliKartica.naslov" placeholder="Npr. Marija Petrović"/>
+      <input type="text" class="form-input" [value]="novaPomogliKartica.naslov" (input)="novaPomogliKartica.naslov = $any($event.target).value" placeholder="Npr. Marija Petrović"/>
     </div>
     <div class="form-group">
       <label class="form-label">Tekst priče <span style="color:#e74c3c;">*</span></label>
-      <textarea class="form-textarea" style="min-height:120px;" [(ngModel)]="novaPomogliKartica.tekst" placeholder="Opišite priču..."></textarea>
+      <textarea class="form-textarea" style="min-height:120px;" [value]="novaPomogliKartica.tekst" (input)="novaPomogliKartica.tekst = $any($event.target).value" placeholder="Opišite priču..."></textarea>
     </div>
     <div class="form-group">
       <label class="form-label">Boja srca</label>
-      <select class="form-select" [(ngModel)]="novaPomogliKartica.boja">
+      <select class="form-select" [value]="novaPomogliKartica.boja" (change)="novaPomogliKartica.boja = $any($event.target).value">
         <option value="roza1">Roze 1 (roze-ljubičasta)</option>
         <option value="roza2">Roze 2 (crveno-roze)</option>
         <option value="plava">Plava</option>
@@ -912,7 +918,7 @@
     </div>
     <div class="form-group">
       <label class="form-label">Redoslijed prikaza</label>
-      <input type="number" class="form-input" [(ngModel)]="novaPomogliKartica.redoslijed" placeholder="1, 2, 3..."/>
+      <input type="number" class="form-input" [value]="novaPomogliKartica.redoslijed" (input)="novaPomogliKartica.redoslijed = +$any($event.target).value" placeholder="1, 2, 3..."/>
     </div>
 
     <div class="modal-actions">
@@ -948,17 +954,25 @@
 
     <div class="form-group">
       <label class="form-label">Ime i prezime <span style="color:#e74c3c;">*</span></label>
-      <input type="text" class="form-input" [(ngModel)]="newBeneficiary.name" placeholder="Npr. Marija Nikolić">
+      <input type="text" class="form-input" name="beneficiaryName"
+             [value]="newBeneficiary.name"
+             (input)="newBeneficiary.name = $any($event.target).value"
+             placeholder="Npr. Marija Nikolić">
     </div>
     <div class="form-group">
       <label class="form-label">Opis situacije</label>
-      <textarea class="form-textarea" [(ngModel)]="newBeneficiary.description" placeholder="Kratki opis potreba..."></textarea>
+      <textarea class="form-textarea" name="beneficiaryDescription"
+                [value]="newBeneficiary.description"
+                (input)="newBeneficiary.description = $any($event.target).value"
+                placeholder="Kratki opis potreba..."></textarea>
     </div>
     <div class="form-group">
       <label class="form-label">Status</label>
-      <select class="form-select" [(ngModel)]="newBeneficiary.status">
-        <option value="ACTIVE">Aktivan</option>
-        <option value="INACTIVE">Neaktivan</option>
+      <select class="form-select" name="beneficiaryStatus"
+              (change)="newBeneficiary.status = $any($event.target).value">
+        <option value="aktivan" [selected]="newBeneficiary.status === 'aktivan'">Aktivan</option>
+        <option value="neaktivan" [selected]="newBeneficiary.status === 'neaktivan'">Neaktivan</option>
+        <option value="zavrsen" [selected]="newBeneficiary.status === 'zavrsen'">Završen</option>
       </select>
     </div>
     <div class="modal-actions">
@@ -968,5 +982,45 @@
       </button>
       <button class="btn-modal-cancel" (click)="closeBeneficiaryModal()">Otkaži</button>
     </div>
+  </div>
+</div>
+
+<!-- ── CONFIRM MODAL ──────────────────────────────────────── -->
+<div class="modal-backdrop confirm-backdrop" *ngIf="confirmDeleteOpen" (click)="confirmDeleteOpen = false">
+  <div class="modal-card confirm-card" (click)="$event.stopPropagation()">
+    <div class="confirm-icon"><i class="ph-fill ph-warning" style="color:#e74c3c;font-size:2rem;"></i></div>
+    <h3 class="confirm-title">{{ confirmDeleteTitle }}</h3>
+    <p class="confirm-msg">Da li ste sigurni za <strong>{{ confirmDeleteName }}</strong>? Ova radnja se ne može poništiti.</p>
+    <div class="modal-actions" style="justify-content:center;gap:1rem;">
+      <button class="btn-modal-cancel" (click)="confirmDeleteOpen = false">Otkaži</button>
+      <button class="btn-modal-confirm btn-danger" (click)="executeDelete()">
+        <i class="ph-fill ph-check"></i> Potvrdi
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── INLINE PROMPT MODAL ────────────────────────────────── -->
+<div class="modal-backdrop confirm-backdrop" *ngIf="inlinePromptOpen" (click)="inlinePromptOpen = false">
+  <div class="modal-card confirm-card" (click)="$event.stopPropagation()">
+    <h3 class="confirm-title">{{ inlinePromptTitle }}</h3>
+    <p class="confirm-msg" style="margin-bottom:12px;">{{ inlinePromptLabel }}</p>
+    <textarea class="form-input" rows="3" style="width:100%;resize:vertical;margin-bottom:16px;"
+      [(ngModel)]="inlinePromptValue" name="inlinePromptValue" placeholder="Unesite razlog..."></textarea>
+    <div class="modal-actions" style="justify-content:center;gap:1rem;">
+      <button class="btn-modal-cancel" (click)="inlinePromptOpen = false">Otkaži</button>
+      <button class="btn-modal-confirm" (click)="submitInlinePrompt()">
+        <i class="ph-fill ph-check"></i> Potvrdi
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST NOTIFIKACIJE ─────────────────────────────────── -->
+<div class="toast-container">
+  <div *ngFor="let t of toasts" class="toast" [ngClass]="'toast-' + t.type">
+    <i class="ph-fill" [ngClass]="{'ph-check-circle': t.type==='success', 'ph-warning-circle': t.type==='error', 'ph-info': t.type==='info'}"></i>
+    <span>{{ t.message }}</span>
+    <button class="toast-close" (click)="removeToast(t.id)">×</button>
   </div>
 </div>

@@ -3,6 +3,7 @@ import com.fakultet.dobrobit.models.Korisnik;
 import com.fakultet.dobrobit.models.KorisnikPomoci;
 import com.fakultet.dobrobit.services.KorisnikPomociService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,9 +17,16 @@ public class KorisnikPomociController {
         this.korisnikPomociService = korisnikPomociService;
     }
 
-    //pristup korisnicima kojima je potrebna pomoc
+    // Javni endpoint — samo aktivni slučajevi
     @GetMapping
     public List<KorisnikPomoci> prikaziSve() {
+        return korisnikPomociService.getAktivni();
+    }
+
+    // Admin endpoint — svi slučajevi bez filtera
+    @GetMapping("/admin/svi")
+    @PreAuthorize("hasRole('administrator')")
+    public List<KorisnikPomoci> prikaziSveAdmin() {
         return korisnikPomociService.getAll();
     }
 
@@ -57,6 +65,26 @@ public class KorisnikPomociController {
         try {
             KorisnikPomoci update = korisnikPomociService.update(id, noviPodaci);
             return ResponseEntity.ok(update);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/admin")
+    @PreAuthorize("hasRole('administrator')")
+    public ResponseEntity<?> kreirajAdminSlucaj(@RequestBody java.util.Map<String, String> body) {
+        String naziv = body.get("naziv");
+        String opis = body.get("opisPotrebe");
+        if (naziv == null || naziv.isBlank()) return ResponseEntity.badRequest().body("Naziv je obavezan.");
+        return ResponseEntity.ok(korisnikPomociService.kreirajAdminSlucaj(naziv, opis));
+    }
+
+    @DeleteMapping("/admin/{id}")
+    @PreAuthorize("hasRole('administrator')")
+    public ResponseEntity<String> obrisiAdminSlucaj(@PathVariable int id) {
+        try {
+            korisnikPomociService.obrisi(id);
+            return ResponseEntity.ok("Slučaj obrisan.");
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }

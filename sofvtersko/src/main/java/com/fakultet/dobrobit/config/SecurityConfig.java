@@ -51,7 +51,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/korisnici/login").permitAll()
 
                         // Javni GET endpointi
-                        .requestMatchers(HttpMethod.GET, "/api/korisnici-pomoci/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/korisnici-pomoci", "/api/korisnici-pomoci/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/usluge-proizvodi/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/kategorije/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/donacije/**").permitAll()
@@ -72,7 +72,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/kontakt").permitAll()
 
                         // Pomogli smo — čitanje javno, upravljanje samo admin
-                        .requestMatchers(HttpMethod.GET, "/api/pomogli-slucajevi/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/pomogli-slucajevi", "/api/pomogli-slucajevi/**").permitAll()
                         .requestMatchers("/api/pomogli-slucajevi/**").hasRole("administrator")
 
                         // Partneri — čitanje javno, upravljanje samo admin

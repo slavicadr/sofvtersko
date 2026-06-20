@@ -164,14 +164,16 @@ public class KorisnikServices {
 
         if (noviStatus == StatusNaloga.uklonjen) {
             k.setVerifikovan(false);
+            // Oslobodi email da se može ponovo registrovati
+            k.setEmail("uklonjen_" + k.getKorisnikId() + "_" + System.currentTimeMillis() + "@deleted.local");
         }
 
         // Ako admin odobri — postavi kao verifikovan i aktivan
         if (noviStatus == StatusNaloga.aktivan && !k.isVerifikovan()) {
             k.setVerifikovan(true);
             emailService.posaljiOdobrenjeNaloga(k.getEmail(), k.getIme());
-        } else {
-            // Za svaku drugu promjenu statusa — pošalji obavještenje (SRS 5.3.1)
+        } else if (noviStatus != StatusNaloga.uklonjen) {
+            // Za svaku drugu promjenu statusa (ne brisanje) — pošalji obavještenje
             emailService.posaljiPromjenuStatusa(k.getEmail(), k.getIme(),
                     noviStatus.name(), razlog);
         }

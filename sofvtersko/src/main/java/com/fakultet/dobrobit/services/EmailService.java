@@ -4,6 +4,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CompletableFuture;
+
 @Service
 public class EmailService {
 
@@ -13,24 +15,23 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
-    // Generalna metoda za slanje emaila
     private void posalji(String na, String naslov, String tekst) {
-        try {
-            SimpleMailMessage poruka = new SimpleMailMessage();
-            poruka.setFrom("dobrobit2026@outlook.com");
-            poruka.setTo(na);
-            poruka.setSubject(naslov);
-            poruka.setText(tekst);
-            mailSender.send(poruka);
-        } catch (Exception e) {
-            // Ne blokiramo sistem ako email ne stigne — samo logujemo
-            System.err.println("Email nije poslan na " + na + ": " + e.getMessage());
-        }
+        CompletableFuture.runAsync(() -> {
+            try {
+                SimpleMailMessage poruka = new SimpleMailMessage();
+                poruka.setFrom("dobrobit2026@outlook.com");
+                poruka.setTo(na);
+                poruka.setSubject(naslov);
+                poruka.setText(tekst);
+                mailSender.send(poruka);
+            } catch (Exception e) {
+                System.err.println("Email nije poslan na " + na + ": " + e.getMessage());
+            }
+        });
     }
 
     // ── Notifikacije za volontera ─────────────────────────────────────────────
 
-    // Obavještenje pri promjeni statusa naloga (SRS 5.3.1)
     public void posaljiPromjenuStatusa(String email, String ime,
                                        String noviStatus, String razlog) {
         String naslov = "Dobrobit — Promjena statusa vašeg naloga";
@@ -46,7 +47,6 @@ public class EmailService {
         posalji(email, naslov, tekst);
     }
 
-    // Obavještenje pri uspješnoj registraciji volontera (čeka verifikaciju)
     public void posaljiPotvrduRegistracije(String email, String ime) {
         String naslov = "Dobrobit — Zahtjev za registraciju primljen";
         String tekst = String.format(
@@ -60,7 +60,6 @@ public class EmailService {
         posalji(email, naslov, tekst);
     }
 
-    // Obavještenje pri odobravanju naloga
     public void posaljiOdobrenjeNaloga(String email, String ime) {
         String naslov = "Dobrobit — Vaš nalog je odobren!";
         String tekst = String.format(
@@ -73,7 +72,6 @@ public class EmailService {
         posalji(email, naslov, tekst);
     }
 
-    // Obavještenje kupcu nakon kupovine (SRS 7.4)
     public void posaljiPotvrdaKupovine(String email, String ime,
                                        String usluga, String volonterKontakt) {
         String naslov = "Dobrobit — Potvrda kupovine";
@@ -89,7 +87,6 @@ public class EmailService {
         posalji(email, naslov, tekst);
     }
 
-    // Poruka sa kontakt forme — šalje se na info adresu platforme
     public void posaljiKontaktFormu(String ime, String prezime, String email, String poruka) {
         String naslov = "Dobrobit — Nova poruka: " + ime + " " + prezime;
         String tekst = String.format(
@@ -103,7 +100,6 @@ public class EmailService {
         posalji("dobrobit2026@outlook.com", naslov, tekst);
     }
 
-    // Obavještenje donatoru nakon donacije (SRS 7.4)
     public void posaljiPotvrdaDonacije(String email, String ime, String iznos) {
         String naslov = "Dobrobit — Potvrda donacije";
         String tekst = String.format(

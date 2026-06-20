@@ -11,6 +11,10 @@ export class KorisnikPomociService {
     return this.http.get<KorisnikPomoci[]>('/api/korisnici-pomoci');
   }
 
+  getAllAdmin(): Observable<KorisnikPomoci[]> {
+    return this.http.get<KorisnikPomoci[]>('/api/korisnici-pomoci/admin/svi');
+  }
+
   getById(id: number): Observable<KorisnikPomoci> {
     return this.http.get<KorisnikPomoci>(`/api/korisnici-pomoci/${id}`);
   }
