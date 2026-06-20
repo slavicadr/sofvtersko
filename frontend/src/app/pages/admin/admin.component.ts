@@ -136,6 +136,14 @@ export class AdminComponent implements OnInit {
   uredivanjeKartice: any = null;
   novaPomogliKartica: any = { naslov: '', tekst: '', boja: 'roza1', redoslijed: 1 };
 
+  // ── Katalozi ─────────────────────────────────────────────────
+  katalozi: any[] = [];
+  katalogModalOpen = false;
+  uredivanjeKataloga: any = null;
+  noviKatalog: any = { naslov: '', opis: '', pdfUrl: '', redoslijed: 1 };
+  katalogUploadStatus: '' | 'uploading' | 'done' | 'error' = '';
+  katalogUploadIme = '';
+
   statusModalOpen = false;
   statusChangeTarget: any = null;
   newStatus = 'aktivan';
@@ -655,11 +663,95 @@ export class AdminComponent implements OnInit {
 
   zatvoriPomogliModal() { this.pomogliModalOpen = false; }
 
+  // ── Katalozi ─────────────────────────────────────────────────
+  loadKataloge() {
+    this.http.get<any[]>('/api/katalozi').subscribe({
+      next: (data) => { this.katalozi = data; }
+    });
+  }
+
+  otvoriKatalogFormu() {
+    this.uredivanjeKataloga = null;
+    this.noviKatalog = { naslov: '', opis: '', pdfUrl: '', redoslijed: this.katalozi.length + 1 };
+    this.katalogUploadStatus = '';
+    this.katalogUploadIme = '';
+    this.katalogModalOpen = true;
+  }
+
+  urediKatalog(k: any) {
+    this.uredivanjeKataloga = k;
+    this.noviKatalog = { naslov: k.naslov, opis: k.opis, pdfUrl: k.pdfUrl, redoslijed: k.redoslijed };
+    this.katalogUploadStatus = k.pdfUrl ? 'done' : '';
+    this.katalogUploadIme = k.pdfUrl ? k.pdfUrl.split('/').pop() : '';
+    this.katalogModalOpen = true;
+  }
+
+  onKatalogPdfSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.uploadKatalogPdf(input.files[0]);
+    }
+  }
+
+  private uploadKatalogPdf(file: File) {
+    this.katalogUploadStatus = 'uploading';
+    this.katalogUploadIme = file.name;
+    const formData = new FormData();
+    formData.append('file', file);
+    this.http.post<{ url: string }>('/api/upload/katalog', formData).subscribe({
+      next: (res) => {
+        this.noviKatalog.pdfUrl = res.url;
+        this.katalogUploadStatus = 'done';
+      },
+      error: () => { this.katalogUploadStatus = 'error'; }
+    });
+  }
+
+  sacuvajKatalog() {
+    if (!this.noviKatalog.naslov?.trim()) {
+      this.toast('Naslov je obavezan.', 'error'); return;
+    }
+    if (!this.noviKatalog.pdfUrl?.trim()) {
+      this.toast('Morate uploadovati PDF fajl.', 'error'); return;
+    }
+    if (this.uredivanjeKataloga) {
+      this.http.put<any>(`/api/katalozi/${this.uredivanjeKataloga.id}`, this.noviKatalog).subscribe({
+        next: (updated) => {
+          Object.assign(this.uredivanjeKataloga, updated);
+          this.katalogModalOpen = false;
+          this.toast('Katalog sačuvan.', 'success');
+        },
+        error: () => this.toast('Greška pri čuvanju.', 'error')
+      });
+    } else {
+      this.http.post<any>('/api/katalozi', this.noviKatalog).subscribe({
+        next: (novi) => {
+          this.katalozi.push(novi);
+          this.katalogModalOpen = false;
+          this.toast('Katalog dodat.', 'success');
+        },
+        error: () => this.toast('Greška pri dodavanju.', 'error')
+      });
+    }
+  }
+
+  obrisiKatalog(k: any) {
+    this.openConfirmAction(`"${k.naslov}"`, () => {
+      this.http.delete(`/api/katalozi/${k.id}`).subscribe({
+        next: () => { this.katalozi = this.katalozi.filter(x => x.id !== k.id); this.toast('Katalog obrisan.', 'success'); },
+        error: () => this.toast('Greška pri brisanju.', 'error')
+      });
+    });
+  }
+
+  zatvoriKatalogModal() { this.katalogModalOpen = false; }
+
   viewAlerts() { this.setSection('alerts'); }
   setSection(s: string) {
     this.activeSection = s;
     if (s === 'pomogli' && this.pomogliSlucajevi.length === 0) this.loadPomogliSlucajevi();
     if (s === 'partneri' && this.adminPartneri.length === 0) this.loadPartnere();
+    if (s === 'katalozi' && this.katalozi.length === 0) this.loadKataloge();
   }
 
   getSectionTitle(): string {
@@ -668,7 +760,8 @@ export class AdminComponent implements OnInit {
       offers: 'Ponude', reviews: 'Recenzije', transactions: 'Transakcije',
       donations: 'Donacije', logs: 'Logovi Aktivnosti', alerts: 'Sistemska Upozorenja',
       pomogli: 'Pomogli smo',
-      partneri: 'Partneri'
+      partneri: 'Partneri',
+      katalozi: 'PDF Katalozi'
     };
     return map[this.activeSection] || 'Admin Panel';
   }
@@ -680,7 +773,8 @@ export class AdminComponent implements OnInit {
       reviews: 'Moderacija recenzija', transactions: 'Finansijske transakcije',
       donations: 'Lista donacija', logs: 'Sistemski logovi', alerts: 'Aktivna upozorenja',
       pomogli: 'Upravljajte karticama priča koje se prikazuju na javnoj stranici',
-      partneri: 'Dodajte ili uklonite partnere i sponzore platforme'
+      partneri: 'Dodajte ili uklonite partnere i sponzore platforme',
+      katalozi: 'Uploadujte PDF kataloge koji se prikazuju u sekciji Pomogli smo'
     };
     return map[this.activeSection] || '';
   }

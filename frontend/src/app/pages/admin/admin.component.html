@@ -70,6 +70,10 @@
         <i class="ph-fill ph-handshake nav-icon"></i>
         <span *ngIf="!sidebarCollapsed">Partneri</span>
       </a>
+      <a class="nav-item" [class.active]="activeSection==='katalozi'" (click)="setSection('katalozi'); loadKataloge()" title="PDF Katalozi">
+        <i class="ph-fill ph-file-pdf nav-icon" style="color:#dc2626;"></i>
+        <span *ngIf="!sidebarCollapsed">PDF Katalozi</span>
+      </a>
 
       <div class="nav-group-label" *ngIf="!sidebarCollapsed">Sistem</div>
       <a class="nav-item" [class.active]="activeSection==='logs'" (click)="setSection('logs')" title="Logovi">
@@ -668,6 +672,44 @@
         </div>
       </ng-container>
 
+      <!-- ── KATALOZI ──────────────────────────────────────────── -->
+      <ng-container *ngIf="activeSection === 'katalozi'">
+        <div class="section-toolbar">
+          <button class="btn-primary-sm" (click)="otvoriKatalogFormu()">
+            <i class="ph-fill ph-plus-circle"></i> Dodaj katalog
+          </button>
+        </div>
+
+        <div class="sp-admin-cards">
+          <div class="sp-admin-card" *ngFor="let k of katalozi">
+            <div class="spa-header" style="background:linear-gradient(135deg,#dc2626,#ef4444);">
+              <i class="ph-fill ph-file-pdf spa-heart-icon" style="font-size:1.8rem;"></i>
+              <div class="spa-meta">
+                <div class="spa-naslov">{{ k.naslov || '(bez naslova)' }}</div>
+                <span class="spa-boja-tag">Redoslijed: {{ k.redoslijed }}</span>
+              </div>
+            </div>
+            <div class="spa-tekst">{{ k.opis | slice:0:140 }}{{ k.opis?.length > 140 ? '...' : '' }}</div>
+            <div class="spa-actions">
+              <a [href]="k.pdfUrl" target="_blank" rel="noopener" class="ca-btn ca-edit" title="Otvori PDF" style="text-decoration:none;display:inline-flex;align-items:center;">
+                <i class="ph ph-arrow-square-out"></i>
+              </a>
+              <button class="ca-btn ca-edit" (click)="urediKatalog(k)" title="Uredi">
+                <i class="ph ph-pencil-simple"></i>
+              </button>
+              <button class="ca-btn ca-reject" (click)="obrisiKatalog(k)" title="Obriši">
+                <i class="ph-fill ph-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="katalozi.length === 0">
+            <i class="ph-fill ph-file-pdf" style="font-size:2.5rem;color:#fca5a5;"></i>
+            <p>Nema kataloga. Kliknite "Dodaj katalog" da uploadujete prvi PDF.</p>
+          </div>
+        </div>
+      </ng-container>
+
       <!-- ── ALERTS ─────────────────────────────────────────── -->
       <ng-container *ngIf="activeSection === 'alerts'">
         <div class="alerts-grid">
@@ -927,6 +969,66 @@
         {{ uredivanjeKartice ? 'Sačuvaj izmjene' : 'Dodaj karticu' }}
       </button>
       <button class="btn-modal-cancel" (click)="zatvoriPomogliModal()">Otkaži</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ KATALOG MODAL ═══════════════════════════════════════════ -->
+<div class="modal-backdrop" *ngIf="katalogModalOpen" (click)="zatvoriKatalogModal()">
+  <div class="modal-card" style="max-width:520px;" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">
+        <i class="ph-fill ph-file-pdf" style="color:#dc2626;"></i>
+        {{ uredivanjeKataloga ? 'Uredi katalog' : 'Dodaj PDF katalog' }}
+      </h3>
+      <button class="modal-close" (click)="zatvoriKatalogModal()"><i class="ph ph-x"></i></button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Naslov kataloga <span style="color:#e74c3c;">*</span></label>
+      <input type="text" class="form-input" [value]="noviKatalog.naslov" (input)="noviKatalog.naslov = $any($event.target).value" placeholder="Npr. Godišnji izvještaj 2024"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Opis (opciono)</label>
+      <textarea class="form-textarea" [value]="noviKatalog.opis" (input)="noviKatalog.opis = $any($event.target).value" placeholder="Kratki opis sadržaja kataloga..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">PDF fajl <span style="color:#e74c3c;">*</span></label>
+      <div class="logo-upload-area">
+        <input type="file" #katalogPdfInput accept="application/pdf" style="display:none"
+               (change)="onKatalogPdfSelected($event)"/>
+        <div class="lua-content" (click)="katalogPdfInput.click()">
+          <i class="ph ph-file-pdf" style="font-size:2rem;color:#dc2626;"></i>
+          <span class="lua-text">
+            Kliknite da odaberete PDF<br>
+            <small>Samo PDF — max 20 MB</small>
+          </span>
+          <span *ngIf="katalogUploadStatus === 'uploading'" class="lua-status">Učitavanje...</span>
+          <span *ngIf="katalogUploadStatus === 'done'" class="lua-status lua-ok">
+            <i class="ph-fill ph-check-circle"></i> {{ katalogUploadIme || 'Uspješno uploadovano' }}
+          </span>
+          <span *ngIf="katalogUploadStatus === 'error'" class="lua-status lua-err">
+            <i class="ph-fill ph-x-circle"></i> Greška pri uploadu
+          </span>
+        </div>
+      </div>
+      <div *ngIf="noviKatalog.pdfUrl && katalogUploadStatus === 'done'" style="margin-top:8px;">
+        <a [href]="noviKatalog.pdfUrl" target="_blank" rel="noopener" style="font-size:0.82rem;color:#2563eb;">
+          <i class="ph ph-arrow-square-out"></i> Otvori uploadovani PDF
+        </a>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Redoslijed prikaza</label>
+      <input type="number" class="form-input" [value]="noviKatalog.redoslijed" (input)="noviKatalog.redoslijed = +$any($event.target).value" placeholder="1, 2, 3..."/>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-modal-confirm" (click)="sacuvajKatalog()">
+        <i class="ph-fill" [class]="uredivanjeKataloga ? 'ph-floppy-disk' : 'ph-plus-circle'"></i>
+        {{ uredivanjeKataloga ? 'Sačuvaj izmjene' : 'Dodaj katalog' }}
+      </button>
+      <button class="btn-modal-cancel" (click)="zatvoriKatalogModal()">Otkaži</button>
     </div>
   </div>
 </div>

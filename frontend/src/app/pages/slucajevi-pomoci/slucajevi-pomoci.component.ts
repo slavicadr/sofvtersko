@@ -18,6 +18,7 @@ export class SlucajeviPomociComponent implements OnInit {
 
   cards: any[] = [];
   selectedIndex: number | null = null;
+  katalozi: any[] = [];
 
   get selectedCard(): any | null {
     return this.selectedIndex !== null ? this.cards[this.selectedIndex] : null;
@@ -28,6 +29,9 @@ export class SlucajeviPomociComponent implements OnInit {
   ngOnInit() {
     this.http.get<any[]>('/api/pomogli-slucajevi').subscribe({
       next: (data) => { this.cards = data; }
+    });
+    this.http.get<any[]>('/api/katalozi').subscribe({
+      next: (data) => { this.katalozi = data; }
     });
   }
 

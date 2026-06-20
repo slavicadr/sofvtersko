@@ -45,6 +45,33 @@
     <i class="ph ph-cursor-click"></i> Kliknite na srce da pročitate priču
   </p>
 
+  <!-- ── PDF Katalozi ─────────────────────────────────────────── -->
+  <div class="sp-katalozi" *ngIf="katalozi.length > 0">
+    <h2 class="sp-katalozi-title">
+      <i class="ph-fill ph-files" style="color:#dc2626;margin-right:8px;"></i>
+      Naši katalozi i izvještaji
+    </h2>
+    <p class="sp-katalozi-sub">Preuzmite naše PDF dokumente i saznajte više o radu organizacije.</p>
+    <div class="sp-katalozi-grid">
+      <a
+        *ngFor="let k of katalozi; let i = index"
+        [href]="k.pdfUrl"
+        target="_blank"
+        rel="noopener"
+        class="sp-katalog-card"
+      >
+        <div class="sp-katalog-icon">
+          <i class="ph-fill ph-file-pdf"></i>
+        </div>
+        <div class="sp-katalog-info">
+          <div class="sp-katalog-naslov">{{ k.naslov }}</div>
+          <div class="sp-katalog-opis" *ngIf="k.opis">{{ k.opis }}</div>
+        </div>
+        <i class="ph ph-arrow-square-out sp-katalog-arrow"></i>
+      </a>
+    </div>
+  </div>
+
   <div class="sp-cta">
     <p>Želite da pomognete nekom ko je trenutno u potrebi?</p>
     <div class="sp-cta-btns">
