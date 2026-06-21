@@ -75,6 +75,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/pomogli-slucajevi", "/api/pomogli-slucajevi/**").permitAll()
                         .requestMatchers("/api/pomogli-slucajevi/**").hasRole("administrator")
 
+                        // Katalozi — čitanje javno, upravljanje samo admin
+                        .requestMatchers(HttpMethod.GET, "/api/katalozi", "/api/katalozi/**").permitAll()
+                        .requestMatchers("/api/katalozi/**").hasRole("administrator")
+
                         // Partneri — čitanje javno, upravljanje samo admin
                         .requestMatchers(HttpMethod.GET, "/api/partneri/**").permitAll()
                         .requestMatchers("/api/partneri/**").hasRole("administrator")
@@ -103,8 +107,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/volonter-info/**").hasAnyRole("volonter", "administrator")
 
                         // ── Kupac / Kupovina ───────────────────────────────────────────
-                        .requestMatchers(HttpMethod.POST, "/api/kupovine/kupi").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/recenzije/dodaj").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/kupovine/kupi").hasAnyRole("kupac", "volonter")
+                        .requestMatchers(HttpMethod.POST, "/api/recenzije/dodaj").hasAnyRole("kupac", "volonter")
+                        .requestMatchers(HttpMethod.PATCH, "/api/recenzije/*/odgovor").hasAnyRole("volonter")
 
                         // Realizacija usluge — kupac, volonter ili admin
                         .requestMatchers(HttpMethod.PATCH, "/api/kupovine/*/realizovano").authenticated()

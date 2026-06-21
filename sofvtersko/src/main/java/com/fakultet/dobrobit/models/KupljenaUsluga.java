@@ -21,7 +21,7 @@ public class KupljenaUsluga {
     private UslugaProizvod uslugaProizvod;
 
     @ManyToOne
-    @JoinColumn(name = "pomoc_id", nullable = false)
+    @JoinColumn(name = "pomoc_id", nullable = true)
     private KorisnikPomoci korisnikPomoci;
 
     private BigDecimal iznos;

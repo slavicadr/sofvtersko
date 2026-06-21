@@ -160,7 +160,6 @@ export class BuyerDashboardComponent implements OnInit {
     if (this.reviewForm.rating === 0 || !this.reviewingPurchase || !this.user) return;
     this.http.post<any>('/api/recenzije/dodaj', {
       kupovinaId: this.reviewingPurchase.id,
-      kupacId: this.user.korisnikId,
       brojZvjezdica: this.reviewForm.rating,
       komentar: this.reviewForm.comment
     }).subscribe({
