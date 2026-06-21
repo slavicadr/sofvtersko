@@ -59,3 +59,240 @@
     --color: #dc2626;
   }
 }
+
+.cms-segment {
+  margin: 12px 16px;
+  --background: rgba(255,255,255,0.7);
+  border-radius: 12px;
+}
+
+.loader {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.stats-row {
+  display: flex;
+  gap: 10px;
+  padding: 16px 16px 0;
+}
+
+.stat-card {
+  flex: 1;
+  background: rgba(255,255,255,0.85);
+  border-radius: 14px;
+  padding: 16px 12px;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(45,107,85,0.1);
+
+  .stat-num {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--db-teal);
+    font-family: 'Playfair Display', serif;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 2px;
+  }
+}
+
+.cms-section {
+  margin: 16px 16px 0;
+  background: rgba(255,255,255,0.85);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(45,107,85,0.08);
+
+  &:last-child { margin-bottom: 24px; }
+}
+
+.cms-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--db-text);
+  border-bottom: 1px solid rgba(168,221,208,0.3);
+}
+
+.cms-list {
+  background: transparent !important;
+
+  ion-item {
+    --background: transparent;
+    --border-color: rgba(168,221,208,0.25);
+    --padding-start: 16px;
+  }
+}
+
+.cms-empty {
+  padding: 20px 16px;
+  color: #888;
+  font-size: 0.88rem;
+}
+
+.prodaja-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 6px 0;
+
+  .iznos {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--db-teal);
+  }
+}
+
+.recenzija-card {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(168,221,208,0.25);
+
+  &:last-child { border-bottom: none; }
+}
+
+.recenzija-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.zvjezdice {
+  display: flex;
+  gap: 2px;
+}
+
+.recenzija-datum {
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.recenzija-komentar {
+  font-size: 0.88rem;
+  color: #444;
+  margin: 0;
+}
+
+// ── Sheet modal ──
+.overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: flex-end;
+}
+
+.bottom-sheet {
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  padding: 12px 20px 32px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.sheet-drag-bar {
+  width: 36px; height: 4px;
+  background: #d0d8e0;
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+.sheet-close {
+  position: absolute; top: 20px; right: 20px;
+  background: none; border: none;
+  font-size: 1.4rem; color: #666; cursor: pointer;
+}
+
+.sheet-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--db-text);
+  margin: 0 0 20px;
+}
+
+// ── Forme ──
+.form-field {
+  margin-bottom: 14px;
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 4px;
+  }
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #d0dde6;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  background: #f8fafc;
+  box-sizing: border-box;
+  font-family: inherit;
+
+  &:focus { outline: none; border-color: var(--db-teal); }
+}
+
+.form-textarea {
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.star-select {
+  display: flex; gap: 4px; justify-content: center; padding: 8px 0;
+}
+
+// ── Admin kartice ──
+.admin-card {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(168,221,208,0.25);
+
+  &:last-child { border-bottom: none; }
+}
+
+.admin-card-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.admin-card-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--db-teal), var(--db-teal-mid));
+  color: #fff; font-weight: 700; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; text-transform: uppercase;
+}
+
+.admin-card-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: rgba(168,221,208,0.25);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 1.2rem;
+}
+
+.admin-card-name {
+  font-weight: 600; font-size: 0.95rem; color: var(--db-text);
+}
+
+.admin-card-sub {
+  font-size: 0.78rem; color: #666; margin-top: 2px;
+}
+
+.admin-card-actions {
+  display: flex; gap: 8px;
+
+  ion-button { flex: 1; --border-radius: 10px; }
+}

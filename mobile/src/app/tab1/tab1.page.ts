@@ -1,9 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { KorisnikPomociService } from '../services/korisnik-pomoci.service';
 import { DonacijaService } from '../services/donacija.service';
 import { ModalController } from '@ionic/angular';
 import { KorisnikPomoci } from '../models/korisnik-pomoci.model';
+import { DocModalComponent } from '../shared/doc-modal/doc-modal.component';
+import { environment } from '../../environments/environment';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-tab1',
@@ -22,11 +27,12 @@ export class Tab1Page implements OnInit {
   caseTagColor = ['#2d6b55', '#4a6e1a', '#8a5a2a'];
 
   stats = [
-    { value: '128',   label: 'Aktivnih volontera' },
-    { value: '45',    label: 'Humanitarnih slučajeva' },
-    { value: '1.230', label: 'Transakcija' },
-    { value: '98%',   label: 'Zadovoljnih' },
+    { value: '...', label: 'Aktivnih volontera' },
+    { value: '...', label: 'Humanitarnih slučajeva' },
+    { value: '...', label: 'Transakcija' },
+    { value: '98%', label: 'Zadovoljnih' },
   ];
+  ukupnoDonirano = 0;
 
   steps = [
     {
@@ -101,11 +107,27 @@ export class Tab1Page implements OnInit {
     private korisnikPomociSvc: KorisnikPomociService,
     private donacijaSvc: DonacijaService,
     private router: Router,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
     this.ucitajSlucajeve();
+    this.ucitajStats();
+  }
+
+  ucitajStats() {
+    const api = environment.apiUrl;
+    forkJoin({
+      volonteri: this.http.get<any[]>(`${api}/api/korisnici/tip/volonter`, { withCredentials: true }).pipe(catchError(() => of([]))),
+      slucajevi: this.korisnikPomociSvc.getAll().pipe(catchError(() => of([]))),
+      donacije:  this.donacijaSvc.getAll().pipe(catchError(() => of([]))),
+    }).subscribe(res => {
+      this.stats[0].value = res.volonteri.length.toString();
+      this.stats[1].value = res.slucajevi.length.toString();
+      this.stats[2].value = res.donacije.length.toString();
+      this.ukupnoDonirano = res.donacije.reduce((s: number, d: any) => s + (d.iznos ?? 0), 0);
+    });
   }
 
   ucitajSlucajeve() {
@@ -143,14 +165,14 @@ export class Tab1Page implements OnInit {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   }
 
-  otvoriDokument(tip: string) {
-    const urls: Record<string, string> = {
-      faq:        'http://localhost:4200/faq',
-      uslovi:     'http://localhost:4200/assets/docs/uslovi-koriscenja.pdf',
-      privatnost: 'http://localhost:4200/assets/docs/politika-privatnosti.pdf',
-      ugovor:     'http://localhost:4200/assets/docs/pravni-ugovor.pdf',
-    };
-    window.open(urls[tip], '_blank');
+  async otvoriDokument(tip: string) {
+    const modal = await this.modalCtrl.create({
+      component: DocModalComponent,
+      componentProps: { tip },
+      breakpoints: [0, 0.5, 1],
+      initialBreakpoint: 1,
+    });
+    await modal.present();
   }
 
   onLogoError(event: Event, kratko: string) {

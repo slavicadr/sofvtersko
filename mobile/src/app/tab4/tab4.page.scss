@@ -1,0 +1,220 @@
+:host {
+  --db-roza1: #c026d3;
+  --db-roza2: #e11d48;
+  --db-plava: #2563eb;
+}
+
+.loader {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+/* ── Hero ──────────────────────────────────────────── */
+.hero {
+  background: linear-gradient(160deg, #f0fdf4 0%, #dcfce7 100%);
+  padding: 32px 20px 28px;
+  text-align: center;
+}
+.hero-tag {
+  display: inline-block;
+  background: rgba(45,107,85,0.1);
+  color: #2d6b55;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+.hero-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a2e22;
+  margin: 0 0 10px;
+  line-height: 1.25;
+}
+.hero-sub {
+  font-size: 0.9rem;
+  color: #4b7c6a;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Section ───────────────────────────────────────── */
+.section {
+  padding: 20px 16px;
+}
+
+.section-heading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a2e22;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  ion-icon { font-size: 1.2rem; }
+}
+.section-sub {
+  font-size: 0.83rem;
+  color: #6b7280;
+  margin: 0 0 16px;
+}
+
+/* ── Srca grid ─────────────────────────────────────── */
+.srca-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.srce-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 12px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 2px solid transparent;
+
+  &:active { transform: scale(0.95); }
+
+  &.srce-aktivan {
+    border-color: currentColor;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  }
+}
+
+.srce-ikona {
+  font-size: 3rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+}
+.srce-naziv {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  max-width: 80px;
+}
+
+.srce-roza1 { color: #c026d3; .srce-naziv { color: #86198f; } }
+.srce-roza2 { color: #e11d48; .srce-naziv { color: #9f1239; } }
+.srce-plava { color: #2563eb; .srce-naziv { color: #1d4ed8; } }
+
+/* ── Otvorena priča ────────────────────────────────── */
+.prica-card {
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.prica-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+}
+.prica-srce { font-size: 1.4rem; }
+.prica-naslov {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: #fff;
+}
+.prica-close {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  border-radius: 50%;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.prica-tekst {
+  padding: 0 16px 20px;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: rgba(255,255,255,0.92);
+  margin: 0;
+  background: inherit;
+}
+
+.prica-roza1 { background: linear-gradient(135deg, #c026d3, #a21caf); .prica-srce { color: #f5d0fe; } }
+.prica-roza2 { background: linear-gradient(135deg, #e11d48, #be123c); .prica-srce { color: #fecdd3; } }
+.prica-plava { background: linear-gradient(135deg, #2563eb, #1d4ed8); .prica-srce { color: #bfdbfe; } }
+
+.hint {
+  text-align: center;
+  font-size: 0.83rem;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  ion-icon { font-size: 1rem; }
+}
+
+/* ── Katalozi ──────────────────────────────────────── */
+.katalozi-section {
+  border-top: 1px solid #e5e7eb;
+  margin-top: 4px;
+}
+
+.katalog-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+.katalog-ikona {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  background: #fef2f2;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.katalog-info { flex: 1; min-width: 0; }
+.katalog-naslov {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: #1a2e22;
+}
+.katalog-opis {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.katalog-btn {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  background: #fef2f2;
+  display: flex; align-items: center; justify-content: center;
+  color: #dc2626;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+/* ── Empty state ───────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  ion-icon { font-size: 3rem; color: #f9a8d4; display: block; margin-bottom: 12px; }
+  p { color: #9ca3af; font-size: 0.95rem; }
+}

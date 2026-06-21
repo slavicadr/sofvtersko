@@ -1,14 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { ToastController } from '@ionic/angular';
 import { UslugaProizvodService } from '../services/usluga-proizvod.service';
 import { KategorijaService } from '../services/kategorija.service';
 import { OcjenaRecenzijaService } from '../services/ocjena-recenzija.service';
+import { KupljenaUslugaService } from '../services/kupljena-usluga.service';
+import { KorisnikPomociService } from '../services/korisnik-pomoci.service';
+import { AuthService } from '../services/auth.service';
 import { UslugaProizvod } from '../models/usluga-proizvod.model';
 import { Kategorija } from '../models/kategorija.model';
 import { Korisnik } from '../models/korisnik.model';
 import { OcjenaRecenzija } from '../models/ocjena-recenzija.model';
-
-const SKRIVENE_KATEGORIJE = ['zdravlje i njega', 'prevoz i transport', 'kućni majstor', 'kucni majstor'];
 
 @Component({
   selector: 'app-tab2',
@@ -36,29 +39,45 @@ export class Tab2Page implements OnInit {
   prosjecnaOcjena = 0;
   ucitavaProfil = false;
 
+  // Plaćanje
+  placanjeOtvoreno = false;
+  placanjeSent = false;
+  private prvoPomocId: number | null = null;
+
+  korisnik: Korisnik | null = null;
+
   constructor(
     private uslugaSvc: UslugaProizvodService,
     private kategorijaSvc: KategorijaService,
-    private recenzijaSvc: OcjenaRecenzijaService
+    private recenzijaSvc: OcjenaRecenzijaService,
+    private kupljenaUslugaSvc: KupljenaUslugaService,
+    private korisnikPomociSvc: KorisnikPomociService,
+    private auth: AuthService,
+    private toastCtrl: ToastController,
   ) {}
 
   ngOnInit() {
+    this.auth.currentUser$.subscribe(u => { this.korisnik = u; });
+    this.korisnikPomociSvc.getAll().pipe(catchError(() => of([]))).subscribe(lista => {
+      if (lista.length > 0) this.prvoPomocId = lista[0].pomocId;
+    });
     this.ucitaj();
+    const SKRIVENE = ['kucni majstor', 'prevoz', 'hrana', 'kulinarski'];
     this.kategorijaSvc.getAll().subscribe(k => {
-      const vidljive = k.filter(kat => !SKRIVENE_KATEGORIJE.includes(this.normalizuj(kat.naziv)));
-      const ostalo = vidljive.filter(kat => this.normalizuj(kat.naziv) === 'ostalo');
-      const ostale = vidljive.filter(kat => this.normalizuj(kat.naziv) !== 'ostalo');
+      const filtrirane = k.filter(kat => !SKRIVENE.some(s => this.normalizuj(kat.naziv).includes(s)));
+      const ostalo = filtrirane.filter(kat => this.normalizuj(kat.naziv) === 'ostalo');
+      const ostale = filtrirane.filter(kat => this.normalizuj(kat.naziv) !== 'ostalo');
       this.kategorije = [...ostale, ...ostalo];
     });
   }
+
+  get jeKupac(): boolean { return this.korisnik?.tipKorisnika === 'kupac'; }
 
   ucitaj() {
     this.ucitava = true;
     this.uslugaSvc.getAll().subscribe({
       next: (data) => {
-        this.usluge = data.filter(u =>
-          !SKRIVENE_KATEGORIJE.includes(this.normalizuj(u.kategorija?.naziv ?? ''))
-        );
+        this.usluge = data.filter(u => u.statusObjave === 'aktivna');
         this.filtrirane = this.usluge;
         this.ucitava = false;
       },
@@ -89,7 +108,6 @@ export class Tab2Page implements OnInit {
     });
   }
 
-  // Otvori detalje usluge
   klikNaUslugu(usluga: UslugaProizvod) {
     this.odabranaUsluga = usluga;
     this.uslugaOtvorena = true;
@@ -100,7 +118,8 @@ export class Tab2Page implements OnInit {
     this.odabranaUsluga = null;
   }
 
-  // Otvori profil volontera s recenzijama i ostalim uslugama
+  // ── Profil volontera ──
+
   otvoriProfilVolontera(volonter: Korisnik) {
     this.odabraniVolonter = volonter;
     this.profilOtvoren = true;
@@ -117,9 +136,7 @@ export class Tab2Page implements OnInit {
       next: (res) => {
         this.volonterRecenzije = res.recenzije;
         this.prosjecnaOcjena = res.prosjek.prosjecnaOcjena ?? 0;
-        // Ostale usluge — filtriramo da ne prikazujemo skrivene i onu trenutno otvorenu
         this.volonterUsluge = res.usluge.filter(u =>
-          !SKRIVENE_KATEGORIJE.includes(this.normalizuj(u.kategorija?.naziv ?? '')) &&
           u.uslugaProizvodId !== this.odabranaUsluga?.uslugaProizvodId
         );
         this.ucitavaProfil = false;
@@ -132,6 +149,57 @@ export class Tab2Page implements OnInit {
     this.profilOtvoren = false;
     this.odabraniVolonter = null;
   }
+
+  // ── Plaćanje ──
+
+  otvoriPlacanje() {
+    this.placanjeSent = false;
+    this.placanjeOtvoreno = true;
+  }
+
+  zatvoriPlacanje() {
+    this.placanjeOtvoreno = false;
+  }
+
+  async potvrdiPlacanje() {
+    if (!this.korisnik || !this.odabranaUsluga || !this.prvoPomocId) return;
+    this.placanjeSent = true;
+    const naziv = this.odabranaUsluga.naziv;
+
+    this.kupljenaUslugaSvc.kupi(
+      this.korisnik.korisnikId,
+      this.odabranaUsluga.uslugaProizvodId,
+      this.prvoPomocId,
+      this.odabranaUsluga.cijena ?? null,
+      'KARTICA'
+    ).subscribe({
+      next: async () => {
+        this.placanjeOtvoreno = false;
+        this.zatvoriUslugu();
+        this.ucitaj();
+        const t = await this.toastCtrl.create({
+          message: `✓ Kupovina uspješna! Usluga "${naziv}" je rezervisana.`,
+          duration: 3500,
+          color: 'success',
+          position: 'bottom',
+        });
+        await t.present();
+        this.placanjeSent = false;
+      },
+      error: async () => {
+        this.placanjeSent = false;
+        const t = await this.toastCtrl.create({
+          message: 'Greška pri kupovini. Pokušajte ponovo.',
+          duration: 2500,
+          color: 'danger',
+          position: 'bottom',
+        });
+        await t.present();
+      }
+    });
+  }
+
+  // ── Pomoćni ──
 
   get uslugaInicijali(): string {
     const v = this.odabranaUsluga?.volonter;

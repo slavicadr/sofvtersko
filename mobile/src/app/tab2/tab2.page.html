@@ -140,10 +140,70 @@
       Pogledaj profil volontera
     </ion-button>
 
+    <!-- Kupi dugme — samo za kupca -->
+    <ng-container *ngIf="jeKupac">
+      <ion-button *ngIf="odabranaUsluga?.statusObjave === 'aktivna'" expand="block" color="success" class="btn-kupi"
+                  (click)="otvoriPlacanje()">
+        <ion-icon name="cart-outline" slot="start"></ion-icon>
+        Kupi uslugu{{ odabranaUsluga?.cijena ? ' · ' + odabranaUsluga?.cijena + ' €' : '' }}
+      </ion-button>
+      <div *ngIf="odabranaUsluga?.statusObjave !== 'aktivna'" class="popunjeno-banner">
+        <ion-icon name="close-circle-outline"></ion-icon>
+        Usluga je popunjena — više nije dostupna za kupovinu
+      </div>
+    </ng-container>
+
     <ion-button expand="block" fill="outline" color="medium" class="btn-zatvori-outline"
                 (click)="zatvoriUslugu()">
       Zatvori
     </ion-button>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- MODAL 3: Plaćanje                                      -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="overlay" *ngIf="placanjeOtvoreno" (click)="zatvoriPlacanje()">
+  <div class="bottom-sheet placanje-sheet" (click)="$event.stopPropagation()">
+
+    <div class="sheet-drag-bar"></div>
+    <button class="sheet-close" (click)="zatvoriPlacanje()">
+      <ion-icon name="close"></ion-icon>
+    </button>
+
+    <h2 class="sheet-title">Potvrda kupovine</h2>
+
+    <!-- Sažetak usluge -->
+    <div class="placanje-summary">
+      <div class="placanje-usluga">{{ odabranaUsluga?.naziv }}</div>
+      <div class="placanje-cijena" *ngIf="odabranaUsluga?.cijena">
+        {{ odabranaUsluga?.cijena }} €
+      </div>
+    </div>
+
+    <!-- Način plaćanja (kvazi) -->
+    <div class="form-field">
+      <label>Način plaćanja</label>
+      <div class="placanje-kartica">
+        <ion-icon name="card-outline"></ion-icon>
+        <span>Kartica · **** **** **** 4242</span>
+        <ion-badge color="success" style="margin-left:auto;">Aktivan</ion-badge>
+      </div>
+    </div>
+
+    <ion-button expand="block" color="success" class="btn-plati"
+                [disabled]="placanjeSent"
+                (click)="potvrdiPlacanje()">
+      <ion-spinner *ngIf="placanjeSent" name="crescent" style="width:18px;height:18px;margin-right:8px;"></ion-spinner>
+      <ion-icon *ngIf="!placanjeSent" name="lock-closed-outline" slot="start"></ion-icon>
+      {{ placanjeSent ? 'Obrađujem...' : 'Potvrdi plaćanje' }}
+    </ion-button>
+
+    <p class="placanje-napomena">
+      <ion-icon name="shield-checkmark-outline"></ion-icon>
+      Sigurno plaćanje. Transakcija će biti odmah odobrena.
+    </p>
 
   </div>
 </div>

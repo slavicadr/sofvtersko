@@ -1,0 +1,85 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Pomogli smo</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="ucitaj(); $event.target.complete()">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="ucitava" class="loader">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <ng-container *ngIf="!ucitava">
+
+    <!-- ── Hero ──────────────────────────────────────── -->
+    <div class="hero">
+      <div class="hero-tag">Naš rad</div>
+      <h1 class="hero-title">Slučajevi kojima smo pomogli</h1>
+      <p class="hero-sub">Svaka priča ovdje predstavlja stvarnog čovjeka čiji je život promijenjen zahvaljujući vašoj podršci.</p>
+    </div>
+
+    <!-- ── Priče / Srca ───────────────────────────────── -->
+    <div class="section" *ngIf="slucajevi.length > 0">
+      <div class="srca-grid">
+        <div
+          *ngFor="let s of slucajevi"
+          class="srce-btn"
+          [ngClass]="'srce-' + s.boja"
+          [class.srce-aktivan]="otvoreniSlucaj?.id === s.id"
+          (click)="otvoriSlucaj(s)">
+          <ion-icon name="heart" class="srce-ikona"></ion-icon>
+          <span class="srce-naziv">{{ s.naslov }}</span>
+        </div>
+      </div>
+
+      <!-- Otvorena priča -->
+      <div class="prica-card" *ngIf="otvoreniSlucaj" [ngClass]="'prica-' + otvoreniSlucaj.boja">
+        <div class="prica-header">
+          <ion-icon name="heart" class="prica-srce"></ion-icon>
+          <h2 class="prica-naslov">{{ otvoreniSlucaj.naslov }}</h2>
+          <button class="prica-close" (click)="zatvoriSlucaj()">
+            <ion-icon name="close"></ion-icon>
+          </button>
+        </div>
+        <p class="prica-tekst">{{ otvoreniSlucaj.tekst }}</p>
+      </div>
+
+      <p class="hint" *ngIf="!otvoreniSlucaj">
+        <ion-icon name="hand-left-outline"></ion-icon>
+        Kliknite na srce da pročitate priču
+      </p>
+    </div>
+
+    <div class="empty-state" *ngIf="slucajevi.length === 0">
+      <ion-icon name="heart-outline"></ion-icon>
+      <p>Priče dolaze uskoro.</p>
+    </div>
+
+    <!-- ── PDF Katalozi ──────────────────────────────── -->
+    <div class="section katalozi-section" *ngIf="katalozi.length > 0">
+      <div class="section-heading">
+        <ion-icon name="document-text-outline" color="danger"></ion-icon>
+        Naši katalozi i izvještaji
+      </div>
+      <p class="section-sub">Preuzmite naše PDF dokumente i saznajte više o radu organizacije.</p>
+
+      <div class="katalog-card" *ngFor="let k of katalozi">
+        <div class="katalog-ikona">
+          <ion-icon name="document-text" color="danger"></ion-icon>
+        </div>
+        <div class="katalog-info">
+          <div class="katalog-naslov">{{ k.naslov }}</div>
+          <div class="katalog-opis" *ngIf="k.opis">{{ k.opis }}</div>
+        </div>
+        <a [href]="pdfUrl(k)" target="_blank" rel="noopener" class="katalog-btn">
+          <ion-icon name="open-outline"></ion-icon>
+        </a>
+      </div>
+    </div>
+
+  </ng-container>
+</ion-content>

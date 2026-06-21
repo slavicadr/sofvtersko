@@ -20,4 +20,12 @@ export class OcjenaRecenzijaService {
       { withCredentials: true }
     );
   }
+
+  getByKupac(kupacId: number): Observable<OcjenaRecenzija[]> {
+    return this.http.get<OcjenaRecenzija[]>(`${this.baseUrl}/kupac/${kupacId}`, { withCredentials: true });
+  }
+
+  dodajRecenziju(kupovinaId: number, kupacId: number, brojZvjezdica: number, komentar: string): Observable<OcjenaRecenzija> {
+    return this.http.post<OcjenaRecenzija>(`${this.baseUrl}/dodaj`, { kupovinaId, kupacId, brojZvjezdica, komentar }, { withCredentials: true });
+  }
 }

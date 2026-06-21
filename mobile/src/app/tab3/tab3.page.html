@@ -1,66 +1,437 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>Profil</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleNotifikacije()" title="Push obavještenja">
+        <ion-icon [name]="notifSvc.jeUkljuceno ? 'notifications' : 'notifications-off-outline'"
+                  [color]="notifSvc.jeUkljuceno ? 'primary' : 'medium'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="profil-content">
-  <ng-container *ngIf="korisnik">
-    <div class="avatar-section">
-      <div class="avatar">
-        {{ korisnik.ime[0] }}{{ korisnik.prezime[0] }}
+  <ng-container *ngIf="korisnik; else ucitavaTemplate">
+
+    <!-- Segment za kupca, volontera i admina -->
+    <ion-segment
+      *ngIf="jeVolonter || jeKupac || jeAdmin"
+      [value]="aktivnaSekcija"
+      (ionChange)="onSekcijaChange($event)"
+      class="cms-segment">
+      <ion-segment-button value="profil">
+        <ion-icon name="person-outline"></ion-icon>
+        <ion-label>Profil</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="cms">
+        <ion-icon [name]="jeAdmin ? 'shield-checkmark-outline' : 'grid-outline'"></ion-icon>
+        <ion-label>{{ jeAdmin ? 'Admin panel' : (jeVolonter ? 'Moj panel' : 'Kupovine') }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- ═══════════ PROFIL ═══════════ -->
+    <div *ngIf="aktivnaSekcija === 'profil'">
+      <div class="avatar-section">
+        <div class="avatar">{{ korisnik.ime[0] }}{{ korisnik.prezime[0] }}</div>
+        <h2>{{ korisnik.prikazAnonimno ? 'Anonimno' : (korisnik.ime + ' ' + korisnik.prezime) }}</h2>
+        <ion-chip color="primary">
+          <ion-label>{{ tipLabele[korisnik.tipKorisnika] || korisnik.tipKorisnika }}</ion-label>
+        </ion-chip>
       </div>
-      <h2>{{ korisnik.prikazAnonimno ? 'Anonimno' : (korisnik.ime + ' ' + korisnik.prezime) }}</h2>
-      <ion-chip color="primary">
-        <ion-label>{{ tipLabele[korisnik.tipKorisnika] || korisnik.tipKorisnika }}</ion-label>
-      </ion-chip>
+
+      <ion-list class="info-list">
+        <ion-item>
+          <ion-icon name="mail-outline" slot="start" color="primary"></ion-icon>
+          <ion-label><p>Email</p><h3>{{ korisnik.email }}</h3></ion-label>
+        </ion-item>
+        <ion-item *ngIf="korisnik.telefon">
+          <ion-icon name="call-outline" slot="start" color="primary"></ion-icon>
+          <ion-label><p>Telefon</p><h3>{{ korisnik.telefon }}</h3></ion-label>
+        </ion-item>
+        <ion-item *ngIf="korisnik.adresa">
+          <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
+          <ion-label><p>Adresa</p><h3>{{ korisnik.adresa }}</h3></ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="checkmark-circle-outline" slot="start"
+            [color]="korisnik.verifikovan ? 'success' : 'warning'"></ion-icon>
+          <ion-label>
+            <p>Status</p>
+            <h3>{{ korisnik.verifikovan ? 'Verifikovan' : 'Čeka verifikaciju' }}</h3>
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-icon [name]="notifSvc.jeUkljuceno ? 'notifications' : 'notifications-off-outline'"
+                    slot="start" [color]="notifSvc.jeUkljuceno ? 'primary' : 'medium'"></ion-icon>
+          <ion-label><p>Push obavještenja</p><h3>{{ notifSvc.jeUkljuceno ? 'Uključena' : 'Isključena' }}</h3></ion-label>
+          <ion-toggle slot="end" [checked]="notifSvc.jeUkljuceno" (ionChange)="toggleNotifikacije()"></ion-toggle>
+        </ion-item>
+      </ion-list>
+
+      <div class="odjava-section">
+        <ion-button expand="block" color="danger" fill="outline" (click)="onOdjava()">
+          <ion-icon name="log-out-outline" slot="start"></ion-icon>
+          Odjavi se
+        </ion-button>
+      </div>
     </div>
 
-    <ion-list class="info-list">
-      <ion-item>
-        <ion-icon name="mail-outline" slot="start" color="primary"></ion-icon>
-        <ion-label>
-          <p>Email</p>
-          <h3>{{ korisnik.email }}</h3>
-        </ion-label>
-      </ion-item>
+    <!-- ═══════════ CMS – VOLONTER ═══════════ -->
+    <div *ngIf="aktivnaSekcija === 'cms' && jeVolonter">
+      <div *ngIf="ucitavaCms" class="loader"><ion-spinner name="crescent"></ion-spinner></div>
 
-      <ion-item *ngIf="korisnik.telefon">
-        <ion-icon name="call-outline" slot="start" color="primary"></ion-icon>
-        <ion-label>
-          <p>Telefon</p>
-          <h3>{{ korisnik.telefon }}</h3>
-        </ion-label>
-      </ion-item>
+      <ng-container *ngIf="!ucitavaCms">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-num">{{ mojeUsluge.length }}</div>
+            <div class="stat-label">Ponuda</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">{{ prodaje.length }}</div>
+            <div class="stat-label">Prodaja</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">{{ prosjecnaOcjena | number:'1.1-1' }}</div>
+            <div class="stat-label">Ocjena</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">{{ ukupnoPrikupljeno }}€</div>
+            <div class="stat-label">Prikupljeno</div>
+          </div>
+        </div>
 
-      <ion-item *ngIf="korisnik.adresa">
-        <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
-        <ion-label>
-          <p>Adresa</p>
-          <h3>{{ korisnik.adresa }}</h3>
-        </ion-label>
-      </ion-item>
+        <!-- Moje ponude -->
+        <div class="cms-section">
+          <div class="cms-section-title">
+            <ion-icon name="construct-outline" color="primary"></ion-icon>
+            Moje ponude
+            <ion-button size="small" fill="clear" color="primary" (click)="otvoriDodajUslugu()" style="margin-left:auto;">
+              <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+              Dodaj
+            </ion-button>
+          </div>
+          <div *ngIf="mojeUsluge.length === 0" class="cms-empty">Nemate aktivnih ponuda.</div>
+          <ion-list class="cms-list" *ngIf="mojeUsluge.length > 0">
+            <ion-item *ngFor="let u of mojeUsluge">
+              <ion-label>
+                <h3>{{ u.naziv }}</h3>
+                <p>{{ u.kategorija?.naziv }}{{ u.cijena ? ' · ' + u.cijena + '€' : '' }}</p>
+              </ion-label>
+              <ion-badge slot="end" [color]="u.statusObjave === 'aktivan' ? 'success' : 'warning'" style="margin-right:8px;">
+                {{ u.statusObjave ?? 'na čekanju' }}
+              </ion-badge>
+              <ion-button slot="end" fill="clear" size="small" (click)="otvoriUrediUslugu(u)">
+                <ion-icon name="pencil-outline"></ion-icon>
+              </ion-button>
+              <ion-button slot="end" fill="clear" size="small" color="danger" (click)="obrisiUslugu(u)">
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-button>
+            </ion-item>
+          </ion-list>
+        </div>
 
-      <ion-item>
-        <ion-icon name="checkmark-circle-outline" slot="start"
-          [color]="korisnik.verifikovan ? 'success' : 'warning'">
-        </ion-icon>
-        <ion-label>
-          <p>Status</p>
-          <h3>{{ korisnik.verifikovan ? 'Verifikovan' : 'Čeka verifikaciju' }}</h3>
-        </ion-label>
-      </ion-item>
-    </ion-list>
+        <!-- Moje prodaje -->
+        <div class="cms-section">
+          <div class="cms-section-title">
+            <ion-icon name="receipt-outline" color="primary"></ion-icon>
+            Moje prodaje
+          </div>
+          <div *ngIf="prodaje.length === 0" class="cms-empty">Nema prodaja vaših usluga.</div>
+          <ion-list class="cms-list" *ngIf="prodaje.length > 0">
+            <ion-item *ngFor="let p of prodaje">
+              <ion-label>
+                <h3>{{ p.uslugaProizvod?.naziv ?? 'Usluga' }}</h3>
+                <p>
+                  Kupac: {{ p.kupac?.ime }} {{ p.kupac?.prezime }}
+                  <span *ngIf="p.datumKupovine"> · {{ formatirajDatum(p.datumKupovine) }}</span>
+                </p>
+              </ion-label>
+              <div slot="end" class="prodaja-end">
+                <span class="iznos" *ngIf="p.iznos">{{ p.iznos }}€</span>
+                <ion-badge [color]="p.statusIsporuke === 'realizovano' ? 'success' : (p.statusIsporuke ? 'warning' : 'primary')">
+                  {{ statusLabel(p.statusIsporuke) }}
+                </ion-badge>
+                <ion-button *ngIf="p.statusIsporuke !== 'realizovano'" size="small" fill="clear" color="success" (click)="oznaciRealizovano(p)">
+                  <ion-icon name="checkmark-circle-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-item>
+          </ion-list>
+        </div>
 
-    <div class="odjava-section">
-      <ion-button expand="block" color="danger" fill="outline" (click)="onOdjava()">
-        <ion-icon name="log-out-outline" slot="start"></ion-icon>
-        Odjavi se
-      </ion-button>
+        <!-- Recenzije -->
+        <div class="cms-section" style="margin-bottom:24px;">
+          <div class="cms-section-title">
+            <ion-icon name="star-outline" color="primary"></ion-icon>
+            Recenzije ({{ recenzije.length }})
+          </div>
+          <div *ngIf="recenzije.length === 0" class="cms-empty">Nema recenzija.</div>
+          <div class="recenzija-card" *ngFor="let r of recenzije">
+            <div class="recenzija-header">
+              <div class="zvjezdice">
+                <ion-icon name="star" *ngFor="let s of zvjezdice(r.brojZvjezdica)" color="warning"></ion-icon>
+                <ion-icon name="star-outline" *ngFor="let s of praznihZvjezdica(r.brojZvjezdica)" color="medium"></ion-icon>
+              </div>
+              <span class="recenzija-datum">{{ formatirajDatum(r.datumOcjene) }}</span>
+            </div>
+            <p class="recenzija-komentar" *ngIf="r.komentar">{{ r.komentar }}</p>
+            <p class="recenzija-komentar" style="color:#aaa;font-style:italic;" *ngIf="!r.komentar">Bez komentara.</p>
+          </div>
+        </div>
+      </ng-container>
     </div>
+
+    <!-- ═══════════ CMS – KUPAC ═══════════ -->
+    <div *ngIf="aktivnaSekcija === 'cms' && jeKupac">
+      <div *ngIf="ucitavaCms" class="loader"><ion-spinner name="crescent"></ion-spinner></div>
+
+      <ng-container *ngIf="!ucitavaCms">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-num">{{ kupovine.length }}</div>
+            <div class="stat-label">Kupovina</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">{{ realizovaneCount }}</div>
+            <div class="stat-label">Realizovano</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">{{ mojRecenzije.length }}</div>
+            <div class="stat-label">Recenzija</div>
+          </div>
+        </div>
+
+        <!-- Lista kupovina -->
+        <div class="cms-section" style="margin-bottom:24px;">
+          <div class="cms-section-title">
+            <ion-icon name="bag-outline" color="primary"></ion-icon>
+            Moje kupovine
+          </div>
+          <div *ngIf="kupovine.length === 0" class="cms-empty">Niste kupili nijednu uslugu.</div>
+          <ion-list class="cms-list" *ngIf="kupovine.length > 0">
+            <ion-item *ngFor="let k of kupovine">
+              <ion-label>
+                <h3>{{ k.uslugaProizvod?.naziv ?? 'Usluga' }}</h3>
+                <p>
+                  <span *ngIf="k.korisnikPomoci">Za: {{ k.korisnikPomoci.ime }} {{ k.korisnikPomoci.prezime }}&nbsp;·&nbsp;</span>
+                  {{ formatirajDatum(k.datumKupovine) }}
+                </p>
+              </ion-label>
+              <div slot="end" class="prodaja-end">
+                <span class="iznos" *ngIf="k.iznos">{{ k.iznos }}€</span>
+                <ion-badge [color]="k.statusIsporuke === 'realizovano' ? 'success' : (k.statusIsporuke ? 'warning' : 'primary')">
+                  {{ statusLabel(k.statusIsporuke) }}
+                </ion-badge>
+                <ion-button *ngIf="k.statusIsporuke !== 'realizovano'" size="small" fill="clear" color="success" (click)="oznaciRealizovano(k)">
+                  <ion-icon name="checkmark-circle-outline"></ion-icon>
+                </ion-button>
+                <ion-button *ngIf="k.statusIsporuke === 'realizovano' && !imaRecenziju(k)" size="small" fill="clear" color="warning" (click)="otvoriOcijeni(k)">
+                  <ion-icon name="star-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </ion-item>
+          </ion-list>
+        </div>
+
+        <!-- Moje recenzije -->
+        <div class="cms-section" style="margin-bottom:24px;" *ngIf="mojRecenzije.length > 0">
+          <div class="cms-section-title">
+            <ion-icon name="star-outline" color="primary"></ion-icon>
+            Moje recenzije
+          </div>
+          <div class="recenzija-card" *ngFor="let r of mojRecenzije">
+            <div class="recenzija-header">
+              <div class="zvjezdice">
+                <ion-icon name="star" *ngFor="let s of zvjezdice(r.brojZvjezdica)" color="warning"></ion-icon>
+                <ion-icon name="star-outline" *ngFor="let s of praznihZvjezdica(r.brojZvjezdica)" color="medium"></ion-icon>
+              </div>
+              <span class="recenzija-datum">{{ formatirajDatum(r.datumOcjene) }}</span>
+            </div>
+            <p class="recenzija-komentar" *ngIf="r.komentar">{{ r.komentar }}</p>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- ═══════════ CMS – ADMIN ═══════════ -->
+    <div *ngIf="aktivnaSekcija === 'cms' && jeAdmin">
+      <div *ngIf="ucitavaAdmin" class="loader"><ion-spinner name="crescent"></ion-spinner></div>
+
+      <ng-container *ngIf="!ucitavaAdmin">
+
+        <!-- Badge sažetak -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-num">{{ volonteriNaCekanju.length }}</div>
+            <div class="stat-label">Čeka odobrenje</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">{{ uslugePending.length }}</div>
+            <div class="stat-label">Usluga na čekanju</div>
+          </div>
+        </div>
+
+        <!-- ── Korisnici na čekanju ── -->
+        <div class="cms-section">
+          <div class="cms-section-title">
+            <ion-icon name="person-add-outline" color="primary"></ion-icon>
+            Nalozi na čekanju
+            <ion-button size="small" fill="clear" (click)="ucitajAdminCms()" style="margin-left:auto;">
+              <ion-icon name="refresh-outline"></ion-icon>
+            </ion-button>
+          </div>
+
+          <div *ngIf="volonteriNaCekanju.length === 0" class="cms-empty">
+            Nema naloga koji čekaju odobrenje.
+          </div>
+
+          <div class="admin-card" *ngFor="let k of volonteriNaCekanju">
+            <div class="admin-card-info">
+              <div class="admin-card-avatar">
+                {{ k.ime[0] }}{{ k.prezime[0] }}
+              </div>
+              <div>
+                <div class="admin-card-name">{{ k.ime }} {{ k.prezime }}</div>
+                <div class="admin-card-sub">{{ k.email }}</div>
+                <ion-badge [color]="k.tipKorisnika === 'volonter' ? 'primary' : 'medium'" style="font-size:0.72rem;">
+                  {{ k.tipKorisnika }}
+                </ion-badge>
+              </div>
+            </div>
+            <div class="admin-card-actions">
+              <ion-button size="small" color="success" fill="solid" (click)="odobriKorisnika(k)">
+                <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+                Odobri
+              </ion-button>
+              <ion-button size="small" color="danger" fill="outline" (click)="odbijKorisnika(k)">
+                <ion-icon name="close-outline" slot="start"></ion-icon>
+                Odbij
+              </ion-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Usluge na čekanju ── -->
+        <div class="cms-section" style="margin-bottom:24px;">
+          <div class="cms-section-title">
+            <ion-icon name="construct-outline" color="primary"></ion-icon>
+            Usluge na odobrenju
+          </div>
+
+          <div *ngIf="uslugePending.length === 0" class="cms-empty">
+            Nema usluga koje čekaju odobrenje.
+          </div>
+
+          <div class="admin-card" *ngFor="let u of uslugePending">
+            <div class="admin-card-info">
+              <div class="admin-card-icon">
+                <ion-icon name="construct-outline" color="primary"></ion-icon>
+              </div>
+              <div>
+                <div class="admin-card-name">{{ u.naziv }}</div>
+                <div class="admin-card-sub">
+                  {{ u.volonter?.ime }} {{ u.volonter?.prezime }}
+                  <span *ngIf="u.cijena"> · {{ u.cijena }}€</span>
+                </div>
+                <div class="admin-card-sub" *ngIf="u.kategorija">{{ u.kategorija.naziv }}</div>
+              </div>
+            </div>
+            <div class="admin-card-actions">
+              <ion-button size="small" color="success" fill="solid" (click)="odobriUslugu(u)">
+                <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+                Odobri
+              </ion-button>
+              <ion-button size="small" color="danger" fill="outline" (click)="odbijUslugu(u)">
+                <ion-icon name="close-outline" slot="start"></ion-icon>
+                Odbij
+              </ion-button>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+    </div>
+
   </ng-container>
 
-  <div *ngIf="!korisnik" class="empty-state">
-    <ion-spinner name="crescent"></ion-spinner>
-  </div>
+  <ng-template #ucitavaTemplate>
+    <div class="empty-state"><ion-spinner name="crescent"></ion-spinner></div>
+  </ng-template>
 </ion-content>
+
+<!-- ════════ MODAL: Dodaj / Uredi ponudu ════════ -->
+<div class="overlay" *ngIf="uslugaModalOtvoren" (click)="uslugaModalOtvoren = false">
+  <div class="bottom-sheet" (click)="$event.stopPropagation()">
+    <div class="sheet-drag-bar"></div>
+    <button class="sheet-close" (click)="uslugaModalOtvoren = false">
+      <ion-icon name="close"></ion-icon>
+    </button>
+    <h2 class="sheet-title">{{ editUsluga ? 'Uredi ponudu' : 'Nova ponuda' }}</h2>
+
+    <div class="form-field">
+      <label>Naziv *</label>
+      <input [(ngModel)]="formaUsluga.naziv" placeholder="Npr. Online lekcije matematike" class="form-input"/>
+    </div>
+    <div class="form-field">
+      <label>Kategorija</label>
+      <select [(ngModel)]="formaUsluga.kategorijaId" class="form-input">
+        <option [ngValue]="null">Odaberi kategoriju</option>
+        <option *ngFor="let k of kategorije" [ngValue]="k.kategorijaId">{{ k.naziv }}</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Cijena (€)</label>
+      <input type="number" [(ngModel)]="formaUsluga.cijena" placeholder="0.00" min="0" class="form-input"/>
+    </div>
+    <div class="form-field">
+      <label>Kapacitet</label>
+      <input type="number" [(ngModel)]="formaUsluga.kapacitet" placeholder="Npr. 10" min="1" class="form-input"/>
+    </div>
+    <div class="form-field">
+      <label>Opis</label>
+      <textarea [(ngModel)]="formaUsluga.opis" placeholder="Opišite svoju uslugu..." class="form-input form-textarea"></textarea>
+    </div>
+
+    <ion-button expand="block" [disabled]="!formaUsluga.naziv.trim()" (click)="sacuvajUslugu()">
+      <ion-icon [name]="editUsluga ? 'save-outline' : 'paper-plane-outline'" slot="start"></ion-icon>
+      {{ editUsluga ? 'Sačuvaj izmjene' : 'Pošalji na odobrenje' }}
+    </ion-button>
+    <p *ngIf="!editUsluga" style="font-size:0.76rem;color:#888;text-align:center;margin-top:8px;">
+      <ion-icon name="time-outline"></ion-icon> Ponuda čeka odobrenje administratora.
+    </p>
+  </div>
+</div>
+
+<!-- ════════ MODAL: Ostavi recenziju ════════ -->
+<div class="overlay" *ngIf="recenzijaModalOtvoren" (click)="recenzijaModalOtvoren = false">
+  <div class="bottom-sheet" (click)="$event.stopPropagation()">
+    <div class="sheet-drag-bar"></div>
+    <button class="sheet-close" (click)="recenzijaModalOtvoren = false">
+      <ion-icon name="close"></ion-icon>
+    </button>
+    <h2 class="sheet-title">Ostavi recenziju</h2>
+    <p style="font-size:0.88rem;color:#666;margin-bottom:16px;">
+      Za: <strong>{{ ocjenjujeKupovinu?.uslugaProizvod?.naziv }}</strong>
+    </p>
+
+    <div class="star-select">
+      <ion-icon
+        *ngFor="let s of [1,2,3,4,5]"
+        [name]="formaRecenzija.zvjezdice >= s ? 'star' : 'star-outline'"
+        [color]="formaRecenzija.zvjezdice >= s ? 'warning' : 'medium'"
+        (click)="formaRecenzija.zvjezdice = s"
+        style="font-size:2rem;cursor:pointer;">
+      </ion-icon>
+    </div>
+
+    <div class="form-field" style="margin-top:16px;">
+      <label>Komentar (opcionalno)</label>
+      <textarea [(ngModel)]="formaRecenzija.komentar" placeholder="Podijelite vaše iskustvo..." class="form-input form-textarea"></textarea>
+    </div>
+
+    <ion-button expand="block" [disabled]="formaRecenzija.zvjezdice === 0" (click)="posaljiRecenziju()">
+      <ion-icon name="paper-plane-outline" slot="start"></ion-icon>
+      Objavi recenziju
+    </ion-button>
+  </div>
+</div>
