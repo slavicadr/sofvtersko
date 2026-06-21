@@ -140,8 +140,8 @@
       Pogledaj profil volontera
     </ion-button>
 
-    <!-- Kupi dugme — samo za kupca -->
-    <ng-container *ngIf="jeKupac">
+    <!-- Kupi dugme — za kupca i volontera -->
+    <ng-container *ngIf="jeKupac || jeVolonter">
       <ion-button *ngIf="odabranaUsluga?.statusObjave === 'aktivna'" expand="block" color="success" class="btn-kupi"
                   (click)="otvoriPlacanje()">
         <ion-icon name="cart-outline" slot="start"></ion-icon>

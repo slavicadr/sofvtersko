@@ -72,6 +72,7 @@ export class Tab2Page implements OnInit {
   }
 
   get jeKupac(): boolean { return this.korisnik?.tipKorisnika === 'kupac'; }
+  get jeVolonter(): boolean { return this.korisnik?.tipKorisnika === 'volonter'; }
 
   ucitaj() {
     this.ucitava = true;
