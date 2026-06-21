@@ -279,12 +279,6 @@
               <button class="btn-certificate" (click)="printCertificate(p)" title="Otvori certifikat za štampu ili čuvanje kao PDF">
                 <i class="ph-fill ph-certificate"></i> Certifikat
               </button>
-              <button class="btn-outline" style="padding:6px 12px;font-size:0.8rem;" *ngIf="!p.reviewed" (click)="openReviewModal(p)">
-                <i class="ph ph-star"></i> Ocijeni kupca
-              </button>
-              <span *ngIf="p.reviewed" style="font-size:0.8rem;color:#16a34a;">
-                <i class="ph-fill ph-check-circle"></i> Ocjena poslana
-              </span>
             </ng-container>
             <ng-container *ngIf="p.statusIsporuke !== 'realizovano'">
               <span class="badge badge-pending">Na čekanju</span>
@@ -407,36 +401,6 @@
     </ng-container>
 
   </main>
-</div>
-
-<!-- ── Review Modal ──────────────────────────────────────────── -->
-<div class="modal-backdrop" *ngIf="reviewModalOpen" (click)="closeReviewModal()">
-  <div class="modal-card" style="max-width:480px;" (click)="$event.stopPropagation()">
-    <button class="modal-close" (click)="closeReviewModal()"><i class="ph ph-x"></i></button>
-    <h2 style="font-size:1.3rem;margin-bottom:6px;">
-      <i class="ph-fill ph-star" style="color:#f39c12;"></i> Ocijeni kupca
-    </h2>
-    <p style="font-size:0.85rem;color:#64748b;margin-bottom:20px;">{{ reviewingProdaja?.serviceName }}</p>
-    <div class="form-group">
-      <label class="form-label">Ocjena *</label>
-      <div style="display:flex;gap:8px;margin-top:4px;">
-        <button *ngFor="let s of [1,2,3,4,5]"
-          (click)="reviewForm.rating = s"
-          style="font-size:1.6rem;background:none;border:none;cursor:pointer;line-height:1;"
-          [style.color]="s <= reviewForm.rating ? '#f39c12' : '#d1d5db'">★</button>
-      </div>
-    </div>
-    <div class="form-group" style="margin-top:16px;">
-      <label class="form-label">Komentar (opcionalno)</label>
-      <textarea class="form-textarea" [(ngModel)]="reviewForm.comment" placeholder="Vaše iskustvo sa ovim kupcem..." style="min-height:90px;"></textarea>
-    </div>
-    <div style="display:flex;gap:10px;margin-top:20px;">
-      <button class="btn-primary" style="flex:1;" (click)="submitVolonterReview()" [disabled]="reviewForm.rating === 0">
-        <i class="ph-fill ph-paper-plane-tilt"></i> Pošalji ocjenu
-      </button>
-      <button class="btn-outline" (click)="closeReviewModal()">Otkaži</button>
-    </div>
-  </div>
 </div>
 
 <!-- ── Add/Edit Service Modal ──────────────────────────────── -->

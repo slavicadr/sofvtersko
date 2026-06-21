@@ -21,9 +21,6 @@ export class VolunteerDashboardComponent implements OnInit {
   logoPath = 'assets/logoFinally.jpg';
   activeSection = 'overview';
   serviceModalOpen = false;
-  reviewModalOpen = false;
-  reviewingProdaja: any = null;
-  reviewForm = { rating: 0, comment: '' };
   editingOffer: any = null;
   hasNotifications = false;
 
@@ -120,24 +117,12 @@ export class VolunteerDashboardComponent implements OnInit {
           date: k.datumKupovine ? new Date(k.datumKupovine).toLocaleDateString('bs-BA') : '',
           statusIsporuke: k.statusIsporuke ?? 'na_cekanju',
           datumRealizacije: k.datumRealizacije ? new Date(k.datumRealizacije).toLocaleDateString('bs-BA') : '',
-          reviewed: false,
         }));
         this.purchasedServiceIds = new Set(
           data.map(k => k.uslugaProizvod?.uslugaProizvodId).filter((id): id is number => !!id)
         );
         this.activeOffers.forEach(o => { o.hasPurchases = this.purchasedServiceIds.has(o.id); });
         this.stats.completedServices = data.filter(k => k.statusIsporuke === 'realizovano').length;
-        this.markReviewedProdaje();
-      }
-    });
-  }
-
-  markReviewedProdaje() {
-    if (!this.user) return;
-    this.http.get<any[]>(`/api/recenzije/kupac/${this.user.korisnikId}`).subscribe({
-      next: (reviews) => {
-        const reviewedIds = new Set(reviews.map(r => r.kupovina?.kupovinaId));
-        this.myProdaje.forEach(p => { p.reviewed = reviewedIds.has(p.id); });
       }
     });
   }
@@ -339,29 +324,6 @@ export class VolunteerDashboardComponent implements OnInit {
     });
   }
 
-
-  openReviewModal(p: any) {
-    this.reviewingProdaja = p;
-    this.reviewForm = { rating: 0, comment: '' };
-    this.reviewModalOpen = true;
-  }
-
-  closeReviewModal() { this.reviewModalOpen = false; }
-
-  submitVolonterReview() {
-    if (this.reviewForm.rating === 0 || !this.reviewingProdaja || !this.user) return;
-    this.http.post<any>('/api/recenzije/dodaj', {
-      kupovinaId: this.reviewingProdaja.id,
-      brojZvjezdica: this.reviewForm.rating,
-      komentar: this.reviewForm.comment
-    }).subscribe({
-      next: () => {
-        this.reviewingProdaja.reviewed = true;
-        this.reviewModalOpen = false;
-      },
-      error: (err) => alert(typeof err?.error === 'string' ? err.error : 'Greška pri slanju recenzije.')
-    });
-  }
 
   printCertificate(p: any) {
     const volonterIme = `${this.volunteer.firstName} ${this.volunteer.lastName}`;

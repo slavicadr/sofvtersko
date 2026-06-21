@@ -29,7 +29,7 @@ public class OcjenaRecenzijaService {
         this.emailService = emailService;
     }
 
-    // Dodaje recenziju — kupac ili volonter te kupovine
+    // Dodaje recenziju — samo kupac te kupovine
     public OcjenaRecenzija dodajRecenziju(int kupovinaId, int ocjenjivacId, int brojZvjezdica, String komentar) {
 
         KupljenaUsluga kupovina = kupljenaUslugaRepository.findById(kupovinaId)
@@ -39,13 +39,9 @@ public class OcjenaRecenzijaService {
                 .orElseThrow(() -> new RuntimeException("Korisnik ne postoji!"));
 
         int kupacId = kupovina.getDonator().getKorisnikId();
-        int volonterId = kupovina.getUslugaProizvod().getVolonter().getKorisnikId();
 
-        if (ocjenjivacId != kupacId && ocjenjivacId != volonterId) {
-            throw new RuntimeException("Samo kupac ili volonter te kupovine mogu ostaviti recenziju!");
-        }
-        if (ocjenjivacId == volonterId && ocjenjivacId == kupacId) {
-            throw new RuntimeException("Ne možete ostaviti recenziju za vlastitu uslugu!");
+        if (ocjenjivacId != kupacId) {
+            throw new RuntimeException("Samo kupac te kupovine može ostaviti recenziju!");
         }
 
         if (repository.findByKupovinaAndOcjenjivac(kupovina, ocjenjivac).isPresent()) {
@@ -65,18 +61,15 @@ public class OcjenaRecenzijaService {
 
         OcjenaRecenzija sacuvana = repository.save(ocjena);
 
-        // Email volonteru samo kad kupac ostavi recenziju (ne kad volonter recenzira kupca)
-        if (ocjenjivacId == kupacId) {
-            Korisnik volonterK = kupovina.getUslugaProizvod().getVolonter();
-            emailService.posaljiObavjestenjeRecenzije(
-                    volonterK.getEmail(),
-                    volonterK.getIme() + " " + volonterK.getPrezime(),
-                    ocjenjivac.getIme() + " " + ocjenjivac.getPrezime(),
-                    kupovina.getUslugaProizvod().getNaziv(),
-                    brojZvjezdica,
-                    komentar
-            );
-        }
+        Korisnik volonterK = kupovina.getUslugaProizvod().getVolonter();
+        emailService.posaljiObavjestenjeRecenzije(
+                volonterK.getEmail(),
+                volonterK.getIme() + " " + volonterK.getPrezime(),
+                ocjenjivac.getIme() + " " + ocjenjivac.getPrezime(),
+                kupovina.getUslugaProizvod().getNaziv(),
+                brojZvjezdica,
+                komentar
+        );
 
         return sacuvana;
     }
