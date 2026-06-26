@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +7,8 @@ import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { AuthService } from '../../core/services/auth.service';
 import { KupovinaService } from '../../core/services/kupovina.service';
 import { DonacijaService } from '../../core/services/donacija.service';
-import { Korisnik } from '../../core/models/models';
+import { ChatService } from '../../core/services/chat.service';
+import { Korisnik, ChatPoruka } from '../../core/models/models';
 import { FooterComponent } from '../../shared/footer/footer.component';
 
 @Component({
@@ -17,7 +18,7 @@ import { FooterComponent } from '../../shared/footer/footer.component';
   templateUrl: './buyer-dashboard.component.html',
   styleUrls: ['./buyer-dashboard.component.scss']
 })
-export class BuyerDashboardComponent implements OnInit {
+export class BuyerDashboardComponent implements OnInit, OnDestroy {
   logoPath = 'assets/logoFinally.jpg';
   activeSection = 'overview';
   reviewModalOpen = false;
@@ -43,10 +44,17 @@ export class BuyerDashboardComponent implements OnInit {
   myReviews: any[] = [];
   myDonations: any[] = [];
 
+  // Chat
+  chatKupovina: any = null;
+  chatPoruke: ChatPoruka[] = [];
+  novaChatPoruka = '';
+  private chatInterval: any = null;
+
   constructor(
     private auth: AuthService,
     private kupovinaService: KupovinaService,
     private donacijaService: DonacijaService,
+    private chatService: ChatService,
     private http: HttpClient
   ) {}
 
@@ -124,7 +132,42 @@ export class BuyerDashboardComponent implements OnInit {
     });
   }
 
-  setSection(s: string) { this.activeSection = s; }
+  setSection(s: string) {
+    this.activeSection = s;
+    if (s !== 'chat') { this.stopChatPolling(); }
+  }
+
+  openChat(p: any) {
+    this.chatKupovina = p;
+    this.activeSection = 'chat';
+    this.loadChatPoruke();
+    this.startChatPolling();
+  }
+
+  loadChatPoruke() {
+    if (!this.chatKupovina || !this.user) return;
+    this.chatService.getPoruke(this.chatKupovina.id, this.user.korisnikId).subscribe({
+      next: (poruke) => { this.chatPoruke = poruke; }
+    });
+  }
+
+  sendChatPoruka() {
+    if (!this.novaChatPoruka.trim() || !this.chatKupovina || !this.user) return;
+    this.chatService.posaljiPoruku(this.chatKupovina.id, this.user.korisnikId, this.novaChatPoruka).subscribe({
+      next: (p) => { this.chatPoruke.push(p); this.novaChatPoruka = ''; }
+    });
+  }
+
+  startChatPolling() {
+    this.stopChatPolling();
+    this.chatInterval = setInterval(() => this.loadChatPoruke(), 5000);
+  }
+
+  stopChatPolling() {
+    if (this.chatInterval) { clearInterval(this.chatInterval); this.chatInterval = null; }
+  }
+
+  ngOnDestroy() { this.stopChatPolling(); }
 
   getSectionTitle(): string {
     const map: any = {

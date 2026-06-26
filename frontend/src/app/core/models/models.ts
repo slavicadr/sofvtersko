@@ -83,6 +83,14 @@ export interface Verifikacija {
   datumVerifikacije: string;
 }
 
+export interface ChatPoruka {
+  porukaId: number;
+  kupovina: KupljenaUsluga;
+  posiljalac: Korisnik;
+  sadrzaj: string;
+  vrijemeSlanda: string;
+}
+
 export interface LogAktivnosti {
   logId: number;
   korisnik?: Korisnik;

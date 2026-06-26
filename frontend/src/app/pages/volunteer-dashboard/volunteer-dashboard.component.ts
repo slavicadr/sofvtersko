@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +8,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { UslugaService } from '../../core/services/usluga.service';
 import { KorisnikPomociService } from '../../core/services/korisnik-pomoci.service';
 import { KupovinaService } from '../../core/services/kupovina.service';
-import { Korisnik } from '../../core/models/models';
+import { ChatService } from '../../core/services/chat.service';
+import { Korisnik, ChatPoruka } from '../../core/models/models';
 
 @Component({
   selector: 'app-volunteer-dashboard',
@@ -17,7 +18,7 @@ import { Korisnik } from '../../core/models/models';
   templateUrl: './volunteer-dashboard.component.html',
   styleUrls: ['./volunteer-dashboard.component.scss']
 })
-export class VolunteerDashboardComponent implements OnInit {
+export class VolunteerDashboardComponent implements OnInit, OnDestroy {
   logoPath = 'assets/logoFinally.jpg';
   activeSection = 'overview';
   serviceModalOpen = false;
@@ -50,6 +51,12 @@ export class VolunteerDashboardComponent implements OnInit {
   beneficiaries: any[] = [];
   myProdaje: any[] = [];
 
+  // Chat
+  chatKupovina: any = null;
+  chatPoruke: ChatPoruka[] = [];
+  novaChatPoruka = '';
+  private chatInterval: any = null;
+
   categories = [
     'Edukacija', 'Zdravlje', 'IT pomoć', 'Astrologija', 'Life-coach',
     'Prevod', 'Proizvodi', 'Pravna pomoć', 'Psihološka podrška', 'Ostalo',
@@ -67,6 +74,7 @@ export class VolunteerDashboardComponent implements OnInit {
     private uslugaService: UslugaService,
     private pomocService: KorisnikPomociService,
     private kupovinaService: KupovinaService,
+    private chatService: ChatService,
     private http: HttpClient
   ) {}
 
@@ -158,7 +166,42 @@ export class VolunteerDashboardComponent implements OnInit {
     });
   }
 
-  setSection(s: string) { this.activeSection = s; }
+  setSection(s: string) {
+    this.activeSection = s;
+    if (s !== 'chat') { this.stopChatPolling(); }
+  }
+
+  openChat(p: any) {
+    this.chatKupovina = p;
+    this.activeSection = 'chat';
+    this.loadChatPoruke();
+    this.startChatPolling();
+  }
+
+  loadChatPoruke() {
+    if (!this.chatKupovina || !this.user) return;
+    this.chatService.getPoruke(this.chatKupovina.id, this.user.korisnikId).subscribe({
+      next: (poruke) => { this.chatPoruke = poruke; }
+    });
+  }
+
+  sendChatPoruka() {
+    if (!this.novaChatPoruka.trim() || !this.chatKupovina || !this.user) return;
+    this.chatService.posaljiPoruku(this.chatKupovina.id, this.user.korisnikId, this.novaChatPoruka).subscribe({
+      next: (p) => { this.chatPoruke.push(p); this.novaChatPoruka = ''; }
+    });
+  }
+
+  startChatPolling() {
+    this.stopChatPolling();
+    this.chatInterval = setInterval(() => this.loadChatPoruke(), 5000);
+  }
+
+  stopChatPolling() {
+    if (this.chatInterval) { clearInterval(this.chatInterval); this.chatInterval = null; }
+  }
+
+  ngOnDestroy() { this.stopChatPolling(); }
 
   getSectionTitle(): string {
     const map: any = {
