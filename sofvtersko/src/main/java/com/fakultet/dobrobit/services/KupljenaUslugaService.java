@@ -16,20 +16,17 @@ public class KupljenaUslugaService {
     private final UslugaProizvodRepository uslugaRepository;
     private final KorisnikPomociRepository pomocRepository;
     private final VolonterInfoService volonterInfoService;
-    private final EmailService emailService;
 
     public KupljenaUslugaService(KupljenaUslugaRepository repository,
                                  KorisnikRepository korisnikRepository,
                                  UslugaProizvodRepository uslugaRepository,
                                  KorisnikPomociRepository pomocRepository,
-                                 VolonterInfoService volonterInfoService,
-                                 EmailService emailService) {
+                                 VolonterInfoService volonterInfoService) {
         this.repository = repository;
         this.korisnikRepository = korisnikRepository;
         this.uslugaRepository = uslugaRepository;
         this.pomocRepository = pomocRepository;
         this.volonterInfoService = volonterInfoService;
-        this.emailService = emailService;
     }
 
     // Prima ID-jeve, sam učitava entitete iz baze (SRS UC-3)
@@ -47,10 +44,8 @@ public class KupljenaUslugaService {
             throw new RuntimeException("Usluga nije aktivna i ne može se kupiti!");
         }
 
-        KorisnikPomoci pomoc = pomocRepository.findById(pomocId).orElse(null);
-        if (pomoc == null) {
-            pomoc = pomocRepository.findAll().stream().findFirst().orElse(null);
-        }
+        KorisnikPomoci pomoc = pomocRepository.findById(pomocId)
+                .orElseThrow(() -> new RuntimeException("Korisnik pomoći sa ID " + pomocId + " ne postoji!"));
 
         KupljenaUsluga kupovina = new KupljenaUsluga();
         kupovina.setDonator(kupac);
@@ -62,22 +57,6 @@ public class KupljenaUslugaService {
         kupovina.setNacinPlacanja(nacinPlacanja);
 
         KupljenaUsluga sacuvana = repository.save(kupovina);
-
-        Korisnik volonter = usluga.getVolonter();
-        emailService.posaljiPotvrdaKupovine(
-                kupac.getEmail(),
-                kupac.getIme() + " " + kupac.getPrezime(),
-                usluga.getNaziv(),
-                volonter.getEmail()
-        );
-        emailService.posaljiObavjestenjeKupovineVolonteru(
-                volonter.getEmail(),
-                volonter.getIme() + " " + volonter.getPrezime(),
-                kupac.getIme() + " " + kupac.getPrezime(),
-                kupac.getEmail(),
-                usluga.getNaziv(),
-                sacuvana.getIznos().toPlainString()
-        );
 
         // Auto-disable service when capacity limit is reached
         if (usluga.getKapacitet() != null && usluga.getKapacitet() > 0) {
@@ -138,14 +117,6 @@ public class KupljenaUslugaService {
         KupljenaUsluga saved = repository.save(k);
 
         volonterInfoService.uvecajBrojUsluga(volonterId);
-
-        String nazivUsluge = k.getUslugaProizvod().getNaziv();
-        Korisnik kupac = k.getDonator();
-        Korisnik volonterK = k.getUslugaProizvod().getVolonter();
-        emailService.posaljiObavjestenjeRealizacije(
-                kupac.getEmail(), kupac.getIme() + " " + kupac.getPrezime(), nazivUsluge, false);
-        emailService.posaljiObavjestenjeRealizacije(
-                volonterK.getEmail(), volonterK.getIme() + " " + volonterK.getPrezime(), nazivUsluge, true);
 
         return saved;
     }

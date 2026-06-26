@@ -4,16 +4,15 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ocjena_recenzija",
-    uniqueConstraints = @jakarta.persistence.UniqueConstraint(columnNames = {"kupovina_id", "ocjenjivac_id"}))
+@Table(name = "ocjena_recenzija")
 public class OcjenaRecenzija {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int ocjenaId;
 
-    @ManyToOne
-    @JoinColumn(name = "kupovina_id", nullable = false)
+    @OneToOne
+    @JoinColumn(name = "kupovina_id", nullable = false, unique = true)
     private KupljenaUsluga kupovina;
 
     @ManyToOne
@@ -23,12 +22,6 @@ public class OcjenaRecenzija {
     private int brojZvjezdica;
     private String komentar;
     private LocalDateTime datumOcjene = LocalDateTime.now();
-
-    @Column(name = "odgovor_volontera", columnDefinition = "TEXT")
-    private String odgovorVolontera;
-
-    @Column(name = "datum_odgovora")
-    private LocalDateTime datumOdgovora;
 
     public OcjenaRecenzija() {}
 
@@ -49,10 +42,4 @@ public class OcjenaRecenzija {
 
     public LocalDateTime getDatumOcjene() { return datumOcjene; }
     public void setDatumOcjene(LocalDateTime datumOcjene) { this.datumOcjene = datumOcjene; }
-
-    public String getOdgovorVolontera() { return odgovorVolontera; }
-    public void setOdgovorVolontera(String odgovorVolontera) { this.odgovorVolontera = odgovorVolontera; }
-
-    public LocalDateTime getDatumOdgovora() { return datumOdgovora; }
-    public void setDatumOdgovora(LocalDateTime datumOdgovora) { this.datumOdgovora = datumOdgovora; }
 }

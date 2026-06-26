@@ -49,7 +49,6 @@ export class VolunteerDashboardComponent implements OnInit {
 
   beneficiaries: any[] = [];
   myProdaje: any[] = [];
-  purchasedServiceIds = new Set<number>();
 
   categories = [
     'Edukacija', 'Zdravlje', 'IT pomoć', 'Astrologija', 'Life-coach',
@@ -95,10 +94,7 @@ export class VolunteerDashboardComponent implements OnInit {
     if (!this.user) return;
     this.uslugaService.filterByVolonter(this.user.korisnikId).subscribe({
       next: (data) => {
-        this.activeOffers = data.map(u => ({
-          ...this.uslugaService.mapToView(u),
-          hasPurchases: this.purchasedServiceIds.has(u.uslugaProizvodId),
-        }));
+        this.activeOffers = data.map(u => this.uslugaService.mapToView(u));
         this.stats.activeOffers = this.activeOffers.filter(o => o.status === 'ACTIVE').length;
       }
     });
@@ -118,10 +114,6 @@ export class VolunteerDashboardComponent implements OnInit {
           statusIsporuke: k.statusIsporuke ?? 'na_cekanju',
           datumRealizacije: k.datumRealizacije ? new Date(k.datumRealizacije).toLocaleDateString('bs-BA') : '',
         }));
-        this.purchasedServiceIds = new Set(
-          data.map(k => k.uslugaProizvod?.uslugaProizvodId).filter((id): id is number => !!id)
-        );
-        this.activeOffers.forEach(o => { o.hasPurchases = this.purchasedServiceIds.has(o.id); });
         this.stats.completedServices = data.filter(k => k.statusIsporuke === 'realizovano').length;
       }
     });
@@ -135,7 +127,6 @@ export class VolunteerDashboardComponent implements OnInit {
           const stars = r.brojZvjezdica ?? 0;
           const buyer = r.ocjenjivac ? `${r.ocjenjivac.ime} ${r.ocjenjivac.prezime}` : 'Anonimno';
           return {
-            id: r.ocjenaId,
             rating: stars,
             starsArray: Array(stars).fill(0),
             emptyStars: Array(5 - stars).fill(0),
@@ -146,7 +137,7 @@ export class VolunteerDashboardComponent implements OnInit {
             comment: r.komentar ?? '',
             date: r.datumOcjene ? new Date(r.datumOcjene).toLocaleDateString('bs-BA') : '',
             offerName: r.kupovina?.uslugaProizvod?.naziv ?? '',
-            reply: r.odgovorVolontera ?? '',
+            reply: '',
             replyOpen: false,
             replyDraft: '',
           };
@@ -313,17 +304,12 @@ export class VolunteerDashboardComponent implements OnInit {
   }
 
   submitReply(r: any) {
-    if (!r.replyDraft.trim()) return;
-    this.http.patch<any>(`/api/recenzije/${r.id}/odgovor`, { odgovor: r.replyDraft }).subscribe({
-      next: (updated) => {
-        r.reply = updated.odgovorVolontera ?? r.replyDraft;
-        r.replyOpen = false;
-        r.replyDraft = '';
-      },
-      error: (err) => alert(typeof err?.error === 'string' ? err.error : 'Greška pri slanju odgovora.')
-    });
+    if (r.replyDraft.trim()) {
+      r.reply = r.replyDraft;
+      r.replyOpen = false;
+      r.replyDraft = '';
+    }
   }
-
 
   printCertificate(p: any) {
     const volonterIme = `${this.volunteer.firstName} ${this.volunteer.lastName}`;

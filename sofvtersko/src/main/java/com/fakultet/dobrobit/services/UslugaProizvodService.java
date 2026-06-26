@@ -1,5 +1,6 @@
 package com.fakultet.dobrobit.services;
 
+import com.fakultet.dobrobit.models.KupljenaUsluga;
 import com.fakultet.dobrobit.models.UslugaProizvod;
 import com.fakultet.dobrobit.models.Korisnik;
 import com.fakultet.dobrobit.models.Kategorija;
@@ -20,18 +21,15 @@ import java.util.List;
         private final KategorijaRepository kategorijaRepository;
         private final KorisnikRepository korisnikRepository;
         private final KupljenaUslugaRepository kupljenaUslugaRepository;
-        private final EmailService emailService;
 
         public UslugaProizvodService(UslugaProizvodRepository repository,
                                      KategorijaRepository kategorijaRepository,
                                      KorisnikRepository korisnikRepository,
-                                     KupljenaUslugaRepository kupljenaUslugaRepository,
-                                     EmailService emailService) {
+                                     KupljenaUslugaRepository kupljenaUslugaRepository) {
             this.repository = repository;
             this.kategorijaRepository = kategorijaRepository;
             this.korisnikRepository = korisnikRepository;
             this.kupljenaUslugaRepository = kupljenaUslugaRepository;
-            this.emailService = emailService;
         }
 
         public UslugaProizvod kreiraj(UslugaProizvod usluga) {
@@ -83,26 +81,23 @@ import java.util.List;
                     .orElseThrow(() -> new RuntimeException("Usluga ne postoji"));
 
             u.setStatusObjave(status);
-            UslugaProizvod sacuvana = repository.save(u);
-
-            if ("aktivna".equals(status) && u.getVolonter() != null) {
-                Korisnik v = u.getVolonter();
-                emailService.posaljiOdobrenjeUsluge(
-                        v.getEmail(),
-                        v.getIme() + " " + v.getPrezime(),
-                        u.getNaziv()
-                );
-            }
-
-            return sacuvana;
+            return repository.save(u);
         }
 
         public void obrisi(int id) {
             UslugaProizvod usluga = repository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Usluga ne postoji."));
 
-            if (kupljenaUslugaRepository.countByUslugaProizvod(usluga) > 0) {
-                throw new RuntimeException("Nije moguće obrisati uslugu koja je već kupljena ili realizovana. Možete je deaktivirati.");
+            List<KupljenaUsluga> kupovine = kupljenaUslugaRepository.findByUslugaProizvod(usluga);
+
+            boolean imaNerealizovanih = kupovine.stream()
+                    .anyMatch(k -> "na_cekanju".equals(k.getStatusIsporuke()));
+            if (imaNerealizovanih) {
+                throw new RuntimeException("Ne možete obrisati uslugu koja ima aktivne (nerealizovane) kupovine.");
+            }
+
+            if (!kupovine.isEmpty()) {
+                throw new RuntimeException("Ne možete obrisati uslugu koja ima istoriju kupovina. Možete je deaktivirati.");
             }
 
             repository.deleteById(id);

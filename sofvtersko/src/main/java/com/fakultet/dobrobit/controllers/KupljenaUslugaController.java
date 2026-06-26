@@ -40,7 +40,8 @@ public class KupljenaUslugaController {
             int uslugaId = ((Number) uslugaIdObj).intValue();
 
             Object pomocIdObj = podaci.get("pomocId");
-            int pomocId = (pomocIdObj instanceof Number) ? ((Number) pomocIdObj).intValue() : 0;
+            if (!(pomocIdObj instanceof Number)) return ResponseEntity.badRequest().body("Nedostaje pomocId.");
+            int pomocId = ((Number) pomocIdObj).intValue();
 
             String nacinPlacanja = (String) podaci.getOrDefault("nacinPlacanja", "KARTICA");
 

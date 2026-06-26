@@ -112,8 +112,8 @@ Aplikacija komunicira s **istim Spring Boot backendom** (`sofvtersko/`) kao i we
 | Tab | Naziv | Funkcija |
 |-----|-------|----------|
 | Tab 1 | Početna | Hero, statistike, koraci, humanitarni slučajevi, uloge, recenzije, partneri, footer |
-| Tab 2 | Usluge | Pretraga i filtriranje usluga po kategoriji, detalji usluge, kvazi kupovina, profil volontera s recenzijama |
-| Tab 3 | Profil | Lični podaci, historija kupovina, admin CMS panel (odobravanje korisnika i usluga), odjava |
+| Tab 2 | Usluge | Pretraga i filtriranje usluga po kategoriji, detalji usluge, profil volontera s recenzijama |
+| Tab 3 | Profil | Prikaz podataka prijavljenog korisnika, odjava |
 
 ---
 
@@ -213,18 +213,12 @@ Bez ovog, pretraživač bi blokirao sve HTTP zahtjeve mobilne aplikacije prema b
 | `/api/korisnici/logout` | POST | `AuthService` | Odjava korisnika |
 | `/api/korisnici/registracija` | POST | `AuthService` | Registracija volontera/donatora |
 | `/api/korisnici/registracija/kupac` | POST | `AuthService` | Registracija kupca |
-| `/api/korisnici/status/na_cekanju` | GET | `AdminService` | Svi korisnici na čekanju (admin) |
-| `/api/korisnici/{id}/status` | PUT | `AdminService` | Odobravanje/odbijanje korisnika (admin) |
 | `/api/usluge-proizvodi` | GET | `UslugaProizvodService` | Sve usluge volontera |
 | `/api/usluge-proizvodi/filter-volonter` | POST | `UslugaProizvodService` | Usluge određenog volontera |
-| `/api/usluge-proizvodi/{id}/status` | PUT | `UslugaProizvodService` | Promjena statusa usluge (admin) |
 | `/api/kategorije` | GET | `KategorijaService` | Sve kategorije |
 | `/api/korisnici-pomoci` | GET | `KorisnikPomociService` | Humanitarni slučajevi |
 | `/api/korisnici-pomoci/{id}` | GET | `KorisnikPomociService` | Jedan slučaj |
 | `/api/donacije` | GET | `DonacijaService` | Sve donacije (za izračun prikupljenog iznosa) |
-| `/api/kupovine/kupi` | POST | `KupljenaUslugaService` | Kupovina usluge (kvazi plaćanje) |
-| `/api/kupovine/kupac/{id}` | GET | `KupljenaUslugaService` | Historija kupovina po kupcu |
-| `/api/kupovine/volonter/{id}` | GET | `KupljenaUslugaService` | Kupovine tuđih usluga za volontera |
 | `/api/recenzije/volonter/{id}` | GET | `OcjenaRecenzijaService` | Recenzije za volontera |
 | `/api/recenzije/volonter/{id}/prosjek` | GET | `OcjenaRecenzijaService` | Prosječna ocjena volontera |
 | `/api/profili` | GET | `ProfilService` | Svi profili |
@@ -714,29 +708,22 @@ onLogoError(event: Event, kratko: string) {
 
 **Fajlovi:** `tab2/tab2.page.ts`, `.html`, `.scss`
 
-#### Učitavanje — samo aktivne usluge
-
-```typescript
-ucitaj() {
-  this.uslugaSvc.getAll().subscribe({
-    next: (data) => {
-      this.usluge = data.filter(u => u.statusObjave === 'aktivna');
-      this.filtrirane = this.usluge;
-    }
-  });
-}
-```
-
-Filtriranje na `statusObjave === 'aktivna'` isključuje usluge u statusima `popunjeno`, `odbijena` ili `uklonjena`. Lista se automatski osvježava nakon svake kupovine pozivom `this.ucitaj()`.
-
 #### Filtriranje kategorija
 
 ```typescript
-const SKRIVENE = ['kucni majstor', 'prevoz', 'hrana', 'kulinarski'];
+const SKRIVENE_KATEGORIJE = [
+  'zdravlje i njega', 'prevoz i transport',
+  'kućni majstor', 'kucni majstor'  // Sa i bez dijakritika
+];
+```
+
+Kod učitavanja se primjenjuje filtriranje i sortiranje:
+
+```typescript
 this.kategorijaSvc.getAll().subscribe(k => {
-  const filtrirane = k.filter(kat => !SKRIVENE.some(s => this.normalizuj(kat.naziv).includes(s)));
-  const ostalo = filtrirane.filter(kat => this.normalizuj(kat.naziv) === 'ostalo');
-  const ostale = filtrirane.filter(kat => this.normalizuj(kat.naziv) !== 'ostalo');
+  const vidljive = k.filter(kat => !SKRIVENE_KATEGORIJE.includes(this.normalizuj(kat.naziv)));
+  const ostalo   = vidljive.filter(kat => this.normalizuj(kat.naziv) === 'ostalo');
+  const ostale   = vidljive.filter(kat => this.normalizuj(kat.naziv) !== 'ostalo');
   this.kategorije = [...ostale, ...ostalo]; // "Ostalo" uvijek na kraju
 });
 ```
@@ -753,21 +740,38 @@ private normalizuj(str: string): string {
 
 Ovo omogućava da korisnik koji ukuca `podrska` pronađe uslugu nazvanu `Podrška`. Normalizacija se primjenjuje i na upit i na podatke pri poređenju.
 
-#### Tok korisničke interakcije (tri modala)
+#### Filtriranje u pretrazi
 
-**Modal 1 — Detalji usluge** (klik na karticu):
 ```typescript
-klikNaUslugu(usluga: UslugaProizvod) {
-  this.odabranaUsluga = usluga;
-  this.uslugaOtvorena = true;
+private primijeniFilter() {
+  const upit = this.normalizuj(this.trenutniUpit);
+  this.filtrirane = this.usluge.filter(u => {
+    const matchUpit = !upit ||
+      this.normalizuj(u.naziv).includes(upit) ||          // Po nazivu
+      this.normalizuj(u.opis ?? '').includes(upit) ||     // Po opisu
+      this.normalizuj(u.kategorija?.naziv ?? '').includes(upit); // Po kategoriji
+    const matchKat = !this.odabranaKategorija ||
+      u.kategorija?.kategorijaId === this.odabranaKategorija;
+    return matchUpit && matchKat;
+  });
 }
 ```
 
-**Modal 2 — Profil volontera** (klik na volontera unutar detalja):
+#### Tok korisničke interakcije (dva modala)
+
+**Klik na karticu usluge:**
+```typescript
+klikNaUslugu(usluga: UslugaProizvod) {
+  this.odabranaUsluga = usluga;
+  this.uslugaOtvorena = true;      // Otvori modal 1: Detalji usluge
+}
+```
+
+**Klik na volontera unutar detalja:**
 ```typescript
 otvoriProfilVolontera(volonter: Korisnik) {
   this.odabraniVolonter = volonter;
-  this.profilOtvoren = true;
+  this.profilOtvoren = true;       // Otvori modal 2: Profil volontera
   this.ucitavaProfil = true;
 
   forkJoin({
@@ -777,117 +781,44 @@ otvoriProfilVolontera(volonter: Korisnik) {
   }).subscribe({ next: (res) => {
     this.volonterRecenzije = res.recenzije;
     this.prosjecnaOcjena   = res.prosjek.prosjecnaOcjena ?? 0;
-    this.volonterUsluge    = res.usluge.filter(u =>
-      u.uslugaProizvodId !== this.odabranaUsluga?.uslugaProizvodId
-    );
-    this.ucitavaProfil = false;
+    this.volonterUsluge    = res.usluge.filter(...); // Bez skrivenih kategorija
+    this.ucitavaProfil     = false;
   }});
 }
 ```
 
-`forkJoin` pokreće sva tri HTTP zahtjeva **paralelno** i čeka da svi završe. Ovo smanjuje ukupno vrijeme čekanja u poređenju sa sekvencijalnim pozivima.
+`forkJoin` pokreće sva tri HTTP zahtjeva **paralelno** i čeka da svi završe. Rezultati su dostupni istovremeno, što smanjuje ukupno vrijeme čekanja.
 
-**Modal 3 — Plaćanje** (klik "Kupi uslugu"):
-Prikazuje se samo korisnicima s tipom `kupac` ili `volonter`. Sadrži sažetak usluge i lažni broj kartice (`**** 4242`). Na potvrdu poziva backend API za kupovinu.
+#### Modal 1: Detalji usluge
 
-#### Ko može kupiti uslugu?
-
-```typescript
-get jeKupac(): boolean { return this.korisnik?.tipKorisnika === 'kupac'; }
-get jeVolonter(): boolean { return this.korisnik?.tipKorisnika === 'volonter'; }
-```
-
-HTML dugme za kupovinu:
-```html
-<ng-container *ngIf="jeKupac || jeVolonter">
-  <ion-button *ngIf="odabranaUsluga?.statusObjave === 'aktivna'" ...>
-    Kupi uslugu
-  </ion-button>
-  <div *ngIf="odabranaUsluga?.statusObjave !== 'aktivna'" class="popunjeno-banner">
-    Usluga je popunjena — više nije dostupna za kupovinu
-  </div>
-</ng-container>
-```
-
-**Zašto i volonter može kupiti?** Backend `POST /api/kupovine/kupi` ne provjerava `tip_korisnika`. Kolona `kupljena_usluga.donator_id` je FK prema `korisnik`, ne prema podskupu korisnika tipa `kupac`. Jedina stvar koja je spriječavala volontere bio je `*ngIf="jeKupac"` na frontendu, koji je proširen na `*ngIf="jeKupac || jeVolonter"`.
-
-#### Tok kvazi plaćanja
-
-```typescript
-async potvrdiPlacanje() {
-  if (!this.korisnik || !this.odabranaUsluga || !this.prvoPomocId) return;
-  this.placanjeSent = true;
-
-  this.kupljenaUslugaSvc.kupi(
-    this.korisnik.korisnikId,
-    this.odabranaUsluga.uslugaProizvodId,
-    this.prvoPomocId,                // Ko prima beneficiju — prvi korisnik pomoći u sistemu
-    this.odabranaUsluga.cijena ?? null,
-    'KARTICA'
-  ).subscribe({
-    next: async () => {
-      this.zatvoriUslugu();
-      this.ucitaj();   // Osvježi listu — popunjena usluga nestaje
-    }
-  });
-}
-```
-
-`prvoPomocId` se učitava na `ngOnInit()` iz `korisnikPomociSvc.getAll()[0].pomocId`. **Volonter bira korisnika pomoći pri realizaciji usluge**, a ne kupac pri kupovini.
-
-#### Detalji modala 1 — Detalji usluge
-
-Bottom-sheet (max 80% ekrana visine):
+Bottom-sheet (max 80% ekrana visine) s:
 - Kategorija chip
 - Naziv usluge (Playfair Display, 1.4rem)
-- Klikabilan red s volonterom (avatar inicijali + ime + "Profil →")
+- Klikabilan red s volonterom (avatar + ime + "Profil →")
 - Info stavke: Cijena (€), Kapacitet, Tip usluge
 - Pun opis usluge
 - Dugme "Pogledaj profil volontera"
-- Dugme "Kupi uslugu" (vidljivo samo za kupca/volontera; usluga mora biti `aktivna`)
-- Baner "Usluga je popunjena" (ako `statusObjave !== 'aktivna'`)
 - Dugme "Zatvori"
 
-#### Detalji modala 2 — Profil volontera
+#### Modal 2: Profil volontera
 
-Bottom-sheet (max 90% ekrana, scrollabilan):
+Bottom-sheet (max 90% ekrana, scrollabilan) s:
 - Avatar (inicijali u teal krugu), ime, chip "Volonter"
 - Prosječna ocjena (zvjezdice + broj + "(X recenzija)")
 - Email, telefon (ako postoje)
 - Sekcija "Recenzije" — kartice: avatar recenzenta, ime, naziv usluge, zvjezdice, komentar, datum
-- Sekcija "Ostale usluge" — mini kartice, klikabilne (otvaraju Modal 1 za tu uslugu)
+- Sekcija "Ostale usluge" — mini kartice ostalih usluga istog volontera, klikabilne
 - Dugme "Zatvori"
-
-#### Detalji modala 3 — Plaćanje
-
-Bottom-sheet:
-- Naziv i cijena usluge
-- "Kartica · **** **** **** 4242" + badge "Aktivan" (kvazi kartica)
-- Dugme "Potvrdi plaćanje" (disabled tokom slanja; prikazuje spinner)
-- Napomena: "Sigurno plaćanje. Transakcija će biti odmah odobrena."
 
 ---
 
-### 10.3 Tab3 – Profil, Historija i Admin CMS
+### 10.3 Tab3 – Profil korisnika (nepromijenjen u logici)
 
-**Fajlovi:** `tab3/tab3.page.ts`, `.html`, `.scss`
-
-Tab3 je višenamjenski tab koji prikazuje različit sadržaj zavisno od tipa prijavljenog korisnika.
-
-#### Segment navigacija
-
-| Segment | Vidljiv za | Sadržaj |
-|---------|-----------|---------|
-| `profil` | sve | Lični podaci i odjava |
-| `historija` | kupac, volonter | Historija kupovina |
-| `prodaja` | volonter | Kupovine tuđih usluga / realizacija |
-| `cms` | administrator | Admin panel |
-
-#### Sekcija: Profil korisnika
+**Fajl:** `tab3/tab3.page.ts`
 
 ```typescript
 ngOnInit() {
-  this.auth.currentUser$.subscribe(u => this.korisnik = u);
+  this.auth.currentUser$.subscribe(u => this.korisnik = u); // Reaktivno — mijenja se pri login/logout
 }
 
 async onOdjava() {
@@ -895,110 +826,9 @@ async onOdjava() {
 }
 ```
 
-Prikazuje ime, email, tip korisnika (mapiran u čitljiv string) i dugme za odjavu s potvrdom.
+Tab3 koristi `AuthService.currentUser$` Observable za reaktivni prikaz podataka prijavljenog korisnika. Prikazuje ime, email, tip korisnika (mapiran u čitljiv string) i dugme za odjavu s potvrdom.
 
-#### Sekcija: Historija kupovina
-
-Učitava sve kupovine prijavljenog korisnika:
-
-```typescript
-ucitajHistoriju() {
-  forkJoin({
-    kupovine: this.kupljenaUslugaSvc.getByKupac(this.korisnik!.korisnikId)
-              .pipe(catchError(() => of([]))),
-    prodaje:  this.kupljenaUslugaSvc.getByVolonter(this.korisnik!.korisnikId)
-              .pipe(catchError(() => of([]))),
-  }).subscribe(...)
-}
-```
-
-Badge boje u historiji:
-
-```typescript
-statusBoja(status?: string): string {
-  if (!status) return 'primary';           // NULL → Plaćeno (plava)
-  if (status === 'na_cekanju') return 'warning';   // žuta
-  if (status === 'realizovano') return 'success';  // zelena
-  return 'medium';
-}
-
-statusLabel(status?: string): string {
-  const mapa: Record<string, string> = {
-    realizovano: 'Realizovano',
-    na_cekanju:  'Čeka isporuku',
-    otkazano:    'Otkazano',
-  };
-  return status ? (mapa[status] ?? status) : 'Plaćeno';
-}
-```
-
-`status_isporuke` je `NULL` odmah nakon kupovine — prikazuje se kao **"Plaćeno"** s plavim badge-om. Tek kad volonter/admin realizuje uslugu mijenja se u `'realizovano'`.
-
-#### Sekcija: Admin CMS
-
-Vidljiva samo za `tipKorisnika === 'administrator'`.
-
-```typescript
-get jeAdmin(): boolean { return this.korisnik?.tipKorisnika === 'administrator'; }
-```
-
-**Učitavanje podataka:**
-```typescript
-ucitajAdminCms() {
-  forkJoin({
-    korisnici: this.adminSvc.getNaCekanju().pipe(catchError(() => of([]))),
-    usluge:    this.uslugaSvc.getAll().pipe(catchError(() => of([]))),
-  }).subscribe({
-    next: (res) => {
-      this.volonteriNaCekanju = (res.korisnici as Korisnik[])
-        .filter(k => k.tipKorisnika !== 'administrator');
-      this.uslugePending = (res.usluge as UslugaProizvod[])
-        .filter(u => u.statusObjave === 'na_cekanju');
-    }
-  });
-}
-```
-
-`GET /api/korisnici/status/na_cekanju` vraća sve korisnike s `statusNaloga = 'na_cekanju'`.
-
-**Odobravanje korisnika:**
-`PUT /api/korisnici/{id}/status { noviStatus: 'aktivan' }` → backend automatski postavlja `verifikovan = true` i šalje email odobrenja.
-
-**Odbijanje korisnika:**
-AlertController traži razlog → `PUT /api/korisnici/{id}/status { noviStatus: 'suspendovan', razlog }`.
-
-**Odobravanje usluge:**
-```typescript
-async odobriUslugu(u: UslugaProizvod) {
-  await this.uslugaSvc.promijeniStatus(u.uslugaProizvodId, 'aktivna').toPromise();
-  this.ucitajAdminCms();
-}
-```
-
-> **Važno:** Status se šalje kao `'aktivna'` (feminin), a ne `'aktivan'`. Backend striktno provjerava ovu vrijednost. Slanje `'aktivan'` uzrokuje grešku "Usluga nije aktivna i ne može se kupiti!".
-
-#### AdminService — `src/app/services/admin.service.ts`
-
-```typescript
-@Injectable({ providedIn: 'root' })
-export class AdminService {
-  private readonly baseUrl = `${environment.apiUrl}/api/korisnici`;
-
-  getNaCekanju(): Observable<Korisnik[]> {
-    return this.http.get<Korisnik[]>(`${this.baseUrl}/status/na_cekanju`, { withCredentials: true });
-  }
-  odobriKorisnika(id: number): Observable<Korisnik> {
-    return this.http.put<Korisnik>(`${this.baseUrl}/${id}/status`,
-      { noviStatus: 'aktivan', razlog: 'Odobreno od administratora' },
-      { withCredentials: true });
-  }
-  odbijKorisnika(id: number, razlog: string): Observable<Korisnik> {
-    return this.http.put<Korisnik>(`${this.baseUrl}/${id}/status`,
-      { noviStatus: 'suspendovan', razlog },
-      { withCredentials: true });
-  }
-}
-```
+**Vizuelna izmjena:** Prepisan SCSS da odgovara Dobrobit paleti.
 
 ---
 
@@ -1032,30 +862,22 @@ Slijedeći elementi su konceptualno preuzeti s Angular web frontenda i adaptiran
 |------|------|
 | `models/ocjena-recenzija.model.ts` | TypeScript interfejsi za recenzije i kupljene usluge |
 | `services/ocjena-recenzija.service.ts` | HTTP pozivi prema `/api/recenzije/volonter/{id}` |
-| `services/kupljena-usluga.service.ts` | HTTP pozivi za kupovinu i historiju kupovina |
-| `services/admin.service.ts` | Admin akcije: lista na čekanju, odobrenje, odbijanje |
 
 ### Nove metode u postojećim servisima
 
 | Servis | Metoda | Opis |
 |--------|--------|------|
 | `UslugaProizvodService` | `getByVolonter(volonter)` | POST za filtriranje usluga po volonteru |
-| `UslugaProizvodService` | `promijeniStatus(id, status)` | PUT za promjenu `statusObjave` (admin) |
-| `KupljenaUslugaService` | `kupi(kupacId, uslugaId, pomocId, iznos, nacin)` | POST kupovina usluge |
-| `KupljenaUslugaService` | `getByKupac(kupacId)` | GET historija kupovina kupca |
-| `KupljenaUslugaService` | `getByVolonter(volonterId)` | GET kupovine tuđih usluga (za volontera) |
 
 ### Novi Angular koncepti korišćeni
 
 | Koncept | Gdje | Opis |
 |---------|------|------|
-| `forkJoin` (RxJS) | `tab2.page.ts`, `tab3.page.ts` | Paralelni HTTP pozivi s `catchError(of([]))` fallback |
-| Tri ugniježđena bottom-sheet modala | `tab2.page.html` | Prilagođeni modali bez `ModalController` |
-| `[disabled]="placanjeSent"` | `tab2.page.html` | Sprječava dupli klik tokom API poziva |
+| `forkJoin` (RxJS) | `tab2.page.ts` | Paralelni HTTP pozivi za profil volontera |
+| Dva ugniježđena bottom-sheet modala | `tab2.page.html` | Prilagođeni modali bez `ModalController` |
 | `onLogoError` handler | `tab1.page.ts` | Fallback za partnere kad logo slika ne učita |
 | `formatirajDatum()` | `tab2.page.ts` | Lokalizovan prikaz datuma recenzije |
 | `zvjezdicaArray()` / `praznihZvjezdica()` | `tab2.page.ts` | Generisanje niza za `*ngFor` zvjezdice |
-| `statusLabel()` / `statusBoja()` | `tab3.page.ts` | Mapiranje `status_isporuke` na badge tekst/boju |
 
 ### Izmjene u postojećim fajlovima
 
@@ -1065,13 +887,11 @@ Slijedeći elementi su konceptualno preuzeti s Angular web frontenda i adaptiran
 | `models/donacija.model.ts` | Dodano `korisnikPomoci?: { pomocId: number }` |
 | `pages/register/register.page.ts` | Uklonjen tip `donator` |
 | `tab1/tab1.page.*` | Potpuno prepisan — kompleksna početna strana |
-| `tab2/tab2.page.*` | Potpuno prepisan — 3 modala, filtriranje, pretraga, kupovina |
-| `tab3/tab3.page.*` | Dodana segment navigacija, historija kupovina i admin CMS panel |
+| `tab2/tab2.page.*` | Potpuno prepisan — dva modala, filtriranje, pretraga |
 | `tabs/tabs.page.html` | Ikonica tab1 promijenjena, label "Slučajevi" → "Početna" |
 | `global.scss` | Potpuno prepisan s Dobrobit stilovima |
 | `theme/variables.scss` | Potpuno prepisan s design tokenima |
 | `SecurityConfig.java` | Port 4300 dodan u CORS allowed origins |
-| `UploadController.java` | Dodana podrška za upload logoa partnera |
 
 ---
 

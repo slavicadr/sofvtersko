@@ -144,7 +144,7 @@ Volonter prima ZAHVALNOST i potvrdu o volontiranju (certifikat)
 - **Server port (backend):** 8080
 - **Dev server (frontend):** 4200
 - **Baza:** MySQL, localhost:3306, baza `dobrobit1`
-- **Email SMTP:** Mailtrap sandbox, sandbox.smtp.mailtrap.io:587
+- **Email SMTP:** Outlook, smtp-mail.outlook.com:587
 
 ---
 
@@ -198,674 +198,365 @@ Volonter prima ZAHVALNOST i potvrdu o volontiranju (certifikat)
 
 ---
 
-## 4. BAZA PODATAKA — DETALJAN OPIS
+## 4. BAZA PODATAKA — ENTITETI I RELACIJE
 
-Baza se zove `dobrobit1`, radi na MySQL 8.0.45, porta 3306. Hibernate je konfigurisan sa `ddl-auto=update` — automatski kreira i ažurira tabele na osnovu Java `@Entity` klasa pri svakom pokretanju aplikacije. Ukupno ima **14 tabela**.
-
----
-
-### 4.0 Pregled svih tabela
-
-| Tabela | Svrha | Vrsta |
-|--------|-------|-------|
-| `korisnik` | Svi korisnici sistema — centralna tabela | Entitet |
-| `volonter_info` | Prošireni profil isključivo za volontere | Entitet (1:1 s korisnik) |
-| `profil` | Opcionalni javni profil (slika, grad) | Entitet (1:1 s korisnik) |
-| `kategorija` | Kategorije usluga | Šifarnik |
-| `usluga_proizvod` | Usluge koje volonteri nude | Entitet |
-| `kupljena_usluga` | Transakcije — kupovine usluga | Transakcija |
-| `donacija` | Direktne novčane donacije | Transakcija |
-| `korisnik_pomoci` | Humanitarni slučajevi — primaoci pomoći | Entitet |
-| `ocjena_recenzija` | Recenzije i ocjene kupovina | Entitet |
-| `verifikacija` | Log admin verifikacionih akcija | Log |
-| `log_aktivnosti` | Sistemski log prijava i akcija | Log |
-| `partner` | Partneri i sponzori platforme | CMS sadržaj |
-| `katalog` | Katalog dokumenata / informativni sadržaj | CMS sadržaj |
-| `pomogli_slucaj` | Kartice uspješnih priča | CMS sadržaj |
-
----
+Hibernate je konfigurisan sa `ddl-auto=update`, što znači da automatski kreira i ažurira tabele na osnovu Java klasa pri pokretanju aplikacije.
 
 ### 4.1 Tabela: `korisnik`
 
-**Centralna tabela cijelog sistema.** Svako ko postoji u sistemu — volonter, kupac, donator, korisnik pomoći ili administrator — ima tačno jedan zapis ovdje.
+Centralna tabela — svaki korisnik sistema (bez obzira na ulogu) ima zapis ovdje.
 
-#### Shema kolona
-
-| Kolona | MySQL tip | NULL | Ključ | Default | Opis |
-|--------|-----------|------|-------|---------|------|
-| `korisnik_id` | `INT` | NO | PK, AUTO_INCREMENT | — | Primarni ključ |
-| `ime` | `VARCHAR(255)` | NO | — | — | Ime |
-| `prezime` | `VARCHAR(255)` | NO | — | — | Prezime |
-| `email` | `VARCHAR(255)` | NO | UNIQUE | — | Email — jedinstven identifikator |
-| `lozinka_hash` | `VARCHAR(255)` | NO | — | — | BCrypt hash lozinke |
-| `telefon` | `VARCHAR(255)` | YES | — | NULL | Broj telefona |
-| `adresa` | `VARCHAR(255)` | YES | — | NULL | Adresa stanovanja |
-| `naziv` | `VARCHAR(255)` | YES | — | NULL | Naziv organizacije (opciono) |
-| `opis` | `TEXT` | YES | — | NULL | Biografija / opis |
-| `prikaz_anonimno` | `BIT(1)` | NO | — | — | Anonimni prikaz u javnosti |
-| `tip_korisnika` | `ENUM` | NO | INDEX | — | Jedna od 5 uloga (vidi ispod) |
-| `status_naloga` | `ENUM` | NO | — | `na_cekanju` | Status aktivacije (vidi ispod) |
-| `datum_registracije` | `DATETIME` | NO | — | `CURRENT_TIMESTAMP` | Automatski se popunjava |
-| `verifikovan` | `TINYINT(1)` | NO | — | `0` | Da li je admin odobrio nalog |
-| `razlog_promjene_statusa` | `TEXT` | YES | — | NULL | Zadnji razlog promjene statusa |
-| `portfolio_link_temp` | — | — | — | — | `@Transient` — ne čuva se u bazi |
-| `cv_url_temp` | — | — | — | — | `@Transient` — ne čuva se u bazi |
-
-#### ENUM vrijednosti
-
-**`tip_korisnika`:**
-```sql
-ENUM('donator', 'volonter', 'korisnik_pomoci', 'administrator', 'kupac')
-```
-| Vrijednost | Spring Security rola | Opis |
+| Kolona | Tip | Opis |
 |---|---|---|
-| `volonter` | `ROLE_volonter` | Nudi usluge, prolazi verifikaciju |
-| `kupac` | `ROLE_kupac` | Kupuje usluge, ostavlja recenzije |
-| `donator` | `ROLE_donator` | Donira novac direktno korisnicima pomoći |
-| `korisnik_pomoci` | `ROLE_korisnik_pomoci` | Prima donacije i kupovine |
-| `administrator` | `ROLE_administrator` | Puni pristup svemu |
+| `korisnik_id` | INT (PK, AUTO) | Primarni ključ |
+| `ime` | VARCHAR | Ime korisnika |
+| `prezime` | VARCHAR | Prezime korisnika |
+| `email` | VARCHAR (UNIQUE) | Email adresa — jedinstven identifikator |
+| `lozinka_hash` | VARCHAR | BCrypt hash lozinke |
+| `telefon` | VARCHAR | Broj telefona (opciono) |
+| `adresa` | VARCHAR | Adresa (opciono) |
+| `naziv` | VARCHAR | Naziv (za organizacije) |
+| `opis` | TEXT | Biografija / opis volontera |
+| `prikaz_anonimno` | BOOLEAN | Da li se korisnik prikazuje anonimno |
+| `tip_korisnika` | ENUM | `volonter`, `kupac`, `donator`, `korisnik_pomoci`, `administrator` |
+| `status_naloga` | ENUM | `na_cekanju`, `aktivan`, `suspendovan`, `uklonjen` |
+| `datum_registracije` | DATETIME | Datum i vrijeme registracije |
+| `verifikovan` | BOOLEAN | Da li je nalog verifikovan od admina |
+| `razlog_promjene_statusa` | TEXT | Razlog zadnje promjene statusa |
 
-> **Napomena o kupcu i volonteru:** Kupovinu usluge mogu obaviti samo korisnici sa ulogom `kupac` ili `volonter`.
-> Backend `POST /api/kupovine/kupi` zahtijeva `ROLE_kupac` ili `ROLE_volonter` — svi ostali tipovi (donator, korisnik_pomoci, administrator) dobijaju 403.
+**Napomene:**
+- Kolona `email` ima `UNIQUE` constraint — duplikati su onemogućeni na nivou baze.
+- `lozinka_hash` se nikad ne vraća u JSON odgovoru (`@JsonProperty(WRITE_ONLY)`).
+- `tip_korisnika` određuje koja prava korisnik ima (mapira se na Spring Security role).
+- Volonter koji je na `na_cekanju` statusu NE može se prijaviti (Spring Security `isEnabled()` vraća `false` ako nije `verifikovan`).
+- `portfolioLinkTemp` i `cvUrlTemp` su `@Transient` polja — postoje samo u Java objektu tokom registracije i ne čuvaju se u ovoj tabeli.
 
-**`status_naloga`:**
-```sql
-ENUM('aktivan', 'na_cekanju', 'suspendovan', 'neaktivan', 'uklonjen')
-```
-| Vrijednost | Može se prijaviti | Opis |
-|---|---|---|
-| `na_cekanju` | NE | Čeka admin odobrenje (default pri registraciji) |
-| `aktivan` | DA | Normalno funkcioniše |
-| `suspendovan` | NE | Privremeno blokiran od admina |
-| `neaktivan` | NE | Dugo neaktivan |
-| `uklonjen` | NE | Trajno uklonjen — finalno stanje |
-
-#### Ključni detalji implementacije
-
-**Zašto `verifikovan` postoji pored `status_naloga`?**
-Spring Security `UserDetails.isEnabled()` je vezan za `verifikovan` polje, ne za `status_naloga`. Oba moraju biti `true`/`aktivan` za uspješnu prijavu:
-```java
-@Override
-public boolean isEnabled() { return verifikovan; }
-```
-
-**Anonymizacija pri brisanju:**
-Status `uklonjen` je jedini koji fizički mijenja email:
-```java
-k.setEmail("uklonjen_" + k.getKorisnikId() + "_" + System.currentTimeMillis() + "@deleted.local");
-```
-Razlog: `email` kolona ima `UNIQUE` constraint. Bez anonymizacije, isti email ne bi mogao biti ponovo registrovan.
-
-**`@Transient` polja:**
-`portfolioLinkTemp` i `cvUrlTemp` anotovani su sa `@Transient` — Hibernate ih ignoriše i ne kreira kolone. Postoje samo u Java memoriji tokom registracije radi prenošenja podataka između metoda.
-
-#### Relacije (FK koje polaze od `korisnik`)
-
-```
-korisnik.korisnik_id ←── volonter_info.volonter_id        (1:1)
-korisnik.korisnik_id ←── profil.korisnik_id               (1:1)
-korisnik.korisnik_id ←── usluga_proizvod.volonter_id      (1:N)
-korisnik.korisnik_id ←── kupljena_usluga.donator_id       (1:N)
-korisnik.korisnik_id ←── donacija.donator_id              (1:N)
-korisnik.korisnik_id ←── ocjena_recenzija.ocjenjivac_id   (1:N)
-korisnik.korisnik_id ←── log_aktivnosti.korisnik_id       (1:N)
-korisnik.korisnik_id ←── verifikacija.korisnik_id         (1:N)
-korisnik.korisnik_id ←── verifikacija.administrator_id    (1:N)
-korisnik.korisnik_id ←── korisnik_pomoci.korisnik_id      (1:1, opciono)
-```
+**Relacije:**
+- Jedan `Korisnik` može imati jedan `VolonterInfo` (1:1)
+- Jedan `Korisnik` može imati više `UslugaProizvod` zapisa (1:N, kao volonter)
+- Jedan `Korisnik` može imati više `KupljenaUsluga` zapisa (1:N, kao kupac)
+- Jedan `Korisnik` može biti `ocjenjivac` u više `OcjenaRecenzija` (1:N)
 
 ---
 
 ### 4.2 Tabela: `volonter_info`
 
-Prošireni profil koji postoji **isključivo za korisnike tipa `volonter`**. Kreira se automatski u istoj transakciji kao i `korisnik` zapis pri registraciji.
+Prošireni profil koji postoji samo za korisnike tipa `volonter`. Kreira se automatski pri registraciji volontera.
 
-#### Shema kolona
+| Kolona | Tip | Opis |
+|---|---|---|
+| `volonter_id` | INT (PK, AUTO) | Primarni ključ |
+| `korisnik_id` | INT (FK → korisnik) | Referenca na Korisnik — UNIQUE |
+| `biografija` | TEXT | Detaljni opis volontera |
+| `portfolio_link` | VARCHAR | URL do portfolio stranice |
+| `cv_url` | VARCHAR | Putanja do uploadovanog CV PDF fajla |
+| `broj_usluga` | INT | Broj realizovanih (završenih) usluga |
 
-| Kolona | MySQL tip | NULL | Ključ | Default | Opis |
-|--------|-----------|------|-------|---------|------|
-| `volonter_id` | `INT` | NO | PK | — | **Primarni ključ = FK prema `korisnik.korisnik_id`** |
-| `biografija` | `TEXT` | YES | — | NULL | Detaljan opis iskustva |
-| `broj_usluga` | `INT` | NO | — | `0` | Automatski broji realizovane usluge |
-| `portfolio_link` | `VARCHAR(255)` | YES | — | NULL | URL portfolio stranice |
-| `cv_url` | `VARCHAR(255)` | YES | — | NULL | Putanja: `/api/upload/cv/{filename}` |
-
-#### FK constraint
-
-```
-fk_volonter_info_korisnik: volonter_info.volonter_id → korisnik.korisnik_id
-```
-
-> **Dizajn odluka:** `volonter_id` je ujedno i primarni ključ i strani ključ — nema svog auto-increment ID-a. Ovo je primjer One-to-One odnosa gdje child tabela koristi parent PK kao sopstveni PK.
-
-#### Kako se popunjava `broj_usluga`
-
-Svaki put kad se kupovina označi kao `realizovano`, backend automatski poziva:
-```java
-volonterInfoService.uvecajBrojUsluga(volonterId);
-// UPDATE volonter_info SET broj_usluga = broj_usluga + 1 WHERE volonter_id = ?
-```
-Ovaj broj ulazi u algoritam za rangiranje "Istaknutih volontera":
-```
-score = prosjecna_ocjena × 2.0 + broj_usluga × 0.5
-```
+**Napomene:**
+- `broj_usluga` se automatski povećava za 1 svaki put kad se usluga označi kao `realizovano`.
+- `cv_url` sadrži relativnu putanju tipa `/api/upload/cv/{filename}`.
 
 ---
 
-### 4.3 Tabela: `profil`
+### 4.3 Tabela: `usluga_proizvod`
 
-Opcionalni javni profil korisnika. Za razliku od `volonter_info`, može postojati za bilo koji tip korisnika.
+Svaka usluga ili proizvod koji volonter nudi na platformi.
 
-#### Shema kolona
+| Kolona | Tip | Opis |
+|---|---|---|
+| `usluga_proizvod_id` | INT (PK, AUTO) | Primarni ključ |
+| `volonter_id` | INT (FK → korisnik) | Volonter koji nudi uslugu |
+| `kategorija_id` | INT (FK → kategorija) | Kategorija usluge |
+| `naziv` | VARCHAR | Naziv usluge/proizvoda |
+| `opis` | TEXT | Detaljan opis |
+| `tip` | VARCHAR | `usluga` ili `proizvod` |
+| `cijena` | DECIMAL | Cijena u EUR |
+| `status_objave` | VARCHAR | `na_cekanju`, `aktivna`, `popunjeno`, `odbijena`, `uklonjena` |
+| `datum_kreiranja` | DATETIME | Datum kreiranja |
+| `kapacitet` | INT | Maksimalni broj kupovina (NULL = neograničeno) |
 
-| Kolona | MySQL tip | NULL | Ključ | Default | Opis |
-|--------|-----------|------|-------|---------|------|
-| `profil_id` | `INT` | NO | PK, AUTO_INCREMENT | — | Primarni ključ |
-| `korisnik_id` | `INT` | NO | UNIQUE, FK | — | Vezani korisnik — jedinstven |
-| `opis` | `TEXT` | YES | — | NULL | Kratki javni opis |
-| `profilna_slika` | `VARCHAR(255)` | YES | — | NULL | URL profilne slike |
-| `grad` | `VARCHAR(255)` | YES | — | NULL | Grad korisnika |
-| `portfolio_link` | `VARCHAR(255)` | YES | — | NULL | Link za javni portfolio |
-| `prosjecna_ocjena` | `DECIMAL(38,2)` | YES | — | NULL | Keširani prosjek ocjena |
-
-#### FK constraint
-
+**Status tok:**
 ```
-fk_profil_korisnik: profil.korisnik_id → korisnik.korisnik_id
+Kreiranje → na_cekanju
+Admin odobri → aktivna
+Kapacitet popunjen → popunjeno (automatski)
+Admin odbije → odbijena
+Admin/Volonter ukloni → uklonjena
 ```
+
+**Prava brisanja:**
+- Može se obrisati **samo** ako nema nijedne kupovine.
+- Ako ima aktivnih (nerealizovanih) kupovina → greška.
+- Ako ima realizovanih kupovina (istorija) → greška (FK constraint).
 
 ---
 
 ### 4.4 Tabela: `kategorija`
 
-Šifarnik kategorija usluga. Svaka usluga mora imati tačno jednu kategoriju.
+Kategorije usluga i proizvoda.
 
-#### Shema kolona
-
-| Kolona | MySQL tip | NULL | Ključ | Default | Opis |
-|--------|-----------|------|-------|---------|------|
-| `kategorija_id` | `INT` | NO | PK, AUTO_INCREMENT | — | Primarni ključ |
-| `naziv` | `VARCHAR(100)` | NO | UNIQUE | — | Naziv — jedinstven |
-| `opis` | `TEXT` | YES | — | NULL | Opis kategorije |
+| Kolona | Tip | Opis |
+|---|---|---|
+| `kategorija_id` | INT (PK, AUTO) | Primarni ključ |
+| `naziv` | VARCHAR (UNIQUE) | Naziv kategorije |
+| `opis` | TEXT | Opis kategorije |
 
 **Napomene:**
-- Ako volonter pri kreiranju usluge unese naziv kategorije koja ne postoji, `UslugaProizvodService` je automatski kreira
-- Mobilna aplikacija skriva određene kategorije na UI nivou (filtrira: `kucni majstor`, `prevoz`, `hrana`, `kulinarski`), ali one ostaju u bazi
+- Ako volonter unese novu kategoriju pri kreiranju usluge, sistem je automatski kreira ako ne postoji.
+- Nove kategorije koje predloži volonter idu na odobrenje adminu.
 
 ---
 
-### 4.5 Tabela: `usluga_proizvod`
+### 4.5 Tabela: `kupljena_usluga`
 
-Centralna tabela za ponude — svaka usluga ili proizvod koji volonter nudi.
+Svaka transakcija — kupovina usluge od strane kupca za određenog korisnika pomoći.
 
-#### Shema kolona
-
-| Kolona | MySQL tip | NULL | Ključ | Default | Opis |
-|--------|-----------|------|-------|---------|------|
-| `usluga_proizvod_id` | `INT` | NO | PK, AUTO_INCREMENT | — | Primarni ključ |
-| `volonter_id` | `INT` | NO | INDEX, FK | — | Volonter koji nudi uslugu |
-| `kategorija_id` | `INT` | NO | INDEX, FK | — | Kategorija usluge |
-| `naziv` | `VARCHAR(255)` | YES | — | NULL | Naziv usluge |
-| `opis` | `VARCHAR(255)` | YES | — | NULL | Opis (kratki) |
-| `tip` | `VARCHAR(255)` | YES | — | NULL | `usluga` ili `proizvod` |
-| `cijena` | `DECIMAL(38,2)` | YES | — | NULL | Cijena u EUR |
-| `status_objave` | `VARCHAR(255)` | YES | INDEX | NULL | Status (vidi ispod) |
-| `datum_kreiranja` | `DATETIME` | NO | — | `CURRENT_TIMESTAMP` | Auto-popunjava se |
-| `kapacitet` | `INT` | YES | — | NULL | Max broj kupovina; NULL = neograničeno |
-
-#### FK constrainti
-
-```
-fk_usluga_volonter:    usluga_proizvod.volonter_id   → volonter_info.volonter_id
-FKnsflno1qthxnx3bw7...: usluga_proizvod.volonter_id  → korisnik.korisnik_id
-fk_usluga_kategorija:  usluga_proizvod.kategorija_id → kategorija.kategorija_id
-```
-
-> **Napomena:** Na `volonter_id` postoje **dva FK constrainta** — jedan prema `volonter_info` i jedan prema `korisnik`. Ovo je artefakt Hibernate mapiranja gdje se i `@ManyToOne Korisnik volonter` i `@OneToOne VolonterInfo` mapiraju na istu kolonu. U praksi se uvijek koristi ista vrijednost.
-
-#### Tok statusa `status_objave`
-
-```
-Kreiranje od strane volontera
-        ↓
-    na_cekanju   ← čeka admin pregled
-
-Admin odobrava          Admin odbija
-        ↓                    ↓
-     aktivna             odbijena
-
-Kupci kupuju sve
-slobodne kapacitete
-        ↓
-     popunjeno   ← automatski kad kupovina_count >= kapacitet
-
-Admin/Volonter uklanja
-        ↓
-     uklonjena
-```
-
-Mobilna aplikacija prikazuje korisniku **samo usluge sa statusom `aktivna`** (filtrira na frontend strani). Backend pri kupovini eksplicitno provjera:
-```java
-if (!"aktivna".equals(usluga.getStatusObjave())) {
-    throw new RuntimeException("Usluga nije aktivna i ne može se kupiti!");
-}
-```
-
----
-
-### 4.6 Tabela: `kupljena_usluga`
-
-Evidentira svaku kupovinu usluge. Ovo je **transakciona tabela** — nastaje kad kupac plati, i njena istorija se nikad ne briše.
-
-#### Shema kolona
-
-| Kolona | MySQL tip | NULL | Ključ | Default | Opis |
-|--------|-----------|------|-------|---------|------|
-| `kupovina_id` | `INT` | NO | PK, AUTO_INCREMENT | — | Primarni ključ |
-| `donator_id` | `INT` | NO | INDEX, FK | — | Ko je platio (kupac ili volonter) |
-| `usluga_proizvod_id` | `INT` | NO | INDEX, FK | — | Koja usluga je kupljena |
-| `pomoc_id` | `INT` | NO | INDEX, FK | — | Kome ide beneficija |
-| `iznos` | `DECIMAL(38,2)` | YES | — | NULL | Iznos plaćanja u EUR |
-| `datum_kupovine` | `DATETIME` | NO | — | `CURRENT_TIMESTAMP` | Automatski |
-| `status_placanja` | `VARCHAR(255)` | YES | — | NULL | `placeno` (odmah nakon kupovine) |
-| `nacin_placanja` | `VARCHAR(255)` | YES | — | NULL | `KARTICA`, `GOTOVINA`, itd. |
-| `referenca_placanja` | `VARCHAR(255)` | YES | — | NULL | Referentni broj transakcije |
-| `datum_realizacije` | `DATETIME(6)` | YES | — | NULL | Kad je usluga realizovana |
-| `status_isporuke` | `VARCHAR(255)` | NO | — | `na_cekanju` | Status isporuke (vidi ispod) |
-
-#### FK constrainti
-
-```
-fk_kupovina_donator: kupljena_usluga.donator_id         → korisnik.korisnik_id
-fk_kupovina_usluga:  kupljena_usluga.usluga_proizvod_id → usluga_proizvod.usluga_proizvod_id
-fk_kupovina_pomoc:   kupljena_usluga.pomoc_id           → korisnik_pomoci.pomoc_id
-```
-
-#### Dizajn odluka: kolona `donator_id` umjesto `kupac_id`
-
-Kolona se zove `donator_id` (ne `kupac_id`) jer kupovinu mogu obaviti i kupci i volonteri.
-Backend endpoint `POST /api/kupovine/kupi` zahtijeva `ROLE_kupac` ili `ROLE_volonter` — **volonter može kupiti uslugu drugog volontera**, ali donator, korisnik_pomoci i administrator ne mogu.
-
-#### Tok statusa `status_isporuke`
-
-```
-Kupovina kreirana → status_isporuke = NULL (baza default: 'na_cekanju')
-        ↓
-Kupac, volonter ili admin klikne "Realizovano"
-        ↓
-PATCH /api/kupovine/{id}/realizovano
-        ↓
-status_isporuke = 'realizovano'
-datum_realizacije = NOW()
-volonter_info.broj_usluga += 1    ← automatski
-```
-
-#### Šta se dešava kad se dostigne kapacitet
-
-Nakon svake uspješne kupovine backend provjerava:
-```java
-long ukupnoKupovina = repository.countByUslugaProizvod(usluga);
-if (ukupnoKupovina >= usluga.getKapacitet()) {
-    usluga.setStatusObjave("popunjeno");
-    uslugaRepository.save(usluga);
-}
-```
-Usluga dobiva status `popunjeno` i nestaje sa liste dostupnih.
-
----
-
-### 4.7 Tabela: `donacija`
-
-Direktne novčane donacije — donator daje novac određenom korisniku pomoći, bez kupovine usluge.
-
-#### Shema kolona
-
-| Kolona | MySQL tip | NULL | Ključ | Default | Opis |
-|--------|-----------|------|-------|---------|------|
-| `donacija_id` | `INT` | NO | PK, AUTO_INCREMENT | — | Primarni ključ |
-| `donator_id` | `INT` | NO | INDEX, FK | — | Ko donira (može biti i anoniman) |
-| `pomoc_id` | `INT` | NO | INDEX, FK | — | Korisnik pomoći koji prima donaciju |
-| `iznos` | `DECIMAL(38,2)` | NO | — | — | Iznos donacije u EUR |
-| `status_donacije` | `VARCHAR(255)` | YES | — | NULL | Opći status |
-| `status_placanja` | `VARCHAR(255)` | YES | — | NULL | `placeno`, `na_cekanju` |
-| `nacin_placanja` | `VARCHAR(255)` | YES | — | NULL | Način plaćanja |
-| `referenca_placanja` | `VARCHAR(255)` | YES | — | NULL | Referentni broj |
-| `datum_donacije` | `DATETIME` | NO | — | `CURRENT_TIMESTAMP` | Automatski |
-| `anonimno` | `BIT(1)` | NO | — | — | Prikaži kao anonimna donacija |
-
-#### FK constrainti
-
-```
-fk_donacija_donator: donacija.donator_id → korisnik.korisnik_id
-fk_donacija_pomoc:   donacija.pomoc_id   → korisnik_pomoci.pomoc_id
-```
-
-**Napomena:** Endpoint `POST /api/donacije` je javan (ne zahtijeva prijavu), ali donator mora biti registrovan korisnik da bi `donator_id` FK bio validan. Anonimne donacije koriste poseban "anonimni" korisnički nalog u sistemu.
-
----
-
-### 4.8 Tabela: `korisnik_pomoci`
-
-Humanitarni slučajevi — lica ili organizacije kojima platforma pomaže prikupljanjem donacija i kupovinom usluga.
-
-#### Shema kolona
-
-| Kolona | MySQL tip | NULL | Ključ | Default | Opis |
-|--------|-----------|------|-------|---------|------|
-| `pomoc_id` | `INT` | NO | PK, AUTO_INCREMENT | — | Primarni ključ |
-| `korisnik_id` | `INT` | YES | UNIQUE, FK | NULL | Opciono — vezani `korisnik` nalog |
-| `naziv_organizacije_ili_lica` | `VARCHAR(255)` | NO | — | — | Ime prikazano javno |
-| `opis_potrebe` | `TEXT` | YES | — | NULL | Opis situacije i potrebe |
-| `broj_racuna` | `VARCHAR(255)` | YES | — | NULL | Broj bankovnog računa |
-| `dokaz_verifikacije` | `VARCHAR(255)` | YES | — | NULL | Putanja do dokumenta |
-| `status_slucaja` | `VARCHAR(255)` | NO | — | — | Vidljivost slučaja |
-
-#### FK constraint
-
-```
-fk_pomoc_korisnik: korisnik_pomoci.korisnik_id → korisnik.korisnik_id
-```
-
-#### Status `status_slucaja`
-
-| Vrijednost | Vidljiv javno | Opis |
+| Kolona | Tip | Opis |
 |---|---|---|
-| `aktivan` | DA | Prikazuje se svim korisnicima |
-| `neaktivan` | NE | Skriven, admin ga vidi |
-| `zavrsen` | NE | Slučaj zatvoren, arhiviran |
+| `kupovina_id` | INT (PK, AUTO) | Primarni ključ |
+| `donator_id` | INT (FK → korisnik) | Kupac koji je platio |
+| `usluga_proizvod_id` | INT (FK → usluga_proizvod) | Kupljena usluga |
+| `pomoc_id` | INT (FK → korisnik_pomoci) | Korisnik pomoći koji prima benefit |
+| `iznos` | DECIMAL | Iznos plaćanja |
+| `datum_kupovine` | DATETIME | Datum kupovine |
+| `status_placanja` | VARCHAR | `placeno`, `na_cekanju` |
+| `nacin_placanja` | VARCHAR | `KARTICA`, `GOTOVINA`, itd. |
+| `referenca_placanja` | VARCHAR | Referentni broj transakcije |
+| `status_isporuke` | VARCHAR | `na_cekanju`, `realizovano` |
+| `datum_realizacije` | DATETIME | Kada je usluga realizovana |
 
-#### Kaskadna brisanja
-
-Brisanje `korisnik_pomoci` zapisa automatski briše sve vezane zapise:
+**Status tok isporuke:**
 ```
-DELETE FROM korisnik_pomoci WHERE pomoc_id = X
-        ↓ ON DELETE CASCADE:
-  kupljena_usluga WHERE pomoc_id = X   → brisanje
-  donacija WHERE pomoc_id = X          → brisanje
+Kupovina kreirana → status_isporuke: na_cekanju
+Kupac/Volonter/Admin označi završenim → status_isporuke: realizovano
 ```
 
-Ovo je **fizičko brisanje** — zapis i sva historija nestaju trajno. Preporučuje se umjesto brisanja koristiti `status_slucaja = 'zavrsen'`.
+**Napomene:**
+- Kada `status_isporuke` postane `realizovano`, automatski se poziva `uvecajBrojUsluga()` za volontera.
+- Certifikat o volontiranju je dostupan samo za kupovine sa statusom `realizovano`.
 
 ---
 
-### 4.9 Tabela: `ocjena_recenzija`
+### 4.6 Tabela: `donacija`
 
-Recenzije kupaca za realizovane kupovine. Jedna kupovina može imati **tačno jednu** recenziju.
+Direktne donacije bez kupovine usluge.
 
-#### Shema kolona
-
-| Kolona | MySQL tip | NULL | Ključ | Default | Opis |
-|--------|-----------|------|-------|---------|------|
-| `ocjena_id` | `INT` | NO | PK, AUTO_INCREMENT | — | Primarni ključ |
-| `kupovina_id` | `INT` | NO | UNIQUE, FK | — | Vezana kupovina — UNIQUE sprječava duplikate |
-| `ocjenjivac_id` | `INT` | NO | INDEX, FK | — | Ko je ostavio recenziju |
-| `broj_zvjezdica` | `INT` | NO | — | — | Ocjena 1–5 |
-| `komentar` | `VARCHAR(255)` | YES | — | NULL | Tekstualni komentar |
-| `datum_ocjene` | `DATETIME` | NO | — | `CURRENT_TIMESTAMP` | Automatski |
-
-#### FK constrainti
-
-```
-fk_ocjena_kupovina: ocjena_recenzija.kupovina_id   → kupljena_usluga.kupovina_id
-fk_ocjena_korisnik: ocjena_recenzija.ocjenjivac_id → korisnik.korisnik_id
-```
-
-#### UNIQUE constraint na `kupovina_id`
-
-```sql
-UNIQUE KEY (kupovina_id)
-```
-
-Ovo na nivou baze garantuje da ista kupovina ne može imati više recenzija — čak i ako bi neki bug u kodu pokušao da ubaci duplikat, baza ga odbija.
-
-#### Kako se koristi za rangiranje
-
-Backend agregira recenzije po volonteru:
-```java
-// KupljenaUsluga → UslugaProizvod → Volonter
-List<OcjenaRecenzija> findByKupovina_UslugaProizvod_Volonter_KorisnikId(int volonterId);
-```
-Ovo je JPA "method query" koji Spring automatski prevodi u JOIN:
-```sql
-SELECT r.* FROM ocjena_recenzija r
-JOIN kupljena_usluga k ON r.kupovina_id = k.kupovina_id
-JOIN usluga_proizvod u ON k.usluga_proizvod_id = u.usluga_proizvod_id
-WHERE u.volonter_id = ?
-```
+| Kolona | Tip | Opis |
+|---|---|---|
+| `donacija_id` | INT (PK, AUTO) | Primarni ključ |
+| `donator_id` | INT (FK → korisnik) | Donator |
+| `korisnik_pomoci_id` | INT (FK → korisnik_pomoci) | Primalac donacije |
+| `iznos` | DECIMAL | Iznos donacije |
+| `status_donacije` | VARCHAR | Status donacije |
+| `status_placanja` | VARCHAR | `placeno`, `na_cekanju` |
+| `nacin_placanja` | VARCHAR | Način plaćanja |
+| `datum_donacije` | DATETIME | Datum donacije |
+| `anonimno` | BOOLEAN | Da li se donator prikazuje anonimno |
 
 ---
 
-### 4.10 Tabela: `verifikacija`
+### 4.7 Tabela: `korisnik_pomoci`
 
-Log verifikacionih akcija — bilježi svako odobravanje ili odbijanje korisnika/usluge od strane admina.
+Korisnici pomoći — lica ili organizacije koje primaju donacije i benefite od kupovina.
 
-#### Shema kolona
+| Kolona | Tip | Opis |
+|---|---|---|
+| `pomoc_id` | INT (PK, AUTO) | Primarni ključ |
+| `korisnik_id` | INT (FK → korisnik) | Vezan korisnik nalog (opciono) |
+| `naziv` | VARCHAR | Naziv/ime korisnika pomoći |
+| `opis_potrebe` | TEXT | Opis situacije i potreba |
+| `broj_racuna` | VARCHAR | Broj bankovnog računa |
+| `dokaz_verifikacije` | TEXT | Dokument koji dokazuje potrebu |
+| `status_slucaja` | VARCHAR | `aktivan`, `neaktivan`, `zavrsen` — vidljivost na javnoj stranici |
 
-| Kolona | MySQL tip | NULL | Ključ | Default | Opis |
-|--------|-----------|------|-------|---------|------|
-| `verifikacija_id` | `INT` | NO | PK, AUTO_INCREMENT | — | Primarni ključ |
-| `korisnik_id` | `INT` | YES | INDEX, FK | NULL | Ko se verifikuje (opciono) |
-| `usluga_proizvod_id` | `INT` | YES | INDEX, FK | NULL | Koja usluga se verifikuje (opciono) |
-| `administrator_id` | `INT` | NO | INDEX, FK | — | Admin koji vrši akciju |
-| `tip_verifikacije` | `VARCHAR(255)` | YES | — | NULL | Tip provjere (`korisnik`, `usluga`) |
-| `status` | `VARCHAR(255)` | YES | — | NULL | `odobreno`, `odbijeno`, `na_cekanju` |
-| `napomena` | `VARCHAR(255)` | YES | — | NULL | Admin komentar |
-| `datum_verifikacije` | `DATETIME` | NO | — | `CURRENT_TIMESTAMP` | Automatski |
+**Status `status_slucaja`:**
+- `aktivan` — slučaj je vidljiv na javnoj stranici (`GET /api/korisnici-pomoci`)
+- `neaktivan` / `zavrsen` — slučaj je skriven od javnosti; vidljiv samo adminu (`GET /api/korisnici-pomoci/admin/svi`)
 
-#### FK constrainti
-
-```
-fk_verifikacija_korisnik: verifikacija.korisnik_id        → korisnik.korisnik_id
-fk_verifikacija_usluga:   verifikacija.usluga_proizvod_id → usluga_proizvod.usluga_proizvod_id
-fk_verifikacija_admin:    verifikacija.administrator_id   → korisnik.korisnik_id
-```
-
-**Napomena:** U trenutnoj implementaciji, ova tabela se **ne popunjava automatski** pri registraciji volontera. Volonteri čekaju odobrenje putem statusa `korisnik.status_naloga = 'na_cekanju'` i `korisnik.verifikovan = false`. Admin ih odobrava direktno kroz `PUT /api/korisnici/{id}/status`.
+**Brisanje:**
+- Brisanje je **fizičko** (hard delete) — zapis se trajno briše iz baze
+- Prije brisanja, kaskadno se brišu sve vezane `donacija` i `kupljena_usluga` zapisi (`ON DELETE CASCADE` na FK constraintima)
+- Brisanje je moguće samo putem admin endpointa (`DELETE /api/korisnici-pomoci/admin/{id}`)
 
 ---
 
-### 4.11 Tabela: `log_aktivnosti`
+### 4.8 Tabela: `partner`
 
-Sistemski audit log — bilježi sve važne događaje (prijave, odjave, neuspješne pokušaje).
+Partneri i sponzori platforme — prikazuju se na javnoj stranici.
 
-#### Shema kolona
+| Kolona | Tip | Opis |
+|---|---|---|
+| `id` | INT (PK, AUTO) | Primarni ključ |
+| `naziv` | VARCHAR | Puno ime partnera (npr. "Evropska Unija") |
+| `kratko` | VARCHAR | Kratice za fallback logo (npr. "EU") |
+| `opis` | TEXT | Kratak opis partnera |
+| `logo_url` | VARCHAR | URL do loga (vanjski link ili `/uploads/logovi/...`) |
+| `website` | VARCHAR | URL zvanične stranice partnera |
+| `kategorija` | VARCHAR | Kategorija (npr. "Međunarodna organizacija") |
+| `redoslijed` | INT | Redosljed prikazivanja (manji broj = prvi) |
 
-| Kolona | MySQL tip | NULL | Ključ | Default | Opis |
-|--------|-----------|------|-------|---------|------|
-| `log_id` | `INT` | NO | PK, AUTO_INCREMENT | — | Primarni ključ |
-| `korisnik_id` | `INT` | YES | INDEX, FK | NULL | Ko je izvršio akciju (NULL za nepoznate) |
-| `tip_aktivnosti` | `VARCHAR(255)` | NO | — | — | Tip događaja (vidi ispod) |
-| `detalji` | `TEXT` | YES | — | NULL | Dodatni kontekst |
-| `ip_adresa` | `VARCHAR(255)` | YES | — | NULL | IP adresa |
-| `vrijeme_aktivnosti` | `DATETIME(6)` | NO | — | — | Precizno do mikrosekunde |
+**Napomene:**
+- Logo se može uploadovati direktno na server (`POST /api/upload/logo`) ili se može unijeti vanjski URL
+- Uploadovani logoi se čuvaju u: `C:\Users\<korisnik>\dobrobit-uploads\logovi\`
+- Upravljanje partnerima je dostupno samo administratoru
 
-#### FK constraint
+---
+
+### 4.9 Tabela: `pomogli_slucaj`
+
+Kratke priče / kartice o korisnicima kojima je platforma pomogla — prikazuju se na javnoj stranici.
+
+| Kolona | Tip | Opis |
+|---|---|---|
+| `id` | INT (PK, AUTO) | Primarni ključ |
+| `naslov` | VARCHAR | Ime osobe / naziv slučaja |
+| `tekst` | TEXT | Kratka priča o tome kako je platforma pomogla |
+| `boja` | VARCHAR | Boja kartice (`roza1`, `plava1`, `zelena1`, itd.) |
+| `redoslijed` | INT | Redosljed prikazivanja |
+
+**Napomene:**
+- Kartice su vidljive na javnoj stranici na ruti `/slucajevi-kojima-smo-pomogli`
+- Admin može dodavati, uređivati i brisati kartice iz CMS-a
+
+---
+
+### 4.10 Tabela: `ocjena_recenzija`
+
+Recenzije koje kupci ostavljaju nakon kupovine usluge.
+
+| Kolona | Tip | Opis |
+|---|---|---|
+| `ocjena_id` | INT (PK, AUTO) | Primarni ključ |
+| `kupovina_id` | INT (FK → kupljena_usluga, UNIQUE) | Na koju kupovinu se odnosi |
+| `ocjenjivac_id` | INT (FK → korisnik) | Ko je ostavio recenziju |
+| `broj_zvjezdica` | INT | Ocjena 1–5 |
+| `komentar` | TEXT | Tekstualni komentar |
+| `datum_ocjene` | DATETIME | Datum ocjenjivanja |
+
+**Napomene:**
+- `kupovina_id` ima `UNIQUE` constraint — jedna kupovina = jedna recenzija.
+- Samo kupac koji je platio tu kupovinu može ostaviti recenziju.
+- Administrator može obrisati neprimjerene recenzije.
+
+---
+
+### 4.11 Tabela: `verifikacija`
+
+Log verifikacionih akcija administratora.
+
+| Kolona | Tip | Opis |
+|---|---|---|
+| `verifikacija_id` | INT (PK, AUTO) | Primarni ključ |
+| `korisnik_id` | INT (FK → korisnik) | Ko se verifikuje |
+| `usluga_proizvod_id` | INT (FK) | Koja usluga se verifikuje (opciono) |
+| `administrator_id` | INT (FK → korisnik) | Admin koji vrši verifikaciju |
+| `tip_verifikacije` | VARCHAR | Tip provjere |
+| `status` | VARCHAR | Status verifikacije |
+| `napomena` | TEXT | Napomena admina |
+| `datum_verifikacije` | DATETIME | Datum verifikacije |
+
+---
+
+### 4.12 Tabela: `log_aktivnosti`
+
+Sistemski log svih važnih akcija (prijave, odjave, promjene).
+
+| Kolona | Tip | Opis |
+|---|---|---|
+| `log_id` | INT (PK, AUTO) | Primarni ključ |
+| `korisnik_id` | INT (FK → korisnik) | Ko je izvršio akciju |
+| `tip_aktivnosti` | VARCHAR | `LOGIN`, `LOGOUT`, `LOGIN_NEUSPIO`, itd. |
+| `detalji` | TEXT | Dodatni detalji |
+| `ip_adresa` | VARCHAR | IP adresa korisnika |
+| `vrijeme_aktivnosti` | DATETIME | Tačno vrijeme |
+
+---
+
+### 4.13 Pravila brisanja podataka
+
+Brisanje u sistemu dijeli se na dva tipa, zavisno od entiteta:
+
+#### A) Meko brisanje (soft delete) — volonteri i korisnici
+
+Volonter se **nikad ne briše fizički** iz baze. Umjesto toga, admin u CMS-u može promijeniti status na `uklonjen`:
 
 ```
-FKg408oueticx26qbsngk4lhot6: log_aktivnosti.korisnik_id → korisnik.korisnik_id
-```
-
-#### Vrijednosti `tip_aktivnosti`
-
-| Vrijednost | Kada se upisuje |
-|---|---|
-| `LOGIN` | Uspješna prijava |
-| `LOGOUT` | Odjava |
-| `LOGIN_NEUSPIO` | Neuspješan pokušaj prijave |
-| `REGISTRACIJA` | Nova registracija |
-| `PROMJENA_STATUSA` | Admin promijeni status korisnika |
-
----
-
-### 4.12 Tabela: `partner`
-
-CMS tabela za partnere i sponzore koji se prikazuju na javnoj stranici.
-
-#### Shema kolona
-
-| Kolona | MySQL tip | NULL | Default | Opis |
-|--------|-----------|------|---------|------|
-| `id` | `BIGINT` | NO PK AUTO | — | Primarni ključ |
-| `naziv` | `VARCHAR(255)` | YES | NULL | Puno ime partnera |
-| `kratko` | `VARCHAR(255)` | YES | NULL | Skraćenica za fallback logo |
-| `opis` | `TEXT` | YES | NULL | Kratak opis |
-| `logo_url` | `VARCHAR(255)` | YES | NULL | URL loga (vanjski ili `/uploads/logovi/...`) |
-| `website` | `VARCHAR(255)` | YES | NULL | Zvanična stranica |
-| `kategorija` | `VARCHAR(255)` | YES | NULL | Tip (npr. `Međunarodna organizacija`) |
-| `boja_pozadine` | `VARCHAR(255)` | YES | NULL | Boja pozadine logo kartice |
-| `redoslijed` | `INT` | YES | NULL | Redosljed prikaza (ASC) |
-
-Nema FK veza prema drugim tabelama. Upravljanje samo putem admin panela.
-
----
-
-### 4.13 Tabela: `katalog`
-
-CMS tabela za informativne dokumente i kataloge koji se prikazuju korisnicima.
-
-#### Shema kolona
-
-| Kolona | MySQL tip | NULL | Default | Opis |
-|--------|-----------|------|---------|------|
-| `id` | `BIGINT` | NO PK AUTO | — | Primarni ključ |
-| `naslov` | `VARCHAR(255)` | YES | NULL | Naslov dokumenta |
-| `opis` | `TEXT` | YES | NULL | Kratki opis sadržaja |
-| `pdf_url` | `VARCHAR(255)` | YES | NULL | URL do PDF fajla |
-| `datum_dodavanja` | `DATETIME(6)` | YES | NULL | Datum dodavanja |
-| `redoslijed` | `INT` | YES | NULL | Redosljed prikaza |
-
-Nema FK veza. Upravljanje samo putem admin panela (`/api/katalozi`).
-
----
-
-### 4.14 Tabela: `pomogli_slucaj`
-
-CMS tabela za kratke kartice uspješnih priča — "ovim osobama smo pomogli".
-
-#### Shema kolona
-
-| Kolona | MySQL tip | NULL | Default | Opis |
-|--------|-----------|------|---------|------|
-| `id` | `BIGINT` | NO PK AUTO | — | Primarni ključ |
-| `naslov` | `VARCHAR(255)` | YES | NULL | Ime osobe / naziv slučaja |
-| `tekst` | `TEXT` | YES | NULL | Kratka priča |
-| `boja` | `VARCHAR(255)` | YES | NULL | CSS boja kartice (`roza1`, `plava1`...) |
-| `datum_dodavanja` | `DATETIME(6)` | YES | NULL | Datum unosa |
-| `redoslijed` | `INT` | YES | NULL | Redosljed prikaza |
-
-Nema FK veza. Upravljanje samo putem admin panela (`/api/pomogli-slucajevi`).
-
----
-
-### 4.15 Kompletna mapa stranih ključeva
-
-| Tabela | Kolona | → Referenca | Constraint ime |
-|--------|--------|-------------|----------------|
-| `donacija` | `donator_id` | `korisnik.korisnik_id` | `fk_donacija_donator` |
-| `donacija` | `pomoc_id` | `korisnik_pomoci.pomoc_id` | `fk_donacija_pomoc` |
-| `korisnik_pomoci` | `korisnik_id` | `korisnik.korisnik_id` | `fk_pomoc_korisnik` |
-| `kupljena_usluga` | `donator_id` | `korisnik.korisnik_id` | `fk_kupovina_donator` |
-| `kupljena_usluga` | `pomoc_id` | `korisnik_pomoci.pomoc_id` | `fk_kupovina_pomoc` |
-| `kupljena_usluga` | `usluga_proizvod_id` | `usluga_proizvod.usluga_proizvod_id` | `fk_kupovina_usluga` |
-| `log_aktivnosti` | `korisnik_id` | `korisnik.korisnik_id` | *(auto-generirano)* |
-| `ocjena_recenzija` | `kupovina_id` | `kupljena_usluga.kupovina_id` | `fk_ocjena_kupovina` |
-| `ocjena_recenzija` | `ocjenjivac_id` | `korisnik.korisnik_id` | `fk_ocjena_korisnik` |
-| `profil` | `korisnik_id` | `korisnik.korisnik_id` | `fk_profil_korisnik` |
-| `usluga_proizvod` | `kategorija_id` | `kategorija.kategorija_id` | `fk_usluga_kategorija` |
-| `usluga_proizvod` | `volonter_id` | `volonter_info.volonter_id` | `fk_usluga_volonter` |
-| `usluga_proizvod` | `volonter_id` | `korisnik.korisnik_id` | *(auto-generirano)* |
-| `verifikacija` | `administrator_id` | `korisnik.korisnik_id` | `fk_verifikacija_admin` |
-| `verifikacija` | `korisnik_id` | `korisnik.korisnik_id` | `fk_verifikacija_korisnik` |
-| `verifikacija` | `usluga_proizvod_id` | `usluga_proizvod.usluga_proizvod_id` | `fk_verifikacija_usluga` |
-| `volonter_info` | `volonter_id` | `korisnik.korisnik_id` | `fk_volonter_info_korisnik` |
-
----
-
-### 4.16 ER dijagram relacija
-
-```
-                         ┌─────────────┐
-                         │   katalog   │  (CMS, nezavisna)
-                         └─────────────┘
-                         ┌──────────────┐
-                         │    partner   │  (CMS, nezavisna)
-                         └──────────────┘
-                         ┌────────────────┐
-                         │ pomogli_slucaj │  (CMS, nezavisna)
-                         └────────────────┘
-
-┌────────────────────────────────────────────────────────────────────────┐
-│                          korisnik  (centralna)                          │
-│  PK: korisnik_id                                                        │
-│  ENUM tip_korisnika: volonter|kupac|donator|korisnik_pomoci|administrator│
-└──┬──────────┬──────────┬──────────┬──────────┬──────────┬──────────────┘
-   │ 1:1      │ 1:1      │ 1:N      │ 1:N      │ 1:N      │ 1:N
-   ▼          ▼          ▼          ▼          ▼          ▼
-┌──────────┐ ┌──────┐ ┌──────────────┐ ┌──────────┐ ┌─────────────┐ ┌──────────────┐
-│volonter  │ │profil│ │usluga_proizvod│ │ donacija │ │log_aktivnosti│ │verifikacija  │
-│_info     │ │      │ │              │ │          │ │              │ │              │
-│PK=FK     │ │      │ │FK: volonter  │ │FK: donat │ │FK: korisnik  │ │FK: korisnik  │
-│=korisnik │ │      │ │FK: kategorija│ │FK: pomoc │ │              │ │FK: usluga    │
-│_id       │ │      │ │              │ │          │ │              │ │FK: admin     │
-└──────────┘ └──────┘ └──────┬───────┘ └────┬─────┘ └──────────────┘ └──────────────┘
-                              │ 1:N          │ N:1
-                              ▼              │
-                    ┌──────────────────┐     │
-                    │  kupljena_usluga │     │
-                    │  FK: donator_id  │     │
-                    │  FK: usluga_id   │     │
-                    │  FK: pomoc_id ───┼─────┼──────────┐
-                    └────────┬─────────┘     │          │ N:1
-                             │ 1:1           │          ▼
-                             ▼               │  ┌───────────────┐
-                    ┌─────────────────┐      │  │korisnik_pomoci│
-                    │ ocjena_recenzija│      │  │FK: korisnik_id│
-                    │ UNIQUE:         │      └─►│               │
-                    │  kupovina_id    │         └───────────────┘
-                    └─────────────────┘
-
-                    ┌────────────┐
-                    │ kategorija │◄── usluga_proizvod.kategorija_id
-                    └────────────┘
-```
-
----
-
-### 4.17 Pravila brisanja podataka
-
-#### A) Meko brisanje — korisnici (volonteri, kupci, administratori)
-
-Korisnici se **nikad ne brišu fizički**. Admin mijenja status:
-
-```
+Admin klikne "Ukloni" volontera
+        ↓
 PUT /api/korisnici/{id}/status { noviStatus: "uklonjen" }
         ↓
-status_naloga = 'uklonjen'
-verifikovan = false
-email = "uklonjen_{id}_{timestamp}@deleted.local"
+Backend:
+  - status_naloga = 'uklonjen'
+  - verifikovan = false  (onemogućava prijavu)
+  - email → anonymizovan: "uklonjen_<id>_<timestamp>@deleted.local"
+        ↓
+Zapis ostaje u bazi — historija kupovina i recenzija ostaje netaknuta
+Email adresa je oslobođena — isti email se može ponovo registrovati
 ```
 
-Anonymizacija emaila je neophodna jer `email` kolona ima `UNIQUE` constraint — bez nje, isti email se ne bi mogao ponovo registrovati.
+**Zašto anonymizacija emaila?**
+Kolona `email` ima `UNIQUE` constraint u bazi. Bez anonymizacije, bivši volonter ne bi mogao kreirati novi nalog istim emailom jer bi baza prijavila duplikat. Postavljanjem emaila na jedinstveni `deleted.local` format, originalni email se oslobađa za ponovnu upotrebu.
+
+**Status `uklonjen` je finalan** — jednom uklonjen korisnik ne može biti reaktiviran.
 
 #### B) Fizičko brisanje s kaskadnom propagacijom — korisnici pomoći
 
-```
-DELETE korisnik_pomoci WHERE pomoc_id = X
-  → ON DELETE CASCADE: kupljena_usluga.pomoc_id = X → briše se
-  → ON DELETE CASCADE: donacija.pomoc_id = X        → briše se
-```
-
-#### C) Fizičko brisanje usluge — samo bez historije kupovina
+Slučajevi korisnika pomoći brišu se fizički. Zahvaljujući `ON DELETE CASCADE` na stranim ključevima:
 
 ```
+DELETE FROM korisnik_pomoci WHERE pomoc_id = X
+        ↓ automatski kaskadno briše:
+  - donacija WHERE korisnik_pomoci_id = X
+  - kupljena_usluga WHERE pomoc_id = X
+```
+
+Ovo osigurava referentni integritet — ne mogu ostati "siročad" zapisi koji bi upućivali na nepostojeći slučaj.
+
+#### C) Fizičko brisanje bez kaskade — partneri i kartice "Pomogli smo"
+
+Tabele `partner` i `pomogli_slucaj` nemaju FK veze prema drugim tabelama. Brisanje je jednostavno `DELETE FROM ...` bez kaskadnih efekata.
+
+#### D) Brisanje usluge/proizvoda
+
+Usluga se može fizički obrisati **samo** ako nema nijedne kupovine:
+
+```
+DELETE /api/usluge-proizvodi/{id}
+        ↓
 Backend provjera:
-  countByUslugaProizvod > 0 → RuntimeException (blokada)
-  → Preporučeno: promijeniti status na 'uklonjena'
+  - Postoje aktivne (nerealizovane) kupovine? → GREŠKA, blokada
+  - Postoje realizovane kupovine (istorija)? → GREŠKA (FK constraint)
+  - Nema nijedne kupovine → fizičko brisanje OK
 ```
 
-#### D) CMS tabele (partner, katalog, pomogli_slucaj)
+Preporučena alternativa brisanju je postavljanje statusa na `uklonjena` — usluga ostaje u bazi kao historijski zapis ali nije vidljiva kupcima.
 
-Fizičko brisanje bez kaskadnih efekata — nema FK veza prema njima.
+---
+
+### Dijagram relacija (ER)
+
+```
+korisnik (1) ─────────── (1) volonter_info
+    │
+    ├─ (1) ─── (N) usluga_proizvod ─── (N:1) kategorija
+    │                  │
+    │                  └─ (1) ─── (N) kupljena_usluga ─── (N:1) korisnik_pomoci
+    │                                       │
+    │                                       └─ (1:1) ocjena_recenzija
+    │
+    ├─ (1) ─── (N) donacija ──────────────────── (N:1) korisnik_pomoci
+    │
+    ├─ (1) ─── (N) log_aktivnosti
+    │
+    └─ (1) ─── (N) verifikacija
+
+partner          (nezavisna tabela)
+pomogli_slucaj   (nezavisna tabela)
+```
+
+**Kaskadna brisanja (ON DELETE CASCADE):**
+- `kupljena_usluga.pomoc_id` → brisanje `korisnik_pomoci` briše i kupovine
+- `donacija.korisnik_pomoci_id` → brisanje `korisnik_pomoci` briše i donacije
 
 ---
 
@@ -1052,7 +743,7 @@ Svi endpointi imaju prefiks `/api/`. Backend se pokreće na portu `8080`.
 | Metod | Putanja | Pristup | Opis |
 |---|---|---|---|
 | GET | `/` | Javno | Sve kupovine |
-| POST | `/kupi` | Kupac/Volonter | Kupovina usluge |
+| POST | `/kupi` | Autentifikovani | Kupovina usluge |
 | GET | `/kupac/{kupacId}` | Javno | Kupovine određenog kupca |
 | GET | `/pomoc/{pomocId}` | Javno | Kupovine za korisnika pomoći |
 | GET | `/volonter/{volonterId}` | Volonter/Admin | Prodaje određenog volontera |
@@ -1082,18 +773,18 @@ Svi endpointi imaju prefiks `/api/`. Backend se pokreće na portu `8080`.
 | GET | `/kupac/{kupacId}` | Javno | Recenzije određenog kupca |
 | GET | `/volonter/{volonterId}` | Javno | Sve recenzije za usluge volontera |
 | GET | `/volonter/{volonterId}/prosjek` | Javno | Prosječna ocjena volontera |
-| POST | `/dodaj` | Kupac/Volonter | Dodavanje recenzije (samo onaj ko je kupio uslugu) |
+| POST | `/dodaj` | Autentifikovani | Dodavanje recenzije |
 | DELETE | `/{id}` | Admin | Brisanje recenzije |
 
 **Tijelo zahtjeva za dodavanje recenzije:**
 ```json
 {
   "kupovinaId": 12,
+  "kupacId": 3,
   "brojZvjezdica": 5,
   "komentar": "Odlično! Veoma profesionalan volonter."
 }
 ```
-> **Napomena:** `kupacId` se **ne šalje** u tijelu zahtjeva — backend ga čita iz aktivne sesije (`@AuthenticationPrincipal`). Ovo sprječava lažiranje tuđeg identiteta.
 
 ---
 
@@ -1210,12 +901,10 @@ Spring Security konfiguracija (`SecurityConfig.java`) definiše ko može pristup
 - Upload/download CV fajlova
 - Provjera dostupnosti emaila
 
-**Samo kupac ili volonter:**
-- Kupovina usluga (`POST /api/kupovine/kupi`)
-- Dodavanje recenzija (`POST /api/recenzije/dodaj`)
-
 **Samo autentifikovani korisnici:**
+- Kupovina usluga
 - Označavanje usluge kao realizovane
+- Dodavanje recenzija
 - Profil endpointi
 
 **Samo volonter:**
@@ -1291,47 +980,21 @@ filename = filename.replaceAll("[^a-zA-Z0-9._-]", "");
 
 ## 9. EMAIL NOTIFIKACIJE
 
-### 9.1 SMTP servis — Mailtrap sandbox
+Sistem automatski šalje email obavještenja koristeći Outlook SMTP server:
 
-Sistem koristi **Mailtrap sandbox** za slanje email obavještenja. Mailtrap je servis za testiranje emailova — svi emailovi se hvataju u virtuelno sanduče na `https://mailtrap.io` i **ne dostavljaju se na stvarne email adrese**. Ovo je idealno za razvoj i testiranje.
+| Događaj | Primač | Sadržaj |
+|---|---|---|
+| Registracija | Novi korisnik | Potvrda registracije, obavještenje o verifikaciji |
+| Admin odobri nalog | Volonter | Obavještenje da je profil odobren |
+| Admin promijeni status | Korisnik | Obavještenje o novom statusu i razlogu |
 
+**Konfiguracija:**
 ```properties
-spring.mail.host=sandbox.smtp.mailtrap.io
+spring.mail.host=smtp-mail.outlook.com
 spring.mail.port=587
-spring.mail.username=0e04f348da0412
-spring.mail.password=<mailtrap_lozinka>
-spring.mail.properties.mail.smtp.auth=true
+spring.mail.username=dobrobit2026@outlook.com
 spring.mail.properties.mail.smtp.starttls.enable=true
-spring.mail.test-connection=false
 ```
-
-> **Napomena:** Outlook SMTP (`smtp-mail.outlook.com`) je bio inicijalno konfigurisan, ali je odbijao slanje mejlova čak i sa app lozinkama. Mailtrap sandbox rješava ovaj problem i dodatno omogućava pregled svih poslatih mejlova na jednom mjestu.
-
-### 9.2 Implementacija u kodu
-
-Email servis je implementiran u `EmailService.java`. Svaka metoda šalje mejl **asinhorno** koristeći `CompletableFuture.runAsync()` — mejl se šalje u pozadini i ne blokira HTTP odgovor korisniku.
-
-```java
-CompletableFuture.runAsync(() -> {
-    MimeMessage message = mailSender.createMimeMessage();
-    // postavi primača, naslov, HTML tijelo
-    mailSender.send(message);
-});
-```
-
-### 9.3 Kada se šalje koji mejl
-
-| Događaj | Metoda u EmailService | Primač | Sadržaj |
-|---|---|---|---|
-| Kupac kupi uslugu | `posaljiPotvrdaKupovine()` | Kupac | Potvrda kupovine, naziv usluge, iznos |
-| Kupac kupi uslugu | `posaljiObavjestenjeKupovineVolonteru()` | Volonter | Obavještenje da je neko kupio njegovu uslugu |
-| Usluga označena realizovanom | `posaljiObavjestenjeRealizacije()` | Kupac | Potvrda da je usluga završena |
-| Usluga označena realizovanom | `posaljiObavjestenjeRealizacije()` | Volonter | Potvrda da je usluga završena |
-| Kupac ostavi recenziju | `posaljiObavjestenjeRecenzije()` | Volonter | Ko ga je ocijenio, koliko zvjezdica, komentar |
-| Volonter odgovori na recenziju | `posaljiOdgovorNaRecenziju()` | Kupac | Volonterov odgovor na recenziju |
-| Admin odobri uslugu (status → aktivna) | `posaljiOdobrenjeUsluge()` | Volonter | Obavještenje da je usluga odobrena i aktivna |
-| Registracija | `posaljiPotvrdaRegistracije()` | Novi korisnik | Potvrda registracije |
-| Admin odobri/promijeni status naloga | *(u KorisnikServices)* | Korisnik | Obavještenje o novom statusu |
 
 ---
 
@@ -1605,11 +1268,10 @@ Preusmjeravanje na /hvala
 ```
 Usluga je realizovana (statusIsporuke = "realizovano")
         ↓
-Kupac/volonter u svom dashboardu vidi dugme "Ocijeni"
+Kupac u svom dashboardu vidi dugme "Ocijeni"
         ↓
 POST /api/recenzije/dodaj
-{ kupovinaId, brojZvjezdica, komentar }
-(kupacId se NE šalje — backend uzima iz sesije)
+{ kupovinaId, kupacId, brojZvjezdica, komentar }
         ↓
 Backend provjerava:
 - Kupac je zaista platio tu kupovinu
@@ -1645,8 +1307,7 @@ Utiče na prosječnu ocjenu u "Istaknuti volonteri"
 
 ### 12.4 Pravila recenzija
 
-- Samo korisnik sa ulogom `kupac` ili `volonter` može dodati recenziju
-- Recenziju može ostaviti isključivo onaj ko je platio tu konkretnu kupovinu — backend provjerava putem sesije (ne prima `kupacId` iz tijela zahtjeva)
+- Samo kupac koji je platio određenu kupovinu može ostaviti recenziju za nju
 - Jedna kupovina = jedna recenzija (ne može se dodati duplikat)
 - Ocjena mora biti između 1 i 5
 - Samo administrator može obrisati recenziju
@@ -1742,14 +1403,17 @@ server.port=8080
 spring.servlet.multipart.max-file-size=15MB
 spring.servlet.multipart.max-request-size=16MB
 
-# Email (Mailtrap sandbox — za testiranje)
-# Svi mejlovi idu na https://mailtrap.io inbox, ne na stvarne adrese
-spring.mail.host=sandbox.smtp.mailtrap.io
+# Email (Outlook SMTP)
+spring.mail.host=smtp-mail.outlook.com
 spring.mail.port=587
-spring.mail.username=0e04f348da0412
-spring.mail.password=<mailtrap_lozinka>
+spring.mail.username=dobrobit2026@outlook.com
+spring.mail.password=<lozinka>
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
+# Kratki timeoutti — email se šalje async pa ne blokira HTTP odgovor
+spring.mail.properties.mail.smtp.connectiontimeout=3000
+spring.mail.properties.mail.smtp.timeout=3000
+spring.mail.properties.mail.smtp.writetimeout=3000
 spring.mail.test-connection=false
 ```
 
@@ -1785,7 +1449,7 @@ Linux/Mac: /home/<korisnik>/dobrobit-uploads/cv/
 - Google prijava dugme postoji u UI ali nije implementirano
 - "Zaboravili ste lozinku" link nije implementiran
 - Profilna slika volontera se ne uploaduje na server (putanja se unosi ručno)
-- Odgovori volontera na recenzije se čuvaju u bazi (kolona `odgovor_volontera` u tabeli `ocjena_recenzija`) i vidljivi su kupcu u sekciji "Moje Recenzije"
+- Odgovori volontera na recenzije se čuvaju samo lokalno u memoriji (ne persistuju se u bazu)
 - Admin notifikacioni sistem (upozorenja) je vizuelno implementiran ali bez backend logike
 
 ---
