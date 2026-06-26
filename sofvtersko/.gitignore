@@ -33,5 +33,4 @@ build/
 .vscode/
 
 ### Osjetljivi fajlovi — ne commitovati! ###
-src/main/resources/application.properties
 src/main/resources/application-*.properties
