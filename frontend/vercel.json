@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/dobrobit/browser",
+  "outputDirectory": "dist/dobrobit",
   "rewrites": [
     {
       "source": "/api/:path*",
